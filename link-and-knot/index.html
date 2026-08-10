@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINK AND KNOT</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+        --break-c:rgba(255,255,255,0.9);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(980px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+    }
+
+    p{ margin:0 0 14px 0; }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    /* ===== STABILITY AXIS ===== */
+
+    .axis-wrap{ margin:18px 0 6px; }
+
+    .axis-track{
+        display:flex;
+        border:1px solid var(--line);
+        position:relative;
+    }
+
+    .axis-cell{
+        flex:1;
+        text-align:center;
+        padding:20px 4px;
+        font-family:"Courier New", monospace;
+        font-size:14px;
+        letter-spacing:1px;
+        border-right:1px solid var(--line);
+        color:var(--dim);
+        position:relative;
+        transition:background 0.25s, color 0.25s;
+    }
+
+    .axis-cell:last-child{ border-right:none; }
+
+    .axis-cell.zero-col{ color:var(--fg); }
+
+    .axis-cell.current{
+        background:var(--fg);
+        color:var(--bg);
+        font-weight:700;
+    }
+
+    .axis-cell .cell-tag{
+        display:block;
+        font-size:9px;
+        letter-spacing:1px;
+        margin-top:4px;
+        color:inherit;
+        opacity:0.65;
+    }
+
+    .axis-labels{
+        display:flex;
+        justify-content:space-between;
+        margin-top:10px;
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    .axis-labels span:last-child{ text-align:right; }
+
+    .band-readout{
+        margin-top:16px;
+        border:1px solid var(--line);
+        padding:16px 18px;
+    }
+
+    .band-readout .br-status{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-bottom:6px;
+    }
+
+    .band-readout .br-name{
+        font-family:"Times New Roman", serif;
+        font-size:28px;
+        letter-spacing:0.5px;
+        min-height:1.2em;
+    }
+
+    .band-readout .br-name.shake{ color:var(--dim); }
+
+    .band-readout .br-sub{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-top:8px;
+    }
+
+    .band-readout.flag-lock{ border-color:var(--fg); }
+    .band-readout.flag-rupture{ border-color:var(--fg); }
+
+    .stat-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:24px;
+        margin:20px 0 0;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    .stat-row strong{ color:var(--fg); }
+
+    /* ===== CONTROLS ===== */
+
+    .action-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin:16px 0 0;
+    }
+
+    button.btn{
+        background:var(--bg);
+        color:var(--fg);
+        border:1px solid var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        padding:12px 18px;
+        cursor:pointer;
+    }
+
+    button.btn:hover{ background:var(--fg); color:var(--bg); }
+
+    button.btn:disabled{
+        opacity:0.3;
+        cursor:not-allowed;
+    }
+
+    button.btn:disabled:hover{ background:var(--bg); color:var(--fg); }
+
+    button.btn.primary{ padding:16px 22px; font-size:12.5px; }
+
+    button.btn.small{
+        padding:6px 10px;
+        font-size:10.5px;
+    }
+
+    button.btn.ghost{
+        border-color:var(--line);
+        color:var(--dim);
+    }
+
+    button.btn.ghost:hover{
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--fg);
+    }
+
+    /* ===== ROLL RESULT ===== */
+
+    .result-panel{
+        margin-top:22px;
+        border:1px solid var(--line);
+        padding:20px 22px;
+        min-height:5em;
+    }
+
+    .result-status{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-bottom:8px;
+    }
+
+    .result-name{
+        font-family:"Times New Roman", serif;
+        font-size:26px;
+        letter-spacing:0.5px;
+        min-height:1.2em;
+    }
+
+    .result-name.shake{ color:var(--dim); }
+
+    .result-body{
+        margin-top:10px;
+    }
+
+    .result-body p{
+        font-family:"Courier New", monospace;
+        font-size:12.5px;
+        letter-spacing:0.5px;
+        text-transform:none;
+        color:var(--fg);
+        margin:0 0 8px 0;
+    }
+
+    .result-body .noise-line{ color:var(--dim); }
+
+    .result-sub{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-top:10px;
+    }
+
+    /* ===== INVENTORY ===== */
+
+    .inv-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+        gap:12px;
+        margin-top:16px;
+    }
+
+    .inv-empty{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        border:1px solid var(--line);
+        padding:24px;
+        text-align:center;
+        grid-column:1/-1;
+    }
+
+    .knot-card{
+        border:1px solid var(--fg);
+        padding:12px 14px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        min-height:130px;
+    }
+
+    .knot-card.broken{ border-style:dashed; }
+
+    .knot-card .kc-tag{
+        font-family:"Courier New", monospace;
+        font-size:10px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-bottom:4px;
+    }
+
+    .knot-card .kc-name{
+        font-family:"Times New Roman", serif;
+        font-size:16px;
+        margin-bottom:6px;
+    }
+
+    .knot-card .kc-output{
+        font-family:"Courier New", monospace;
+        font-size:10.5px;
+        letter-spacing:0.5px;
+        text-transform:none;
+        color:var(--dim);
+        line-height:1.5;
+        margin-bottom:10px;
+    }
+
+    .knot-card .kc-fix{
+        align-self:flex-start;
+    }
+
+    /* ===== LOG ===== */
+
+    .log-panel{
+        margin-top:16px;
+        border:1px solid var(--line);
+        max-height:260px;
+        overflow-y:auto;
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        letter-spacing:0.5px;
+        line-height:1.9;
+    }
+
+    .log-empty{
+        padding:16px;
+        color:var(--dim);
+        text-transform:uppercase;
+        letter-spacing:2px;
+        font-size:11px;
+    }
+
+    .log-entry{
+        padding:9px 14px;
+        border-bottom:1px solid var(--line);
+        color:var(--dim);
+    }
+
+    .log-entry:last-child{ border-bottom:none; }
+
+    .log-entry .le-tag{
+        color:var(--fg);
+        margin-right:8px;
+    }
+
+    .log-entry.rupture .le-tag,
+    .log-entry.lock .le-tag,
+    .log-entry.suppressed .le-tag{
+        color:var(--fg);
+        font-weight:700;
+    }
+
+    /* ===== REFERENCE TABLES ===== */
+
+    .category-head{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:36px 0 16px 0;
+        border-top:1px solid var(--line);
+        padding-top:26px;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:14px 0 18px;
+        font-size:13px;
+        line-height:1.5;
+        table-layout:fixed;
+    }
+
+    th, td{
+        border:1px solid var(--line);
+        padding:9px 10px;
+        vertical-align:top;
+        text-align:left;
+        overflow-wrap:break-word;
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+    }
+
+    th{
+        font-size:10.5px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        font-weight:700;
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--bg);
+    }
+
+    .table-scroll{
+        width:100%;
+        overflow-x:auto;
+        margin:14px 0 18px;
+    }
+
+    .table-scroll table{ margin:0; min-width:560px; }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{ border-bottom-color:var(--fg); }
+
+    @media (max-width: 720px){
+        h1{ font-size:42px; }
+        .axis-cell{ font-size:11px; padding:14px 2px; }
+        .inv-grid{ grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <p class="eyebrow">NODE // 007</p>
+    <h1>LINK AND KNOT</h1>
+    <div class="whitebox">ULTRABLACK OPERATOR — LINKWALKER TERMINAL</div>
+
+    <div class="terminal-note">
+        HEW A KNOT TO ROLL IT INTO INVENTORY — THE LINK DOES NOT MOVE YET.<br>
+        FIX A HELD KNOT TO SPEND IT AND APPLY ITS SHIFT TO THE LINK.<br>
+        CORE KNOTS PULL TOWARD THE KEEN BAND. BROKEN KNOTS PULL TOWARD THE BREAK BAND.<br>
+        AT +3 THE LINK LOCKS — FIXING A BROKEN KNOT WHILE LOCKED SPENDS IT BUT SUPPRESSES ITS SHIFT.<br>
+        AT -3 THE LINK IS AT RUPTURE.
+    </div>
+
+    <hr>
+
+    <h2>Link Stability</h2>
+    <div class="axis-wrap">
+        <div class="axis-track" id="axisTrack"></div>
+        <div class="axis-labels">
+            <span>← BREAK BAND</span>
+            <span>ZERO</span>
+            <span>KEEN BAND →</span>
+        </div>
+    </div>
+
+    <div class="band-readout" id="bandReadout">
+        <div class="br-status" id="brStatus">STATUS: LINK STABLE</div>
+        <div class="br-name" id="brName">ZERO</div>
+        <div class="br-sub" id="brSub">EQUILIBRIUM · NO MODIFIERS</div>
+    </div>
+
+    <div class="stat-row">
+        <span>LINK VALUE: <strong id="statValue">0</strong></span>
+        <span>KNOTS HELD: <strong id="statHeld">0</strong></span>
+        <span>TOTAL HEWED: <strong id="statHewed">0</strong></span>
+        <span>TOTAL FIXED: <strong id="statFixed">0</strong></span>
+    </div>
+
+    <div class="action-row">
+        <button class="btn primary" id="hewCoreBtn" type="button">HEW CORE KNOT (D12)</button>
+        <button class="btn primary" id="hewBrokenBtn" type="button">HEW BROKEN KNOT (D12)</button>
+    </div>
+    <div class="action-row">
+        <button class="btn ghost small" id="driftBtn" type="button">DRIFT ONE STEP TOWARD ZERO</button>
+        <button class="btn ghost small" id="nudgePlusBtn" type="button">MANUAL +1</button>
+        <button class="btn ghost small" id="nudgeMinusBtn" type="button">MANUAL −1</button>
+        <button class="btn ghost small" id="resetBtn" type="button">RESET SESSION</button>
+    </div>
+
+    <div class="result-panel">
+        <div class="result-status" id="resultStatus">STATUS: IDLE — NO KNOT HEWED</div>
+        <div class="result-name" id="resultName"></div>
+        <div class="result-body" id="resultBody"></div>
+        <div class="result-sub" id="resultSub"></div>
+    </div>
+
+    <hr>
+
+    <h2>Knot Inventory</h2>
+    <p class="mono">Held knots occupy one slot each. Fix a knot to spend it permanently.</p>
+    <div class="inv-grid" id="invGrid"></div>
+
+    <hr>
+
+    <h2>Signal Log</h2>
+    <div class="log-panel" id="logPanel"></div>
+
+    <div class="category-head">CORE KNOTS — QUICK REFERENCE</div>
+    <p class="mono">Roll 1d12. Stable manipulations. Default: one step toward the Keen Band, applied on Fix.</p>
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>d12</th><th>Knot</th><th>Output</th><th>Link Shift On Fix</th></tr></thead>
+            <tbody id="coreRefBody"></tbody>
+        </table>
+    </div>
+
+    <div class="category-head">BROKEN KNOTS — QUICK REFERENCE</div>
+    <p class="mono">Roll 1d12. Volatile manipulations. Default: one step toward the Break Band on Fix, plus a hit to the linked Reading.</p>
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>d12</th><th>Knot</th><th>Output</th><th>Noise</th><th>Link Shift On Fix</th></tr></thead>
+            <tbody id="brokenRefBody"></tbody>
+        </table>
+    </div>
+
+    <hr>
+    <a class="nav-link" href="../linkwalker/">→ LINKWALKER</a>
+    <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+    <a class="nav-link" href="../operator-registry/">→ OPERATOR REGISTRY</a>
+    <a class="nav-link" href="../">→ KERNEL</a>
+
+</main>
+<script src="link-and-knot.js"></script>
+</body>
+</html>

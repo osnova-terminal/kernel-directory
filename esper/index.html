@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESPER</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(1280px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .page-head{
+        margin-bottom:34px;
+    }
+
+    .head-left{
+        max-width:560px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+        max-width:100%;
+        word-break:break-word;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    .hero-tag{
+        margin-top:18px;
+    }
+
+    .columns{
+        column-count:3;
+        column-gap:42px;
+        column-fill:balance;
+    }
+
+    .columns section,
+    .columns p,
+    .columns h2,
+    .columns h3,
+    .columns table,
+    .columns .callout,
+    .columns .terminal-note,
+    .columns .break-block{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    section{
+        margin:0 0 28px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+        break-after:avoid;
+    }
+
+    .part-title{
+        font-family:"Times New Roman", serif;
+        font-size:44px;
+        line-height:0.95;
+        margin:0 0 10px 0;
+        font-weight:550;
+        font-style:normal;
+        letter-spacing:1px;
+        color:var(--fg);
+    }
+
+    .field-subtitle{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:16px 0 6px 0;
+    }
+
+    .field-subtitle:first-of-type{
+        margin-top:4px;
+    }
+
+    .article-label{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 10px 0;
+    }
+
+    /* Article headers rendered as whitebox badges. Two-class selector keeps
+       this ahead of both .article-label and .whitebox regardless of source order. */
+    .article-label.whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-weight:700;
+        margin:0 0 12px 0;
+    }
+
+    p{
+        margin:0 0 14px 0;
+        text-align:justify;
+        text-justify:inter-word;
+    }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .callout{
+        margin:12px 0;
+        padding-left:14px;
+        border-left:1px solid var(--line);
+        color:var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+        column-span:all;
+    }
+
+    .span-all{
+        column-span:all;
+    }
+
+    .break-block{
+        margin:30px 0 18px;
+        padding:14px 0 0;
+        border-top:1px solid var(--line);
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:14px 0 18px;
+        font-size:14px;
+        line-height:1.5;
+        table-layout:fixed;
+    }
+
+    th, td{
+        border:1px solid var(--line);
+        padding:10px 10px;
+        vertical-align:top;
+        text-align:left;
+        overflow-wrap:break-word;
+    }
+
+    th{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        font-weight:700;
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--bg);
+    }
+
+    .small-table{
+        font-size:13px;
+    }
+
+    .small-table td,
+    .small-table th{
+        padding:8px 8px;
+    }
+
+    /* Lets wide tables scroll horizontally instead of breaking the page on narrow screens */
+    .table-scroll{
+        width:100%;
+        overflow-x:auto;
+        margin:14px 0 18px;
+    }
+
+    .table-scroll table{
+        margin:0;
+        min-width:640px;
+    }
+
+    .param-table{
+        font-size:13px;
+        line-height:1.5;
+    }
+
+    .param-table td strong{
+        display:inline;
+    }
+
+    .card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+    }
+
+    .card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.4px;
+    }
+
+    .card ol,
+    .card ul{
+        margin:0;
+        padding-left:20px;
+    }
+
+    .card li{
+        margin:0 0 6px 0;
+    }
+
+    .echo-register ul{
+        column-count:3;
+        column-gap:28px;
+    }
+
+    .echo-register li{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+    }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{
+        border-bottom-color:var(--fg);
+    }
+
+    @media (max-width: 1100px){
+        .columns{ column-count:2; }
+        h1{ font-size:52px; }
+        .part-title{ font-size:38px; }
+        .echo-register ul{ column-count:2; }
+    }
+
+    @media (max-width: 780px){
+        main{ width:min(92vw, 720px); margin:80px auto 60px; }
+        .columns{ column-count:1; }
+        h1{ font-size:42px; }
+        .part-title{ font-size:32px; }
+        table{ font-size:12px; }
+        .param-table{ font-size:11.5px; }
+        .small-table{ font-size:12px; }
+        .echo-register ul{ column-count:1; }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <div class="page-head">
+        <div class="head-left">
+            <p class="eyebrow">NODE // 001</p>
+            <h1>KIND-I OPERATOR ESPer</h1>
+            <div class="whitebox hero-tag">ULTRABLACK</div>
+        </div>
+    </div>
+
+    <div class="columns">
+
+        <section>
+            <div class="article-label whitebox">ARTICLE I — DEFINITIONS</div>
+            <p><strong>§1.1</strong> A  Operator (ESPer) is an individual in whom Extrasensory Phenomena (ESP) manifests as an innate condition, not derived from instrument, procedure, or external induction.</p>
+            <p><strong>§1.2</strong> ESP is herein defined as: a measurable deviation in causal continuity, originating from the subject and not reducible to known physical law.</p>
+            <p><strong>§1.3</strong> The Operant recognizes that this definition is incomplete, with foundational gaps recorded under <span class="mono">[REDACTED]</span>.</p>
+            <div class="callout">&gt;&gt; INPUT ACCEPTED<br>&gt;&gt; PARAMETER COLLAPSE COMPLETE</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE II — HEX GRAVE</div>
+            <p><strong>§2.1</strong> All ESP activity observable under controlled conditions must be collapsed into Parameters and recorded as a Hex Grave.</p>
+            <p><strong>§2.2</strong> A Hex Grave constitutes the only legible form of ESP admissible in Operant records.</p>
+            <p><strong>§2.3</strong> The following Parameters are mandated:</p>
+            <div class="callout">&gt;&gt; Shape<br>&gt;&gt; Origin<br>&gt;&gt; Behavior<br>&gt;&gt; Duration<br>&gt;&gt; Reach<br>&gt;&gt; Impact</div>
+            <p><strong>§2.4</strong> Any manifestation not reducible to these Parameters shall be classified as: <strong>LIMINAL EVENT — UNGRAVED</strong></p>
+            <p><strong>§2.5</strong> Repeated failure to Grave a manifestation will result in reclassification under Protocol Katabasis.</p>
+            <div class="callout">&gt;&gt; SIGNAL DRIFT DETECTED<br>&gt;&gt; COLLAPSE RETAINED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE III — FOCAL PHASE COMPLIANCE</div>
+            <p><strong>§3.1</strong> All KIND-I Operators are required to operate within Focal Phase conditions during sanctioned activity.</p>
+            <p><strong>§3.2</strong> Focal Phase is defined as: the state in which ESP conforms to measurable Parameters.</p>
+            <p><strong>§3.3</strong> Focal Phase compliance ensures:</p>
+            <div class="callout">&gt;&gt; predictability<br>&gt;&gt; containment<br>&gt;&gt; auditability<br>&gt;&gt; [REDACTED]</div>
+            <p><strong>§3.4</strong> Deviation from Focal Phase constitutes operational risk and triggers review under Directive 02-AO from the Paranormal Code.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE IV — LIMINAL PHASE</div>
+            <p><strong>§4.1</strong> Liminal Phase is defined as: ESP expression not conforming to Parameter logic.</p>
+            <p><strong>§4.2</strong> The Operant does not possess a complete model for Liminal Phase.</p>
+            <p><strong>§4.3</strong> Liminal manifestations are to be:</p>
+            <div class="callout">&gt;&gt; recorded indirectly<br>&gt;&gt; not replicated<br>&gt;&gt; not encouraged</div>
+            <p><strong>§4.4</strong> Observed escalation patterns in Liminal activity are always followed by Rites (Ritualistic manifestation of extrasensorial phenomena).</p>
+            <div class="callout">&gt;&gt; INPUT ACCEPTED<br>&gt;&gt; LIMINAL VARIANCE LOGGED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE V — REGISTRATION AND BRIEF STRUCTURE</div>
+            <p><strong>§5.1</strong> Each KIND-I Operator shall maintain an Intake Brief containing:</p>
+            <div class="callout">&gt;&gt; all recorded Hex Graves<br>&gt;&gt; associated Phenomenon descriptors<br>&gt;&gt; observed Liminal deviations</div>
+            <p><strong>§5.2</strong> Hex Graves shall be treated as: operational capability disclosures.</p>
+            <p><strong>§5.3</strong> Cross-record inconsistencies will be flagged under Review Code 9.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE VI — CONTAINMENT PRINCIPLE</div>
+            <p><strong>§6.1</strong> The Operant assumes control over ESPer and ESP under government oversight.</p>
+            <p><strong>§6.2</strong> The Operant establishes: frameworks within which ESP behaves as if under containment or custody.</p>
+            <div class="terminal-note">IF YOU CAN READ THIS<br>FOLLOW SAGITTARIUS<br>TIME EATS</div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">KIND-I DEPLOYMENT BRIEF</div>
+            <div class="mono">OPERATOR ACCESS // VIOLATION CODE: [REDACTED]</div>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2 class="part-title">ESPer FIELD PROCEDURE</h2>
+            <p class="mono">On Hex graving, Focal and Liminal Phases</p>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2>HEX PROCEDURE DIRECTIVES</h2>
+            <h3 class="field-subtitle">Graving</h3>
+            <p>Hexes are Graved before mission start, after briefing. Roll on each Parameter table. Result is how the ESP manifests in the material world through the Hex. One Hex occupies one inventory slot. Hexes cannot be Graved during a mission as they require extensive study, practice and preparation.</p>
+            <br>
+            <h3 class="field-subtitle">Fixing</h3>
+            <p>At any point, during the operator’s turn, they can choose to Fix a Focal Phase Hex with a Half-Action. By doing that, the Hex enters a cooldown period and can only be used again in the next scene. The operator can, instead, attempt Phase Reversal and use a Full Action to Fix a Liminal Phase Hex. This action can be a Rite Action (multiple turns of uninterrupted rituals, incantations, offering, conjuration, evocation, utterance, litany or markings) to complete the Fixing, or an Observation Action (resolves every round, but requires the operator to concentrate on the rites, taking damage can interrupt it).</p>
+            <br>
+            <h3 class="field-subtitle">Regraving</h3>
+            <p>Fixing a Hex does not remove it from inventory. It remains there until the operator decides to override it with a new one. The operator, before a new mission and after a new briefing, can Grave a new Hex to override an old one.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>HEX GRAVE — FOCAL PHASE</h2>
+            <p>Roll 1d6 for each of the six Parameters. The result is the Hex's Grav, its collapsed, measurable Focal Phase form. Interpret every result through the ESP's Phenomenon and Folk Root. Name the Hex. Record it on the intake form. There is no Hex Grave for Liminal Phase, it is unbound by scientific logic and cannot be filed.</p>
+
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>d6</th>
+                            <th>Shape</th>
+                            <th>Origin</th>
+                            <th>Behavior</th>
+                            <th>Duration</th>
+                            <th>Reach</th>
+                            <th>Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Beam</td><td>Self</td><td>Seeking</td><td>Instant</td><td>Contact</td><td>Damage</td></tr>
+                        <tr><td>2</td><td>Cloud</td><td>Touch</td><td>Anchored</td><td>Brief</td><td>Close</td><td>Drain</td></tr>
+                        <tr><td>3</td><td>Pulse</td><td>Thrown</td><td>Spreading</td><td>Sustained</td><td>Near</td><td>Displace</td></tr>
+                        <tr><td>4</td><td>Shell</td><td>Planted</td><td>Retracting</td><td>Delayed</td><td>Far</td><td>Suppress</td></tr>
+                        <tr><td>5</td><td>Thread</td><td>Reflected</td><td>Oscillating</td><td>Residual</td><td>Remote</td><td>Read</td></tr>
+                        <tr><td>6</td><td>Shard</td><td>Ambient</td><td>Mirroring</td><td>Permanent</td><td>Boundless</td><td>Warp</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <h2>FULL PARAMETER DESCRIPTIONS</h2>
+            <p class="mono">Interpretive text for each Grav result, cross-referenced against the roll table above</p>
+
+            <div class="table-scroll">
+                <table class="param-table">
+                    <colgroup>
+                        <col style="width:5%">
+                        <col style="width:15.83%">
+                        <col style="width:15.83%">
+                        <col style="width:15.83%">
+                        <col style="width:15.83%">
+                        <col style="width:15.83%">
+                        <col style="width:15.83%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>d6</th>
+                            <th>Shape</th>
+                            <th>Origin</th>
+                            <th>Behavior</th>
+                            <th>Duration</th>
+                            <th>Reach</th>
+                            <th>Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Beam</strong> — Narrow, linear, directional. Precise. Hits what it points at and nothing else.</td>
+                            <td><strong>Self</strong> — Emanates directly from the ESPer’s body. They are always inside it.</td>
+                            <td><strong>Seeking</strong> — Adjusts trajectory toward a designated target after deployment. Obstacles and distance still matter.</td>
+                            <td><strong>Instant</strong> — Occurs and ends in a single moment. No maintenance required. No residue.</td>
+                            <td><strong>Contact</strong> — Origin and target must be physically touching at activation. No gap tolerated.</td>
+                            <td><strong>Damage</strong> — HAZE HIT to linked Reading through the Pale. The Pale absorbs first.</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Cloud</strong> — Diffuse volumetric mass. Fills a space rather than crossing it. Hard to avoid, hard to aim.</td>
+                            <td><strong>Touch</strong> — Initiates through physical contact between ESPer and target. Requires proximity.</td>
+                            <td><strong>Anchored</strong> — Anchors in space after deployment. Does not move regardless of what moves around it.</td>
+                            <td><strong>Brief</strong> — Persists until the end of the current round. Fades cleanly.</td>
+                            <td><strong>Close</strong> — Within arm’s reach of the origin point.</td>
+                            <td><strong>Drain</strong> — HAZE HIT directly to linked reading. Bypasses the Pale entirely.</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Pulse</strong> — Radial expansion from a single point. Hits everything within radius simultaneously.</td>
+                            <td><strong>Thrown</strong> — Launched from the ESPer toward a designated point. Travels through intervening space.</td>
+                            <td><strong>Spreading</strong> — Expands gradually outward from origin or impact point. Coverage increases over time.</td>
+                            <td><strong>Sustained</strong> — Persists as long as the ESPer actively maintains the Fixing. Ends if the Fixing breaks.</td>
+                            <td><strong>Near</strong> — Within the same room or immediate enclosed space.</td>
+                            <td><strong>Displace</strong> — Moves the target physically without dealing damage. Direction and force set during Fixing.</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Shell</strong> — Enclosing surface. Wraps around a target or area rather than striking from outside.</td>
+                            <td><strong>Planted</strong> — Placed at a location during Fixing. Activates when a condition the ESPer specifies is met.</td>
+                            <td><strong>Retracting</strong> — Extends outward then pulls back toward the ESPer, dragging whatever it caught.</td>
+                            <td><strong>Delayed</strong> — Set during Fixing but does not resolve until a condition the ESPer specifies is met.</td>
+                            <td><strong>Far</strong> — Across a significant distance within line of sight.</td>
+                            <td><strong>Suppress</strong> — Prevents a specific action, ESP use, or sense. ESPer specifies what is suppressed during Fixing.</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>Thread</strong> — Thin filamental connection between two designated points. What travels along it depends on Impact.</td>
+                            <td><strong>Reflected</strong> — Originates from a surface the ESPer designates. ESPer need not be near it at activation.</td>
+                            <td><strong>Oscillating</strong> — Pulses on and off at regular intervals set during Fixing. Effect is intermittent.</td>
+                            <td><strong>Residual</strong> — Fades gradually over several rounds, weakening incrementally. Final moments unpredictable.</td>
+                            <td><strong>Remote</strong> — Beyond the line of sight. Requires a link, a belonging, a name or a prior Touch to function.</td>
+                            <td><strong>Read</strong> — Extracts information from the target or environment. No physical effect.</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>Shard</strong> — Multiple discrete fragments deployed simultaneously. Each piece weaker, coverage wider.</td>
+                            <td><strong>Ambient</strong> — Draws from environmental conditions. No identifiable source point. Harder to trace back.</td>
+                            <td><strong>Mirroring</strong> — Copies and echoes the movement of a designated target. Follows without seeking.</td>
+                            <td><strong>Permanent</strong> — Does not end without deliberate reversal. The IO flags permanent Hexes in Operator Files.</td>
+                            <td><strong>Boundless</strong> — No distance constraint. Only Taboo limits it.</td>
+                            <td><strong>Warp</strong> — Alters a persistent property of target or environment. ESPer specifies the property during Fixing.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <h2>PHASE REVERSAL — LIMINAL PHASE</h2>
+            <p>The Liminal Phase is not an extension of the Focal Phase. It is its inversion. The same force, accessed through old folkloric ritualistic practices. Unclassified. There is no Hex Grave for Liminal Phase, it is unbound by the scientific logic that governs Focal Phase operation. Much more powerful, and less predictable, requires rites, incantations, offering and sustained effort from the ESPer. If the Focal Phase is optimized for reduced damage to the ESPer, the Liminal Phase is severely taxing.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>NOISE</h2>
+            <p>Each round a Liminal Phase Hex is maintained, either through a Rite Action or an Observation Action, it increases Noise one step. In Rite Actions, only when the Hex resolves and new output at every turn an Observation Action is sustained.</p>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Noise</th>
+                            <th>Output</th>
+                            <th>Echo</th>
+                            <th>Echo Variant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Base Liminal effect.</td><td>HAZE HIT to linked Reading.</td><td>Temporary sensory disabling.</td></tr>
+                        <tr><td>2</td><td>Impact one tier higher.</td><td>HARD HIT to linked Reading.</td><td>Physical mark.</td></tr>
+                        <tr><td>3</td><td>Reach doubled.</td><td>HARD HIT to linked Reading; halved movement.</td><td>Debt or Displacement.</td></tr>
+                        <tr><td>4</td><td>Impact one tier higher.</td><td>HYPER HIT to linked Reading.</td><td>Permanent reduction of Reading by 1.</td></tr>
+                        <tr><td>5+</td><td>Director’s orders.</td><td>Major cognitive and physical risk. Flatline risk.</td><td>Severance.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <h2>ECHO VARIANT REGISTER</h2>
+            <div class="card echo-register">
+                <ul>
+                    <li><strong>Sensory disabling</strong> — temporary at low Noise, permanent at high Noise.</li>
+                    <li><strong>Physical Mark</strong> — scarring, spotting or other physical marks left by the ESP on the body.</li>
+                    <li><strong>Debt</strong> — echo only manifests with considerable delay.</li>
+                    <li><strong>Displacement</strong> — ESPer blinks involuntarily to a different spot.</li>
+                    <li><strong>Reading Reduction</strong> — temporary at low Noise, permanent at high Noise.</li>
+                    <li><strong>Severance</strong> — cognitive and/or physical loss, usually as offering to fuel the Hex. Flatline.</li>
+                </ul>
+            </div>
+            <a class="nav-link" href="../hex-grave">→ HEX GRAVE</a>
+            <a class="nav-link" href="../spiritbox">→ SPIRITBOX</a>
+            <a class="nav-link" href="../operator-registry">→ OPERATOR REGISTRY</a>
+            <a class="nav-link" href="../">→ KERNEL</a>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>

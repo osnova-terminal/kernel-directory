@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINKWALKER</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(1280px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .page-head{
+        margin-bottom:34px;
+    }
+
+    .head-left{
+        max-width:900px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+        max-width:100%;
+        word-break:break-word;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    .hero-tag{
+        margin-top:18px;
+    }
+
+    .columns{
+        column-count:3;
+        column-gap:42px;
+        column-fill:balance;
+    }
+
+    .columns section,
+    .columns p,
+    .columns h2,
+    .columns h3,
+    .columns table,
+    .columns .callout,
+    .columns .terminal-note,
+    .columns .break-block{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    section{
+        margin:0 0 28px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+        break-after:avoid;
+    }
+
+    .part-title{
+        font-family:"Times New Roman", serif;
+        font-size:44px;
+        line-height:0.95;
+        margin:0 0 10px 0;
+        font-weight:550;
+        font-style:normal;
+        letter-spacing:1px;
+        color:var(--fg);
+    }
+
+    .field-subtitle{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:16px 0 6px 0;
+    }
+
+    .field-subtitle:first-of-type{
+        margin-top:4px;
+    }
+
+    .article-label{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 10px 0;
+    }
+
+    .article-label.whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-weight:700;
+        margin:0 0 12px 0;
+    }
+
+    p{
+        margin:0 0 14px 0;
+        text-align:justify;
+        text-justify:inter-word;
+    }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .callout{
+        margin:12px 0;
+        padding-left:14px;
+        border-left:1px solid var(--line);
+        color:var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+        column-span:all;
+    }
+
+    .span-all{
+        column-span:all;
+    }
+
+    .break-block{
+        margin:30px 0 18px;
+        padding:14px 0 0;
+        border-top:1px solid var(--line);
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:14px 0 18px;
+        font-size:14px;
+        line-height:1.5;
+        table-layout:fixed;
+    }
+
+    th, td{
+        border:1px solid var(--line);
+        padding:10px 10px;
+        vertical-align:top;
+        text-align:left;
+        overflow-wrap:break-word;
+    }
+
+    th{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        font-weight:700;
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--bg);
+    }
+
+    .small-table{
+        font-size:13px;
+    }
+
+    .small-table td,
+    .small-table th{
+        padding:8px 8px;
+    }
+
+    .table-scroll{
+        width:100%;
+        overflow-x:auto;
+        margin:14px 0 18px;
+    }
+
+    .table-scroll table{
+        margin:0;
+        min-width:640px;
+    }
+
+    .card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+    }
+
+    .card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.4px;
+    }
+
+    /* ===== STABILITY AXIS ===== */
+
+    .axis-wrap{
+        margin:16px 0 6px;
+    }
+
+    .axis-track{
+        display:flex;
+        border:1px solid var(--line);
+    }
+
+    .axis-cell{
+        flex:1;
+        text-align:center;
+        padding:16px 4px;
+        font-family:"Courier New", monospace;
+        font-size:14px;
+        letter-spacing:1px;
+        border-right:1px solid var(--line);
+        color:var(--dim);
+    }
+
+    .axis-cell:last-child{
+        border-right:none;
+    }
+
+    .axis-cell.zero{
+        background:var(--fg);
+        color:var(--bg);
+        font-weight:700;
+    }
+
+    .axis-labels{
+        display:flex;
+        justify-content:space-between;
+        margin-top:10px;
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    .axis-labels span:last-child{
+        text-align:right;
+    }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{
+        border-bottom-color:var(--fg);
+    }
+
+    @media (max-width: 1100px){
+        .columns{ column-count:2; }
+        h1{ font-size:52px; }
+        .part-title{ font-size:38px; }
+    }
+
+    @media (max-width: 780px){
+        main{ width:min(92vw, 720px); margin:80px auto 60px; }
+        .columns{ column-count:1; }
+        h1{ font-size:42px; }
+        .part-title{ font-size:32px; }
+        table{ font-size:12px; }
+        .small-table{ font-size:12px; }
+        .axis-cell{ font-size:12px; padding:12px 2px; }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <div class="page-head">
+        <div class="head-left">
+            <p class="eyebrow">NODE // 003</p>
+            <h1><span style="white-space:nowrap;">KIND-III OPERATOR</span><br>LINKWALKER</h1>
+            <div class="whitebox hero-tag">ULTRABLACK</div>
+        </div>
+    </div>
+
+    <div class="columns">
+
+        <section>
+            <div class="article-label whitebox">ARTICLE I — DEFINITIONS</div>
+            <p><strong>§1.1</strong> A KIND-III Operator (Linkwalker) is an individual who interfaces with ESP without possessing it natively.</p>
+            <p><strong>§1.2</strong> This interface is mediated through:</p>
+            <div class="callout">&gt;&gt; KETE-CLASS OBJECTS</div>
+            <div class="callout">&gt;&gt; INPUT ACCEPTED<br>&gt;&gt; LINK HANDSHAKE VERIFIED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE II — KETE-CLASS OBJECTS</div>
+            <p><strong>§2.1</strong> A Kete-Class Object is defined as: a contained artifact exhibiting persistent ESP structure independent of a living source.</p>
+            <p><strong>§2.2</strong> Kete-Class Objects contain: residual ESP patterns originating from an unresolved Kete-Class event.</p>
+            <p><strong>§2.3</strong> Such objects are:</p>
+            <div class="callout">&gt;&gt; non-reproducible under current Operant methods<br>&gt;&gt; partially legible through Hex Grave analysis<br>&gt;&gt; not fully understood</div>
+            <p><strong>§2.4</strong> Assignment of a Kete-Class Object to a KIND-III Operator constitutes: CONTROLLED EXPOSURE PROTOCOL</p>
+            <p><strong>§2.5</strong> Unauthorized contact with unregistered objects is punishable under Enforcement Clause 873-B.</p>
+            <div class="callout">&gt;&gt; SIGNAL LOCK PARTIAL<br>&gt;&gt; SOURCE UNRESOLVED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE III — KNOT OPERATIONS</div>
+            <p><strong>§3.1</strong> KIND-III Operators do not produce Hexes. They manipulate existing structures through Knots.</p>
+            <p><strong>§3.2</strong> A Knot is defined as: a temporary distortion applied to a resolved Hex structure.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE IV — CORE AND BROKEN KNOTS</div>
+            <p><strong>§4.1</strong> Knots are divided into:</p>
+            <div class="callout">&gt;&gt; Core Knots (stable)<br>&gt;&gt; Broken Knots (strained)</div>
+            <p><strong>§4.2 — CORE KNOTS</strong> Core Knots:</p>
+            <div class="callout">&gt;&gt; do not damage the operator<br>&gt;&gt; operate within predictable tolerances<br>&gt;&gt; are considered approved manipulations</div>
+            <p><strong>§4.3 — BROKEN KNOTS</strong> Broken Knots:</p>
+            <div class="callout">&gt;&gt; induce Reading degradation (BRN / FRM / NRV)<br>&gt;&gt; produce non-linear amplification<br>&gt;&gt; may destabilize the Kete-Class Object</div>
+            <p><strong>§4.4</strong> Use of Broken Knots constitutes: VOLUNTARY STRUCTURAL STRAIN</p>
+            <p><strong>§4.5</strong> Excessive strain events are logged under Incident Series <span class="mono">[REDACTED]</span>.</p>
+            <div class="callout">&gt;&gt; STRAIN THRESHOLD APPROACHING<br>&gt;&gt; OUTPUT UNSTABLE</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE V — REGENERATION CYCLE</div>
+            <p><strong>§5.1</strong> Knots are not retained indefinitely.</p>
+            <p><strong>§5.2</strong> They are: reconstituted through stochastic allocation cycles.</p>
+            <p><strong>§5.3</strong> The Operant does not fully control this allocation and has recorded anomalies under Cycle Report.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE VI — BAND DYNAMICS</div>
+            <p><strong>§6.1</strong> The Link exists across two operational states:</p>
+            <div class="callout">&gt;&gt; Keen Band<br>&gt;&gt; Break Band</div>
+            <p><strong>§6.2 — KEEN BAND</strong> The Link is shifted into the Keen Band through the application of Core Knots. Within this state:</p>
+            <div class="callout">&gt;&gt; structural integrity is maintained<br>&gt;&gt; outcomes remain within predictable tolerances<br>&gt;&gt; signal expression is coherent and legible</div>
+            <p><strong>§6.3 — BREAK BAND</strong> The Link is shifted into the Break Band through the application of Broken Knots. Within this state:</p>
+            <div class="callout">&gt;&gt; structural instability increases<br>&gt;&gt; output exceeds expected parameters<br>&gt;&gt; collateral effects are probable</div>
+            <p><strong>§6.4 — SIGNAL VARIANCE</strong> Observed data indicates that Kete-Class Objects exhibit band preference: some objects demonstrate stronger, clearer output in the Keen Band; others demonstrate amplified or more responsive output in the Break Band.</p>
+            <p><strong>§6.5</strong> The cause of this variance is: UNKNOWN</p>
+            <p><strong>§6.6</strong> Attempts to force band transition have resulted in <span class="mono">[REDACTED]</span>.</p>
+            <div class="callout">&gt;&gt; BAND TRANSITION LOGGED<br>&gt;&gt; RESPONSE INCONCLUSIVE</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE VII — RISK CLASSIFICATION</div>
+            <p><strong>§7.1</strong> KIND-III Operators operate under: PROBABILISTIC CAPABILITY CONDITIONS</p>
+            <p><strong>§7.2</strong> Operational reliability is:</p>
+            <div class="callout">&gt;&gt; variable<br>&gt;&gt; state-dependent<br>&gt;&gt; partially unknowable</div>
+            <p><strong>§7.3</strong> Deviation beyond acceptable variance is flagged under Condition <span class="mono">[REDACTED]</span>.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE VIII — CONTAINMENT PRINCIPLE</div>
+            <p><strong>§8.1</strong> The Link is not generated by the Operator.</p>
+            <p><strong>§8.2</strong> The Kete-Class Object is not the origin.</p>
+            <p><strong>§8.3</strong> The Operant recognizes: both are interacting with a structure that predates them.</p>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">KIND-III DEPLOYMENT BRIEF</div>
+            <div class="mono">OPERATOR ACCESS // VIOLATION CODE: [REDACTED]</div>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2 class="part-title">LINKWALKER FIELD PROCEDURE</h2>
+            <p class="mono">On Knot handling and standard signal deviations</p>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2>KNOT PROCEDURE DIRECTIVES</h2>
+            <h3 class="field-subtitle">Hewing</h3>
+            <p>Knots are Hewed before mission start, after briefing. Roll on the Core Knots table. Result is the knot carried into the assignment. One knot occupies one inventory slot. Knots may be Hewed during the mission. Mid-mission Hewing rolls on the Broken Knots table. Broken Knots are volatile.</p>
+            <br>
+            <h3 class="field-subtitle">Fix</h3>
+            <p>At any point, during the operator's turn, they can choose to Fix a knot. By doing that, they spend the knot and remove it from the inventory permanently.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>LINKWALKING PROCEDURE REPORT</h2>
+            <h3 class="field-subtitle">Link</h3>
+            <p>Linkwalkers cannot fix or grave Hexes, only hew and fix Knots. Their link to Extrasensory Perception is not self-originating. The signal is always compromised by noise interference. The Kete-Class Object overrides the operator in most module scans.</p>
+            <p>Kete-Class Interference is variable. Each object holds a baseline stability, but it shifts under use. Stability is driven by Knot handling and object disposition. Stability is tracked on an axis centered at 0. Core Knots move one step towards the positive signal. Broken Knots move one step towards the negative. Without input, stability returns toward 0. Each object has a preferred state. Some favor equilibrium, some, positive values. Others require sustained instability. Alignment yields optimal output. Deviation causes failure. At extreme deviation: Severance.</p>
+        </section>
+
+        <section class="span-all">
+            <div class="axis-wrap">
+                <div class="axis-track">
+                    <div class="axis-cell">-3</div>
+                    <div class="axis-cell">-2</div>
+                    <div class="axis-cell">-1</div>
+                    <div class="axis-cell zero">0</div>
+                    <div class="axis-cell">+1</div>
+                    <div class="axis-cell">+2</div>
+                    <div class="axis-cell">+3</div>
+                </div>
+                <div class="axis-labels">
+                    <span>← BREAK BAND</span>
+                    <span>ZERO</span>
+                    <span>KEEN BAND →</span>
+                </div>
+            </div>
+            <p class="mono">Negative = Strain / Cost / Reckless / Break Band &nbsp;·&nbsp; Positive = Stability / Control / Playing Safe / Keen Band &nbsp;·&nbsp; 0 = Neutral / Zero</p>
+        </section>
+
+        <section class="span-all">
+            <h2>KEEN BAND</h2>
+            <p>Stable regime. Signal is clean, phase-locked, low noise. The object stays aligned and answers clean. Output is precise, capped, repeatable. Push is resisted.</p>
+            <p><strong>Effects:</strong> reduced peak output, tight targeting, minimal distortion, low collateral.</p>
+            <p><strong>Extreme (+3): Lock.</strong> The link goes rigid. Broken Knots fail or are suppressed. Responses dull. Control holds, reach dies. Short line.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>BREAK BAND</h2>
+            <p>Unstable regime. Signal is saturated, slipping phase, feedback rising. The object is pushed past limit. Output spikes, warps, leaks. Control decays. Cost builds.</p>
+            <p><strong>Effects:</strong> increased output, distortion, targeting drift, collateral checks (BRN/FRM/NRV).</p>
+            <p><strong>Extreme (-3): Rupture.</strong> Forced backlash. Effects overfire or misroute. The object acts out of band. Draw too hard, it snaps.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>0 [ZERO]</h2>
+            <p>Equilibrium. Balanced load. Clean coupling. No bias.</p>
+            <p><strong>Effects:</strong> baseline output, no modifiers. It holds, but it doesn't carry. Just the line, straight and quiet.</p>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">ULTRABRIEF — CORE KNOTS</div>
+            <div class="mono">Roll 1d12. Stable manipulations. Move one step toward the Keen Band.</div>
+        </section>
+
+        <section class="span-all">
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>d12</th>
+                            <th>Knot</th>
+                            <th>Output</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Replay</td><td>Repeat the hit on the same target at one tier lower.</td></tr>
+                        <tr><td>2</td><td>Delay</td><td>Resolve next turn at one tier higher.</td></tr>
+                        <tr><td>3</td><td>Split</td><td>Divide into 2 targets, each takes damage at one tier lower.</td></tr>
+                        <tr><td>4</td><td>Focus</td><td>Increase damage one tier.</td></tr>
+                        <tr><td>5</td><td>Extend</td><td>Double reach; cannot increase tier this turn.</td></tr>
+                        <tr><td>6</td><td>Bore</td><td>Ignore half the Pale.</td></tr>
+                        <tr><td>7</td><td>Mark Chain</td><td>If target was hit this turn → increase damage one tier.</td></tr>
+                        <tr><td>8</td><td>Quickened</td><td>Resolve hit twice at the same tier; move one step towards the Break Band.</td></tr>
+                        <tr><td>9</td><td>Anchor</td><td>Target cannot move until your next turn.</td></tr>
+                        <tr><td>10</td><td>Dampen</td><td>Decrease damage one tier; move one step towards the Keen Band.</td></tr>
+                        <tr><td>11</td><td>Sweep</td><td>All targets in an area take damage at the lowest tier.</td></tr>
+                        <tr><td>12</td><td>Silent</td><td>Undetectable, no damage tier change.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">ULTRABRIEF — BROKEN KNOTS</div>
+            <div class="mono">Roll 1d12. Volatile manipulations. Move toward the Break Band and strike the linked Reading.</div>
+        </section>
+
+        <section class="span-all">
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>d12</th>
+                            <th>Knot</th>
+                            <th>Output</th>
+                            <th>Noise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Over-Replay</td><td>Repeat the hit on the same target at the same tier.</td><td>HAZE HIT to linked Reading.</td></tr>
+                        <tr><td>2</td><td>Slip Delay</td><td>Resolve next turn at one tier higher; cannot be reacted to.</td><td>HAZE HIT to linked Reading.</td></tr>
+                        <tr><td>3</td><td>Fracture Split</td><td>Split into 3 targets, all take damage one tier lower.</td><td>HAZE HIT to linked Reading.</td></tr>
+                        <tr><td>4</td><td>Overfocus</td><td>Increase damage two tiers (capped at HYPER HIT).</td><td>HARD HIT to linked Reading.</td></tr>
+                        <tr><td>5</td><td>Overextend</td><td>Triple reach at one tier higher.</td><td>Next hit against you is one tier higher.</td></tr>
+                        <tr><td>6</td><td>Hollow Bore</td><td>Ignore the Pale; one tier higher.</td><td>HARD HIT to linked Reading.</td></tr>
+                        <tr><td>7</td><td>Cascade Mark</td><td>Next hit on target at two tiers higher.</td><td>If unused next turn → HYPER HIT to linked Reading.</td></tr>
+                        <tr><td>8</td><td>Overclock</td><td>Resolve hit twice at one tier higher; move two steps towards the Break Band.</td><td>Skip next turn + HAZE HIT to linked Reading.</td></tr>
+                        <tr><td>9</td><td>Lingering Tear</td><td>Deal damage over time (next two turns); decaying tier.</td><td>HAZE HIT to linked Reading every turn your damage lingers.</td></tr>
+                        <tr><td>10</td><td>Rend</td><td>Target cannot move or take any actions until your next turn.</td><td>HARD HIT to linked Reading; movement halved next turn.</td></tr>
+                        <tr><td>11</td><td>Wide Sweep</td><td>All targets in an area take damage one tier higher.</td><td>Includes unintended targets.</td></tr>
+                        <tr><td>12</td><td>Ghost Fault</td><td>Unavoidable; at the highest tier; move three steps towards the Break Band.</td><td>HYPER HIT to linked Reading.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+          <a class="nav-link" href="../link-and-knot/">→ LINK AND KNOT</a>
+          <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+          <a class="nav-link" href="../operator-registry/">→ OPERATOR REGISTRY</a>
+          <a class="nav-link" href="../">→ KERNEL</a>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>

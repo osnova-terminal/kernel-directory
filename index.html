@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>ZERO TERMINAL</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="style.css">
+<style>
+    /* Scoped to the new ambient elements only — doesn't touch anything
+       already defined in style.css for .eyebrow / .meta / .status / etc. */
+
+    .kernel-ticker{
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:rgba(255,255,255,0.4);
+        min-height:1.4em;
+    }
+
+    .static-block{
+        margin-top:30px;
+        overflow:hidden;
+        font-family:"Courier New", monospace;
+        font-size:14px;
+        line-height:22px;
+        letter-spacing:3px;
+        color:rgba(255,255,255,0.14);
+        white-space:pre;
+        user-select:none;
+    }
+
+    .static-row{
+        height:22px;
+        overflow:hidden;
+        white-space:nowrap;
+    }
+
+    .boot-box{
+        margin-top:22px;
+        border:1px solid rgba(255,255,255,0.22);
+        padding:16px 18px;
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        line-height:1.9;
+        letter-spacing:0.5px;
+        color:rgba(255,255,255,0.5);
+        min-height:230px;
+        white-space:pre-wrap;
+    }
+
+    .boot-tag{
+        color:rgba(255,255,255,0.85);
+        font-weight:700;
+        margin-right:8px;
+    }
+
+    .boot-cursor{
+        display:inline-block;
+        width:7px;
+        height:12px;
+        background:rgba(255,255,255,0.7);
+        vertical-align:-2px;
+        animation:boot-blink 1s steps(1) infinite;
+    }
+
+    @keyframes boot-blink{
+        50%{ opacity:0; }
+    }
+</style>
+</head>
+<body>
+<main>
+<p class="eyebrow">NODE // 000</p>
+<h1>KERNEL DIRECTORY</h1>
+<hr>
+<div class="kernel-ticker" id="ticker">&gt;&gt; CONTAINMENT HOLDING</div>
+<p class="meta">RUN AUTHORIZATION COMMAND</p>
+<input id="key" autocomplete="off">
+<button onclick="verify()">RUN</button>
+<div id="status" class="status"></div>
+<div class="static-block" id="staticBlock" aria-hidden="true"></div>
+<div class="boot-box" id="bootBox" aria-hidden="true"></div>
+</main>
+
+<script src="terminal.js"></script>
+<script src="fx.js"></script>
+</body>
+</html>

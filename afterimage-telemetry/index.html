@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AFTERIMAGE TELEMETRY</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+        --lock:#e8ffe0; /* cold phosphor white-hot, kept near-white so it still reads as mono FLIR */
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{
+        padding-bottom:80px;
+        position:relative;
+        overflow-x:hidden;
+    }
+
+    main{
+        width:min(1080px, 92vw);
+        margin:110px auto 80px;
+        position:relative;
+        z-index:1;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+    }
+
+    p{ margin:0 0 14px 0; }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    button.btn{
+        background:var(--bg);
+        color:var(--fg);
+        border:1px solid var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        padding:12px 18px;
+        cursor:pointer;
+    }
+
+    button.btn:hover{ background:var(--fg); color:var(--bg); }
+    button.btn.small{ padding:7px 12px; font-size:10.5px; }
+    button.btn.ghost{ border-color:var(--line); color:var(--dim); }
+    button.btn.ghost:hover{ background:var(--fg); color:var(--bg); border-color:var(--fg); }
+
+    /* ===== TARGET ACQUISITION READOUT (replaces REC / timestamp) ===== */
+    /* A fighter-radar style bracket chasing an evasive blip — this is the page's
+       one signature motion, standing in for the old passive rec-dot/clock. */
+
+    .acquisition-rig{
+        margin-top:18px;
+        display:flex;
+        align-items:center;
+        gap:16px;
+    }
+
+    .acq-scope{
+        position:relative;
+        width:54px;
+        height:54px;
+        border:1px solid var(--line);
+        flex-shrink:0;
+        overflow:hidden;
+    }
+
+    .acq-scope::before{
+        /* crosshair */
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+            linear-gradient(to right, transparent calc(50% - 0.5px), var(--dim) calc(50% - 0.5px), var(--dim) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+            linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--dim) calc(50% - 0.5px), var(--dim) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+        opacity:0.5;
+    }
+
+    .acq-blip{
+        position:absolute;
+        width:5px;
+        height:5px;
+        background:var(--fg);
+        border-radius:50%;
+        box-shadow:0 0 6px 2px rgba(255,255,255,0.7);
+        animation:blipDart 4.2s cubic-bezier(.35,0,.2,1) infinite;
+    }
+
+    .acq-bracket{
+        position:absolute;
+        width:16px;
+        height:16px;
+        animation:bracketChase 4.2s cubic-bezier(.5,0,.15,1) infinite;
+    }
+
+    .acq-bracket span{
+        position:absolute;
+        width:6px;
+        height:6px;
+        border-color:var(--fg);
+        border-style:solid;
+        border-width:0;
+    }
+    .acq-bracket span:nth-child(1){ top:0; left:0; border-top-width:1.5px; border-left-width:1.5px; }
+    .acq-bracket span:nth-child(2){ top:0; right:0; border-top-width:1.5px; border-right-width:1.5px; }
+    .acq-bracket span:nth-child(3){ bottom:0; left:0; border-bottom-width:1.5px; border-left-width:1.5px; }
+    .acq-bracket span:nth-child(4){ bottom:0; right:0; border-bottom-width:1.5px; border-right-width:1.5px; }
+
+    /* the blip darts like a tic-tac UAV: sharp non-uniform hops, brief pauses, no easing symmetry */
+    @keyframes blipDart{
+        0%{   top:8px;  left:6px;  }
+        6%{   top:8px;  left:6px;  }
+        9%{   top:34px; left:38px; }
+        22%{  top:34px; left:38px; }
+        26%{  top:6px;  left:33px; }
+        40%{  top:6px;  left:33px; }
+        44%{  top:30px; left:9px;  }
+        61%{  top:30px; left:9px;  }
+        66%{  top:14px; left:20px; }
+        80%{  top:14px; left:20px; }
+        85%{  top:22px; left:41px; }
+        100%{ top:22px; left:41px; }
+    }
+
+    /* the bracket always trails the blip, arriving a beat late — a lock that never quite closes */
+    @keyframes bracketChase{
+        0%{   top:2px;  left:0px;  }
+        9%{   top:2px;  left:0px;  }
+        16%{  top:28px; left:32px; }
+        29%{  top:28px; left:32px; }
+        33%{  top:0px;  left:27px; }
+        47%{  top:0px;  left:27px; }
+        51%{  top:24px; left:3px;  }
+        68%{  top:24px; left:3px;  }
+        73%{  top:8px;  left:14px; }
+        87%{  top:8px;  left:14px; }
+        92%{  top:16px; left:35px; }
+        100%{ top:16px; left:35px; }
+    }
+
+    /* ===== STATS ===== */
+
+    .stat-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:24px;
+        margin:18px 0 0;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    .stat-row strong{ color:var(--fg); }
+
+    /* ===== CATEGORY GROUPS ===== */
+
+    .category-head{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:36px 0 16px 0;
+        border-top:1px solid var(--line);
+        padding-top:22px;
+    }
+
+    .category-block:first-of-type .category-head{
+        border-top:none;
+        padding-top:0;
+        margin-top:22px;
+    }
+
+    .category-count{
+        color:var(--dim);
+        font-weight:400;
+        margin-left:6px;
+    }
+
+    .contact-grid{
+        display:grid;
+        grid-template-columns:repeat(auto-fill, minmax(230px, 1fr));
+        gap:14px;
+    }
+
+    /* ===== CONTACT CARD — FLIR-LOCK VERSION ===== */
+
+    .contact-card{
+        position:relative;
+        overflow:hidden;
+        border:1px solid var(--line);
+        background:#050505;
+        padding:34px 16px 40px;
+        min-height:280px;
+        cursor:pointer;
+        transition:border-color 0.2s;
+        display:flex;
+        flex-direction:column;
+        /* baseline thermal contrast on the whole card, independent of the acquired state,
+           so unlocked contacts still read as "sensor image" rather than plain dark UI */
+        filter:contrast(1.12) brightness(0.97);
+    }
+
+    .contact-card:hover{ border-color:var(--dim); }
+    .contact-card.acquired{ border-color:var(--fg); cursor:default; filter:contrast(1.05) brightness(1.02); }
+
+    /* scanline texture — thermal sensor readout, not a decorative CRT effect */
+    .contact-card::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        background:repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,0.06) 0px,
+            rgba(255,255,255,0.06) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+        opacity:0.55;
+        z-index:2;
+    }
+
+    .reticle{
+        position:absolute;
+        width:14px;
+        height:14px;
+        border-color:var(--dim);
+        border-style:solid;
+        border-width:0;
+        z-index:3;
+        pointer-events:none;
+    }
+
+    .reticle.tl{ top:8px; left:8px; border-top-width:1px; border-left-width:1px; }
+    .reticle.tr{ top:8px; right:8px; border-top-width:1px; border-right-width:1px; }
+    .reticle.bl{ bottom:8px; left:8px; border-bottom-width:1px; border-left-width:1px; }
+    .reticle.br{ bottom:8px; right:8px; border-bottom-width:1px; border-right-width:1px; }
+
+    /* unresolved contacts still evade — the targeting brackets drift gently, hunting for
+       lock rather than sitting perfectly still, but nowhere near as sharp as before */
+    .contact-card:not(.acquired) .reticle{
+        animation:reticleHunt 4.4s ease-in-out infinite;
+    }
+    .contact-card:not(.acquired) .reticle.tl{ animation-delay:0s; }
+    .contact-card:not(.acquired) .reticle.tr{ animation-delay:0.25s; }
+    .contact-card:not(.acquired) .reticle.bl{ animation-delay:0.5s; }
+    .contact-card:not(.acquired) .reticle.br{ animation-delay:0.75s; }
+
+    @keyframes reticleHunt{
+        0%{   transform:translate(0,0); opacity:0.55; }
+        25%{  transform:translate(0.75px,-0.5px); opacity:0.7; }
+        50%{  transform:translate(-0.5px,0.75px); opacity:0.5; }
+        75%{  transform:translate(0.5px,0.5px); opacity:0.65; }
+        100%{ transform:translate(0,0); opacity:0.55; }
+    }
+
+    .contact-card.acquired .reticle{ border-color:var(--fg); animation:none; }
+
+    .contact-meta{
+        position:absolute;
+        top:8px;
+        left:26px;
+        right:26px;
+        display:flex;
+        justify-content:space-between;
+        z-index:3;
+        font-size:10px;
+        letter-spacing:1.5px;
+        pointer-events:none;
+    }
+
+    .contact-code, .contact-sensor{ color:var(--dim); }
+
+    .contact-telemetry{
+        position:absolute;
+        bottom:8px;
+        left:26px;
+        right:26px;
+        font-size:9.5px;
+        letter-spacing:1px;
+        color:rgba(255,255,255,0.32);
+        z-index:3;
+        text-align:center;
+        pointer-events:none;
+    }
+
+    .contact-body{
+        position:relative;
+        z-index:1;
+        margin-top:12px;
+        flex:1;
+        display:flex;
+        flex-direction:column;
+    }
+
+    /* only the mystery/identity portion of an unresolved contact stays degraded */
+    .contact-hidden{
+        position:relative;
+        flex:1;
+        filter:blur(0.4px) contrast(1.15) brightness(0.85);
+    }
+
+    .contact-status{
+        margin-bottom:10px;
+        color:var(--dim);
+        min-height:1.4em;
+    }
+
+    .contact-status.locked{ color:var(--fg); }
+
+    /* status text needs to float above the full-card noise-line now that the
+       crosshair spans the whole card instead of a small nested box */
+    .contact-hidden .contact-status{
+        position:relative;
+        z-index:2;
+    }
+
+    /* ===== FULL-CARD TARGETING CROSSHAIR ===== */
+    /* The crosshair now divides the WHOLE CARD into four quadrants — .noise-line
+       is stretched to inset:0 on the card's hidden layer, not a small box sitting
+       inside it. Six directional path variants exist (different quadrant order =
+       different direction of travel), and each card is assigned a variant plus a
+       negative animation-delay, both seeded from its id via hopParams() in the JS
+       — so contacts never hop in sync, and none of them share a starting phase. */
+    .noise-line{
+        position:absolute;
+        inset:0;
+        z-index:1;
+        overflow:hidden;
+        color:transparent;
+        background:
+            linear-gradient(to right, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+            linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--line) calc(50% - 0.5px), var(--line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+            rgba(255,255,255,0.02);
+    }
+
+    .noise-line ~ .noise-line{
+        display:none;
+    }
+
+    .noise-line::before{
+        content:"";
+        position:absolute;
+        top:0; left:0;
+        width:6px; height:6px;
+        margin:-3px 0 0 -3px;
+        background:var(--fg);
+        opacity:0.75;
+        animation-name:var(--hop-name, noiseHop1);
+        animation-duration:var(--hop-duration, 4.6s);
+        animation-timing-function:cubic-bezier(.4,0,.2,1);
+        animation-iteration-count:infinite;
+        animation-delay:var(--hop-delay, 0s);
+    }
+
+    .noise-line::after{
+        content:"";
+        position:absolute;
+        top:0; left:0;
+        width:14px; height:14px;
+        margin:-7px 0 0 -7px;
+        border:1px solid var(--fg);
+        opacity:0.4;
+        animation-name:var(--hop-name, noiseHop1);
+        animation-duration:var(--hop-duration, 4.6s);
+        animation-timing-function:cubic-bezier(.4,0,.2,1);
+        animation-iteration-count:infinite;
+        animation-delay:var(--hop-bracket-delay, 0.4s);
+    }
+
+    /* six distinct hop paths — different quadrant order (= different direction),
+       different hold/travel timing, expressed in top/left % so they scale to
+       whatever size the card renders at. blip and bracket trace the identical
+       path within a card; only the bracket's animation-delay differs (+0.4s),
+       so it's always a beat behind and the lock never quite closes. */
+    @keyframes noiseHop1{
+        0%{top:15%;left:15%;} 6%{top:15%;left:15%;}
+        11%{top:80%;left:78%;} 26%{top:80%;left:78%;}
+        30%{top:75%;left:12%;} 45%{top:75%;left:12%;}
+        49%{top:12%;left:70%;} 64%{top:12%;left:70%;}
+        68%{top:45%;left:45%;} 100%{top:45%;left:45%;}
+    }
+    @keyframes noiseHop2{
+        0%{top:80%;left:20%;} 8%{top:80%;left:20%;}
+        18%{top:15%;left:80%;} 33%{top:15%;left:80%;}
+        38%{top:50%;left:50%;} 52%{top:50%;left:50%;}
+        58%{top:78%;left:78%;} 74%{top:78%;left:78%;}
+        79%{top:18%;left:18%;} 100%{top:18%;left:18%;}
+    }
+    @keyframes noiseHop3{
+        0%{top:18%;left:78%;} 9%{top:18%;left:78%;}
+        16%{top:78%;left:22%;} 31%{top:78%;left:22%;}
+        36%{top:22%;left:22%;} 50%{top:22%;left:22%;}
+        55%{top:70%;left:75%;} 70%{top:70%;left:75%;}
+        76%{top:45%;left:12%;} 100%{top:45%;left:12%;}
+    }
+    @keyframes noiseHop4{
+        0%{top:50%;left:50%;} 7%{top:50%;left:50%;}
+        13%{top:15%;left:15%;} 27%{top:15%;left:15%;}
+        33%{top:82%;left:80%;} 48%{top:82%;left:80%;}
+        54%{top:80%;left:18%;} 69%{top:80%;left:18%;}
+        75%{top:18%;left:82%;} 100%{top:18%;left:82%;}
+    }
+    @keyframes noiseHop5{
+        0%{top:82%;left:82%;} 10%{top:82%;left:82%;}
+        17%{top:15%;left:20%;} 32%{top:15%;left:20%;}
+        39%{top:20%;left:80%;} 55%{top:20%;left:80%;}
+        62%{top:78%;left:20%;} 78%{top:78%;left:20%;}
+        84%{top:48%;left:48%;} 100%{top:48%;left:48%;}
+    }
+    @keyframes noiseHop6{
+        0%{top:15%;left:80%;} 6%{top:15%;left:80%;}
+        14%{top:48%;left:48%;} 29%{top:48%;left:48%;}
+        35%{top:15%;left:18%;} 50%{top:15%;left:18%;}
+        57%{top:80%;left:80%;} 72%{top:80%;left:80%;}
+        78%{top:80%;left:18%;} 100%{top:80%;left:18%;}
+    }
+
+    .contact-card:not(.acquired) .contact-revealed{ display:none; }
+    .contact-card.acquired .contact-hidden{ display:none; }
+
+    .contact-name{
+        font-family:"Times New Roman", serif;
+        font-size:21px;
+        margin-bottom:10px;
+        min-height:1.4em;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    .contact-field{
+        margin-bottom:10px;
+        min-height:1.5em;
+    }
+
+    .field-label{
+        display:block;
+        margin-bottom:3px;
+    }
+
+    /* ===== REQUIREMENT FIELD — always legible, never encrypted ===== */
+    /* This is the one field that must read clearly in both locked and unlocked states:
+       it's the condition for acquiring lock, not the contact's decoded identity, so it
+       sits outside .contact-hidden entirely and skips every blur/degrade filter. */
+    .contact-requirement{
+        margin-bottom:10px;
+        min-height:1.5em;
+        filter:none !important;
+        color:var(--fg);
+    }
+
+    .contact-requirement .field-label{
+        color:var(--dim);
+    }
+
+    .contact-requirement-text{
+        font-family:"Courier New", monospace;
+        font-size:12.5px;
+        letter-spacing:0.5px;
+        line-height:1.6;
+        color:var(--fg);
+    }
+
+    .contact-acquire-text, .contact-fix-text{
+        margin:0;
+        font-size:13.5px;
+        line-height:1.55;
+        color:var(--fg);
+        min-height:4.65em;
+        display:-webkit-box;
+        -webkit-line-clamp:3;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+    }
+
+    .release-btn{ margin-top:4px; }
+
+    @keyframes contactGlitch{
+        0%{   transform:translateX(0);   filter:brightness(1)   contrast(1.3) blur(2px); }
+        10%{  transform:translateX(-3px);filter:brightness(1.6) contrast(1.6) blur(0px); }
+        20%{  transform:translateX(2px); filter:brightness(0.6) contrast(1.8) blur(3px); }
+        30%{  transform:translateX(-4px);filter:brightness(1.3) contrast(1.2) blur(1px); }
+        45%{  transform:translateX(1px); filter:brightness(0.8) contrast(1.5) blur(0px); }
+        60%{  transform:translateX(-2px);filter:brightness(1.4) contrast(1.1) blur(2px); }
+        75%{  transform:translateX(3px); filter:brightness(0.9) contrast(1.3) blur(0px); }
+        90%{  transform:translateX(-1px);filter:brightness(1.1) contrast(1.1) blur(0px); }
+        100%{ transform:translateX(0);   filter:brightness(1)   contrast(1)   blur(0px); }
+    }
+
+    .contact-card.locking{
+        animation:contactGlitch 0.65s steps(2, end);
+    }
+
+    /* ===== LOG ===== */
+
+    .log-panel{
+        margin-top:16px;
+        border:1px solid var(--line);
+        max-height:240px;
+        overflow-y:auto;
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        letter-spacing:0.5px;
+        line-height:1.9;
+    }
+
+    .log-empty{
+        padding:16px;
+        color:var(--dim);
+        text-transform:uppercase;
+        letter-spacing:2px;
+        font-size:11px;
+    }
+
+    .log-entry{
+        padding:9px 14px;
+        border-bottom:1px solid var(--line);
+        color:var(--dim);
+    }
+
+    .log-entry:last-child{ border-bottom:none; }
+    .log-entry .le-tag{ color:var(--fg); margin-right:8px; }
+
+    /* ===== NAV ===== */
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{ border-bottom-color:var(--fg); }
+
+    @media (prefers-reduced-motion: reduce){
+        body::after,
+        .acq-blip, .acq-bracket,
+        .noise-line::before, .noise-line::after,
+        .contact-card:not(.acquired) .reticle{
+            animation:none !important;
+        }
+    }
+
+    @media (max-width: 720px){
+        h1{ font-size:42px; }
+        .contact-grid{ grid-template-columns:1fr; }
+        .acquisition-rig{ gap:12px; }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <p class="eyebrow">NODE // 010</p>
+    <h1>AFTERIMAGE TELEMETRY</h1>
+    <div class="whitebox">ULTRABLACK OPERATOR — HORIZOGRAPH TERMINAL</div>
+
+    <div class="acquisition-rig">
+        <div class="acq-scope">
+            <div class="acq-blip"></div>
+            <div class="acq-bracket"><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <div class="terminal-note">
+        RAW SENSOR CONTACTS BELOW ARE UNRESOLVED — CLICK A CONTACT TO LOCK ON.<br>
+        LOCKING DECODES THE CONTACT AND FILES IT TO THIS OPERATOR'S TELEMETRY LOG, PERMANENTLY.<br>
+        REQUIREMENTS READ CLEAR ON SENSOR AT ALL TIMES. EVERYTHING ELSE STAYS ENCRYPTED UNTIL LOCK IS CONFIRMED.<br>
+    </div>
+
+    <div class="stat-row">
+        <span>TELEMETRY ACQUIRED: <strong id="statLogged">0 / 28</strong></span>
+    </div>
+
+    <div id="contactSections"></div>
+
+    <hr>
+
+    <h2>Telemetry Log</h2>
+    <div class="log-panel" id="logPanel"></div>
+
+    <hr>
+    <a class="nav-link" href="../horizograph/">→ HORIZOGRAPH</a>
+    <a class="nav-link" href="../constellation/">→ CONSTELLATION</a>
+    <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+    <a class="nav-link" href="../operator-registry/">→ OPERATOR REGISTRY</a>
+    <a class="nav-link" href="../">→ KERNEL</a>
+
+</main>
+<script src="afterimage-telemetry.js"></script>
+</body>
+</html>

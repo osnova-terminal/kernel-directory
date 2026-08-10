@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FORERUNNER</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(1280px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .page-head{
+        margin-bottom:34px;
+    }
+
+    .head-left{
+        max-width:900px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+        max-width:100%;
+        word-break:break-word;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    .hero-tag{
+        margin-top:18px;
+    }
+
+    .columns{
+        column-count:3;
+        column-gap:42px;
+        column-fill:balance;
+    }
+
+    .columns section,
+    .columns p,
+    .columns h2,
+    .columns h3,
+    .columns table,
+    .columns .callout,
+    .columns .terminal-note,
+    .columns .break-block{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    section{
+        margin:0 0 28px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+        break-after:avoid;
+    }
+
+    .part-title{
+        font-family:"Times New Roman", serif;
+        font-size:44px;
+        line-height:0.95;
+        margin:0 0 10px 0;
+        font-weight:550;
+        font-style:normal;
+        letter-spacing:1px;
+        color:var(--fg);
+    }
+
+    .field-subtitle{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:16px 0 6px 0;
+    }
+
+    .field-subtitle:first-of-type{
+        margin-top:4px;
+    }
+
+    .article-label{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 10px 0;
+    }
+
+    .article-label.whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-weight:700;
+        margin:0 0 12px 0;
+    }
+
+    p{
+        margin:0 0 14px 0;
+        text-align:justify;
+        text-justify:inter-word;
+    }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .callout{
+        margin:12px 0;
+        padding-left:14px;
+        border-left:1px solid var(--line);
+        color:var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+        column-span:all;
+    }
+
+    .span-all{
+        column-span:all;
+    }
+
+    .break-block{
+        margin:30px 0 18px;
+        padding:14px 0 0;
+        border-top:1px solid var(--line);
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:14px 0 18px;
+        font-size:14px;
+        line-height:1.5;
+        table-layout:fixed;
+    }
+
+    th, td{
+        border:1px solid var(--line);
+        padding:10px 10px;
+        vertical-align:top;
+        text-align:left;
+        overflow-wrap:break-word;
+    }
+
+    th{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        font-weight:700;
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--bg);
+    }
+
+    .small-table{
+        font-size:13px;
+    }
+
+    .small-table td,
+    .small-table th{
+        padding:8px 8px;
+    }
+
+    .table-scroll{
+        width:100%;
+        overflow-x:auto;
+        margin:14px 0 18px;
+    }
+
+    .table-scroll table{
+        margin:0;
+        min-width:640px;
+    }
+
+    .param-table{
+        font-size:13px;
+        line-height:1.5;
+    }
+
+    .param-table td strong{
+        display:inline;
+    }
+
+    .card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+    }
+
+    .card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.4px;
+    }
+
+    .card ol,
+    .card ul{
+        margin:0;
+        padding-left:20px;
+    }
+
+    .card li{
+        margin:0 0 6px 0;
+    }
+
+    .module-card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+        margin:0 0 16px 0;
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+    }
+
+    .module-card .mcode{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 4px 0;
+    }
+
+    .module-card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.3px;
+        font-style:normal;
+    }
+
+    .module-card .mmeta{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    .module-card p{
+        font-size:14px;
+        text-align:left;
+        margin:0 0 8px 0;
+    }
+
+    .category-head{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:36px 0 16px 0;
+        border-top:1px solid var(--line);
+        padding-top:26px;
+    }
+
+    .category-head-first{
+        border-top:none;
+        padding-top:0;
+        margin-top:6px;
+    }
+
+    .module-grid{
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:16px;
+        margin:0 0 8px 0;
+    }
+
+    .module-grid .module-card{
+        margin:0;
+    }
+
+    @media (max-width: 900px){
+        .module-grid{ grid-template-columns:1fr; }
+    }
+
+    .echo-register ul{
+        column-count:3;
+        column-gap:28px;
+    }
+
+    .echo-register li{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+    }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{
+        border-bottom-color:var(--fg);
+    }
+
+    @media (max-width: 1100px){
+        .columns{ column-count:2; }
+        h1{ font-size:52px; }
+        .part-title{ font-size:38px; }
+        .echo-register ul{ column-count:2; }
+    }
+
+    @media (max-width: 780px){
+        main{ width:min(92vw, 720px); margin:80px auto 60px; }
+        .columns{ column-count:1; }
+        h1{ font-size:42px; }
+        .part-title{ font-size:32px; }
+        table{ font-size:12px; }
+        .param-table{ font-size:11.5px; }
+        .small-table{ font-size:12px; }
+        .echo-register ul{ column-count:1; }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <div class="page-head">
+        <div class="head-left">
+            <p class="eyebrow">NODE // 004</p>
+            <h1><span style="white-space:nowrap;">KIND-V OPERATOR</span><br>FORERUNNER</h1>
+            <div class="whitebox hero-tag">ULTRABLACK</div>
+        </div>
+    </div>
+
+    <div class="columns">
+
+        <section>
+            <div class="article-label whitebox">ARTICLE I — DEFINITIONS</div>
+            <p><strong>§1.1</strong> A KIND-V Operator (Forerunner) is an individual with no inherent ESP capability.</p>
+            <p><strong>§1.2</strong> All interaction with ESP is conducted via:</p>
+            <div class="callout">&gt;&gt; HIGGS FIELD NULLIFICATION TOOLS (HFNT)</div>
+            <div class="callout">&gt;&gt; INPUT ACCEPTED<br>&gt;&gt; SYSTEM INITIALIZED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE II — HFNT SYSTEM</div>
+            <p><strong>§2.1</strong> HFNT units are modular instruments designed to:</p>
+            <div class="callout">&gt;&gt; detect<br>&gt;&gt; shape<br>&gt;&gt; suppress<br>&gt;&gt; redirect</div>
+            <p><strong>§2.2</strong> HFNT modules do not generate ESP.</p>
+            <p><strong>§2.3</strong> They operate by interfering with the conditions under which ESP stabilizes.</p>
+            <p><strong>§2.4</strong> Field inconsistencies observed in high-density environments are logged.</p>
+            <div class="callout">&gt;&gt; FIELD RESPONSE DETECTED<br>&gt;&gt; INTERFERENCE PARTIAL</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE III — ROUTINE STRUCTURES</div>
+            <p><strong>§3.1</strong> Modules are assembled into ROUTINES.</p>
+            <p><strong>§3.2</strong> A Routine is defined as: a constrained configuration of modules producing a repeatable effect.</p>
+            <p><strong>§3.3</strong> Routines are:</p>
+            <div class="callout">&gt;&gt; documented<br>&gt;&gt; replicable<br>&gt;&gt; auditable</div>
+            <p><strong>§3.4</strong> Unauthorized Routine construction is subject to immediate suspension.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE IV — LIMITATIONS</div>
+            <p><strong>§4.1</strong> HFNT systems:</p>
+            <div class="callout">&gt;&gt; degrade under prolonged exposure<br>&gt;&gt; lose accuracy in high-density ESP environments<br>&gt;&gt; require continuous recalibration</div>
+            <p><strong>§4.2</strong> The Operant acknowledges: HFNT interaction is reactive, not authoritative.</p>
+            <p><strong>§4.3</strong> Unrecoverable desynchronization events are classified under Failure Index <span class="mono">[REDACTED]</span>.</p>
+            <div class="callout">&gt;&gt; CALIBRATION DRIFT DETECTED<br>&gt;&gt; CORRECTION FAILED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE V — STRATEGIC ROLE</div>
+            <p><strong>§5.1</strong> KIND-V Operators are designated:</p>
+            <div class="callout">&gt;&gt; stabilizers<br>&gt;&gt; counters<br>&gt;&gt; observers</div>
+            <p><strong>§5.2</strong> They are not to be deployed as primary ESP actors except under Condition <span class="mono">[REDACTED]</span>.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE VI — CONTAINMENT PRINCIPLE</div>
+            <p><strong>§6.1</strong> HFNT systems do not neutralize ESP.</p>
+            <p><strong>§6.2</strong> They produce: temporary compliance with measurable conditions.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE [REDACTED] — [REDACTED]</div>
+            <p><strong>§0.0</strong> <span class="mono">[REDACTED]</span></p>
+            <p><strong>§6.2</strong> <span class="mono">[REDACTED]</span></p>
+            <div class="terminal-note">&gt;&gt;REPEATED INPUT DETECTED<br>&gt;&gt;ORIGIN MATCH: NONE</div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">KIND-V DEPLOYMENT BRIEF</div>
+            <div class="mono">OPERATOR ACCESS // VIOLATION CODE: [REDACTED]</div>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2 class="part-title">FORERUNNER FIELD PROCEDURE</h2>
+            <p class="mono">On sanctioned Module handling and authorized Routines</p>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2>MODULE OPERATION DIRECTIVES</h2>
+            <h3 class="field-subtitle">Allotment</h3>
+            <p>Forerunners do not roll during Briefing. They select Modules directly from the table. One Module takes up one inventory slot per Unit Size (1U, 2U, 3U, etc.). Modules are fixed, known, and issued. No randomness. No emergence. Configuration is always intentional, geared towards operator specialization.</p>
+            <br>
+            <h3 class="field-subtitle">Module Execution</h3>
+            <p>Each Module is used as a Half-Action. Module output is discrete, it does not scale on its own.</p>
+            <br>
+            <h3 class="field-subtitle">Routines</h3>
+            <p>Routines are constructed in the field by connecting Modules. Connecting two Modules requires a Full Action. Each connection builds a chain.</p>
+            <div class="callout">&gt;&gt; 2 Modules → 1 connection → 1 Full Action<br>&gt;&gt; 3 Modules → 2 connections → 2 Full Actions</div>
+            <p>Routines depend on module ports.</p>
+            <div class="callout">&gt;&gt; M ports output signal.<br>&gt;&gt; F ports receive signal input.<br>&gt;&gt; P ports are passive. They do not connect directly into the signal flow but must be attached to the routine to alter the signal.</div>
+        </section>
+
+        <section class="span-all">
+            <h2>EXECUTION MODEL</h2>
+            <div class="callout">&gt;&gt; Modules → fast, limited<br>&gt;&gt; Routines → slow, powerful</div>
+            <h3 class="field-subtitle">Interruption</h3>
+            <p>If the Forerunner is:</p>
+            <div class="callout">&gt;&gt; displaced<br>&gt;&gt; interrupted<br>&gt;&gt; forced to react</div>
+            <p>Routine construction may:</p>
+            <div class="callout">&gt;&gt; stall<br>&gt;&gt; misalign<br>&gt;&gt; fail</div>
+            <p>Assembly requires continuity.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>DESIGN INTENT</h2>
+            <p>Forerunners are not reactive. They are preparatory, calculating, positional and procedural. They do not spike output instantly, they must build toward it.</p>
+            <h3 class="field-subtitle">Tactical Consequence</h3>
+            <p>In direct confrontation:</p>
+            <div class="callout">&gt;&gt; Early turns → weak presence<br>&gt;&gt; Mid turns → partial assembly<br>&gt;&gt; Late turns → full Routine execution</div>
+            <h3 class="field-subtitle">Field Directive</h3>
+            <p>Avoid direct engagement without preparation.</p>
+            <div class="callout">&gt;&gt; Use Zones<br>&gt;&gt; Control space<br>&gt;&gt; Buy time</div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">MODULE DIRECTORY</div>
+            <div class="mono">Full appearance and function reference, organized by category</div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head category-head-first">CORE</div>
+        </section>
+
+        <div class="module-card">
+            <div class="mcode">CCM-01 — MAINFRAME NODE</div>
+            <h3>Call Sign: Mainframe Node</h3>
+            <div class="mmeta">Size: 2U | Ports: F+F+F</div>
+            <p><strong>Appearance:</strong> CRT display showing node map in phosphor green.</p>
+            <p><strong>Function:</strong></p>
+            <div class="callout">&gt;&gt; Required for 3+ module chains<br>&gt;&gt; Enables full-chain activation<br>&gt;&gt; Maintains multiple systems</div>
+        </div>
+
+        <section class="span-all">
+            <div class="category-head">DETECTION — ESP</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">ESP-D01 — EXTRASENSORY PROXIMITY DETECTOR</div>
+                    <h3>Call Sign: "Sonde"</h3>
+                    <div class="mmeta">Size: 1U | Ports: M</div>
+                    <p><strong>Appearance:</strong> White rectangular puck, matchbox-thick. Dark mesh grille face, single green phosphor LED pulsing like a slow heartbeat.</p>
+                    <p><strong>Function:</strong> Returns a snapshot of nearby presence as spatial "shapes."</p>
+                    <p><strong>Use:</strong></p>
+                    <div class="callout">&gt;&gt; Check rooms<br>&gt;&gt; Sense through walls<br>&gt;&gt; Identify density and rough position</div>
+                    <p><strong>Limit:</strong> Snapshot only, becomes unreliable as targets move.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">ESP-D02 — WIDE-FIELD EMISSION SCANNER</div>
+                    <h3>Call Sign: "Sweep Head"</h3>
+                    <div class="mmeta">Size: 2U | Ports: M+M</div>
+                    <p><strong>Appearance:</strong> Wedge unit with brushed metal face and a narrow CRT strip. A scanning line sweeps vertically.</p>
+                    <p><strong>Function:</strong> Produces continuous wide-area scans.</p>
+                    <p><strong>Use:</strong></p>
+                    <div class="callout">&gt;&gt; Area awareness<br>&gt;&gt; Detect movement zones</div>
+                    <p><strong>Limit:</strong> Broad and noisy, no precision.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">ESP-D03 — SIGNATURE LOCK RETAINER</div>
+                    <h3>Call Sign: "Anchor Block"</h3>
+                    <div class="mmeta">Size: 2U | Ports: F+M</div>
+                    <p><strong>Appearance:</strong> Blocky white brick with a small CRT grid showing a single blinking dot.</p>
+                    <p><strong>Function:</strong> Locks onto one signature and updates it continuously.</p>
+                    <p><strong>Use:</strong></p>
+                    <div class="callout">&gt;&gt; Track a specific target<br>&gt;&gt; Maintain identity through movement</div>
+                    <p><strong>Limit:</strong> Only one target; requires initial acquisition.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">ESP-D04 — EXTENDED RANGE AMPLIFICATION CROWN</div>
+                    <h3>Call Sign: "Tall Crown"</h3>
+                    <div class="mmeta">Size: 3U | Ports: P</div>
+                    <p><strong>Appearance:</strong> Rigid white headband with a top-mounted vented module, constant green glow.</p>
+                    <p><strong>Function:</strong> Extends range and sensitivity of detection systems.</p>
+                    <p><strong>Limit:</strong> No standalone output.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">NULLIFICATION — HFN</div>
+        </section>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N01 — NULL SPIKE</div>
+            <h3>Call Sign: "Spike"</h3>
+            <div class="mmeta">Size: 1U | Ports: M</div>
+            <p><strong>Appearance:</strong> Short white rod with metal tip and single LED.</p>
+            <p><strong>Function:</strong> Contact-based nullification.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N02 — LOCAL NULL PROJECTOR</div>
+            <h3>Call Sign: "Pixel Void"</h3>
+            <div class="mmeta">Size: 3U | Ports: F+M</div>
+            <p><strong>Appearance:</strong> Brick unit with CRT showing a pixelated circle radius.</p>
+            <p><strong>Function:</strong> Creates a localized null field.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N03 — PERIMETER STAKE</div>
+            <h3>Call Sign: "Ground Stake"</h3>
+            <div class="mmeta">Size: 4U | Ports: F</div>
+            <p><strong>Appearance:</strong> White column with metal spike base, CRT radius display.</p>
+            <p><strong>Function:</strong> Anchors a persistent null perimeter.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N04 — NULL PULSE</div>
+            <h3>Call Sign: "Pulse"</h3>
+            <div class="mmeta">Size: 2U | Ports: M</div>
+            <p><strong>Appearance:</strong> Flat circular emitter with radial vent pattern.</p>
+            <p><strong>Function:</strong> Emits radial NRV disruption.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N05 — COGNITIVE SPIKE</div>
+            <h3>Call Sign: "Spike-II"</h3>
+            <div class="mmeta">Size: 1U | Ports: M</div>
+            <p><strong>Appearance:</strong> Compact rectangular emitter, no screen, single green LED.</p>
+            <p><strong>Function:</strong> Single-target BRN strike.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N06 — SIGNAL SHEAR</div>
+            <h3>Call Sign: "Shear"</h3>
+            <div class="mmeta">Size: 2U | Ports: F+M</div>
+            <p><strong>Appearance:</strong> Split housing with visible internal relays clicking.</p>
+            <p><strong>Function:</strong> Interrupts signal flow / disrupts actions.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N07 — PATTERN FRACTURE</div>
+            <h3>Call Sign: "Fracture"</h3>
+            <div class="mmeta">Size: 3U | Ports: F+F</div>
+            <p><strong>Appearance:</strong> Wide chassis with dual input ports and branching circuitry visible.</p>
+            <p><strong>Function:</strong> Splits signal across multiple targets.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N08 — NULL LANCE</div>
+            <h3>Call Sign: "Lance"</h3>
+            <div class="mmeta">Size: 2U | Ports: M</div>
+            <p><strong>Appearance:</strong> Elongated emitter with narrow aperture front.</p>
+            <p><strong>Function:</strong> Directional NRV strike.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFN-N09 — ECHO BREAKER</div>
+            <h3>Call Sign: "Echo"</h3>
+            <div class="mmeta">Size: 2U | Ports: F+M</div>
+            <p><strong>Appearance:</strong> Box with dual-phase indicator blinking out of sync.</p>
+            <p><strong>Function:</strong> Repeats signal next turn at reduced strength.</p>
+        </div>
+
+        <section class="span-all">
+            <div class="category-head">SHIELDING — HFS</div>
+        </section>
+
+        <div class="module-card">
+            <div class="mcode">HFS-S01 — SHIELD PLATE</div>
+            <h3>Call Sign: "Screen"</h3>
+            <div class="mmeta">Size: 1U | Ports: P</div>
+            <p><strong>Appearance:</strong> Flat white plate, no display, single LED.</p>
+            <p><strong>Function:</strong> Localized protection.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">HFS-S02 — SUPPRESSION MANTLE</div>
+            <h3>Call Sign: "Mantle"</h3>
+            <div class="mmeta">Size: 2U | Ports: P</div>
+            <p><strong>Appearance:</strong> Heavy white vest with embedded indicator box.</p>
+            <p><strong>Function:</strong> Passive suppression field.</p>
+        </div>
+
+        <section class="span-all">
+            <div class="category-head">SIGNAL — SIG</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">SIG-C01 — RETENTION COIL</div>
+                    <h3>Call Sign: "Coil"</h3>
+                    <div class="mmeta">Size: 1U | Ports: F</div>
+                    <p><strong>Appearance:</strong> Cylindrical unit with vertical LED charge strip.</p>
+                    <p><strong>Function:</strong> Triggers instantly when signal changes.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">SIG-C02 — SIGNAL PROCESSOR</div>
+                    <h3>Call Sign: "Drum"</h3>
+                    <div class="mmeta">Size: 3U | Ports: F+F+M</div>
+                    <p><strong>Appearance:</strong> Wide unit with dual inputs and CRT waveform merge display.</p>
+                    <p><strong>Function:</strong> Combines and stabilizes signals.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">SIG-C03 — SIGNAL LENS</div>
+                    <h3>Call Sign: "Lens"</h3>
+                    <div class="mmeta">Size: 2U | Ports: F+M</div>
+                    <p><strong>Appearance:</strong> Projector-like aperture with rotary angle dial.</p>
+                    <p><strong>Function:</strong> Narrows signal into a direction.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">SIG-C04 — STABILIZATION FRAME</div>
+                    <h3>Call Sign: "Frame"</h3>
+                    <div class="mmeta">Size: 2U | Ports: F+F</div>
+                    <p><strong>Appearance:</strong> Flat chassis with exposed internal green circuitry.</p>
+                    <p><strong>Function:</strong> Prevents instability in chains.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">ULTRABLACK AUTHORIZED ROUTINES</div>
+            <div class="mono">Fixed module chains cleared for standard field deployment</div>
+        </section>
+
+        <div class="module-card">
+            <div class="mcode">DSB-01 — DIRECT SIGNAL BREAK</div>
+            <h3>Call Sign: "Precision Lance"</h3>
+            <div class="mmeta">Size: 6U</div>
+            <p>ESP-D03 → SIG-C01 → SIG-C03 → HFN-N05</p>
+            <p><strong>Effect:</strong> Precision BRN strike.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">ADS-01 — AMPLIFIED DIRECT STRIKE</div>
+            <h3>Call Sign: "Long Needle"</h3>
+            <div class="mmeta">Size: 11U</div>
+            <p>ESP-D03 → SIG-C04 → SIG-C02 → SIG-C01 → SIG-C03 → HFN-N05</p>
+            <p><strong>Effect:</strong> Stabilized high-precision strike.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CSB-01 — CONE SIGNAL BREAK</div>
+            <h3>Call Sign: "Wide Break"</h3>
+            <div class="mmeta">Size: 4U</div>
+            <p>SIG-C03 → HFN-N05</p>
+            <p><strong>Effect:</strong> Cone attack.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">LNC-01 — DIRECT NULL LANCE</div>
+            <h3>Call Sign: "Pierce"</h3>
+            <div class="mmeta">Size: 3U</div>
+            <p>SIG-C03 → HFN-N08</p>
+            <p><strong>Effect:</strong> Focused NRV strike.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">RPS-01 — RADIAL PULSE SYSTEM</div>
+            <h3>Call Sign: "Shock Ring"</h3>
+            <div class="mmeta">Size: 2U</div>
+            <p>HFN-N04</p>
+            <p><strong>Effect:</strong> Radial disruption.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">FRC-01 — FRACTURED STRIKE</div>
+            <h3>Call Sign: "Split Strike"</h3>
+            <div class="mmeta">Size: 5U</div>
+            <p>SIG-C01 → HFN-N07</p>
+            <p><strong>Effect:</strong> Multi-target.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">ECH-01 — ECHO STRIKE</div>
+            <h3>Call Sign: "Aftershock"</h3>
+            <div class="mmeta">Size: 4U</div>
+            <p>SIG-C01 → HFN-N09</p>
+            <p><strong>Effect:</strong> Delayed repeat.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">PSF-01 — PROXIMITY SWEEP FIELD</div>
+            <h3>Call Sign: "Wide Net"</h3>
+            <div class="mmeta">Size: 3U</div>
+            <p>ESP-D01 → SIG-C03</p>
+            <p><strong>Effect:</strong> Directed detection.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">ASF-01 — ANCHORED SWEEP</div>
+            <h3>Call Sign: "Tracking Arc"</h3>
+            <div class="mmeta">Size: 4U</div>
+            <p>ESP-D03 → SIG-C03</p>
+            <p><strong>Effect:</strong> Directional tracking.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">MSF-01 — MULTI-SWEEP FILTER</div>
+            <h3>Call Sign: "Noise Map"</h3>
+            <div class="mmeta">Size: 5U</div>
+            <p>ESP-D02 → SIG-C02 → SIG-C03</p>
+            <p><strong>Effect:</strong> Processed area detection.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">LNZ-01 — LOCAL NULL ZONE</div>
+            <h3>Call Sign: "Void Field"</h3>
+            <div class="mmeta">Size: 3U</div>
+            <p>HFN-N02</p>
+            <p><strong>Effect:</strong> Area suppression.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">SPF-01 — STATIC PERIMETER FIELD</div>
+            <h3>Call Sign: "Iron Curtain"</h3>
+            <div class="mmeta">Size: 9U</div>
+            <p>ESP-D02 → SIG-C02 → HFN-N03</p>
+            <p><strong>Effect:</strong> Large null perimeter.</p>
+        </div>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">ULTRABRIEF</div>
+            <div class="mono">Modules and authorized combinations — master reference tables</div>
+        </section>
+
+        <section class="span-all">
+            <h2>MODULE MASTER TABLE</h2>
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Full Name</th>
+                            <th>Call Sign</th>
+                            <th>Category</th>
+                            <th>Size</th>
+                            <th>Ports</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ESP-D01</td><td>Extrasensory Proximity Detector</td><td>Sonde</td><td>ESP</td><td>1U</td><td>M</td></tr>
+                        <tr><td>ESP-D02</td><td>Wide-Field Emission Scanner</td><td>Sweep Head</td><td>ESP</td><td>2U</td><td>M+M</td></tr>
+                        <tr><td>ESP-D03</td><td>Signature Lock Retainer</td><td>Anchor Block</td><td>ESP</td><td>2U</td><td>F+M</td></tr>
+                        <tr><td>ESP-D04</td><td>Extended Range Amplification Crown</td><td>Tall Crown</td><td>ESP</td><td>3U</td><td>P</td></tr>
+                        <tr><td>HFN-N01</td><td>Higgs Field Null Spike</td><td>Spike</td><td>HFN</td><td>1U</td><td>M</td></tr>
+                        <tr><td>HFN-N02</td><td>Localized Null Zone Projector</td><td>Pixel Void</td><td>HFN</td><td>3U</td><td>F+M</td></tr>
+                        <tr><td>HFN-N03</td><td>Perimeter Null Field Stake</td><td>Ground Stake</td><td>HFN</td><td>4U</td><td>F</td></tr>
+                        <tr><td>HFN-N04</td><td>Null Pulse Emitter</td><td>Pulse</td><td>HFN</td><td>2U</td><td>M</td></tr>
+                        <tr><td>HFN-N05</td><td>Cognitive Spike</td><td>Spike-II</td><td>HFN</td><td>1U</td><td>M</td></tr>
+                        <tr><td>HFN-N06</td><td>Signal Shear</td><td>Shear</td><td>HFN</td><td>2U</td><td>F+M</td></tr>
+                        <tr><td>HFN-N07</td><td>Pattern Fracture</td><td>Fracture</td><td>HFN</td><td>3U</td><td>F+F</td></tr>
+                        <tr><td>HFN-N08</td><td>Null Lance</td><td>Lance</td><td>HFN</td><td>2U</td><td>M</td></tr>
+                        <tr><td>HFN-N09</td><td>Echo Breaker</td><td>Echo</td><td>HFN</td><td>2U</td><td>F+M</td></tr>
+                        <tr><td>HFS-S01</td><td>Higgs Field Shield Plate</td><td>Screen</td><td>HFS</td><td>1U</td><td>P</td></tr>
+                        <tr><td>HFS-S02</td><td>Radial Suppression Mantle</td><td>Mantle</td><td>HFS</td><td>2U</td><td>P</td></tr>
+                        <tr><td>SIG-C01</td><td>Signal Retention Coil</td><td>Coil</td><td>SIG</td><td>1U</td><td>F</td></tr>
+                        <tr><td>SIG-C02</td><td>Dual-Input Signal Processor</td><td>Drum</td><td>SIG</td><td>3U</td><td>F+F+M</td></tr>
+                        <tr><td>SIG-C03</td><td>Directional Signal Lens</td><td>Lens</td><td>SIG</td><td>2U</td><td>F+M</td></tr>
+                        <tr><td>SIG-C04</td><td>Twin-Port Stabilization Frame</td><td>Frame</td><td>SIG</td><td>2U</td><td>F+F</td></tr>
+                        <tr><td>CCM-01</td><td>Core Control Module</td><td>Mainframe Node</td><td>CORE</td><td>2U</td><td>F+F+F</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <h2>AUTHORIZED ROUTINES — MASTER TABLE</h2>
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Full Name</th>
+                            <th>Call Sign</th>
+                            <th>Size</th>
+                            <th>Routine</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>DSB-01</td><td>Direct Signal Break</td><td>Precision Lance</td><td>6U</td><td>ESP-D03 → SIG-C01 → SIG-C03 → HFN-N05</td></tr>
+                        <tr><td>ADS-01</td><td>Amplified Direct Strike</td><td>Long Needle</td><td>11U</td><td>ESP-D03 → SIG-C04 → SIG-C02 → SIG-C01 → SIG-C03 → HFN-N05</td></tr>
+                        <tr><td>CSB-01</td><td>Cone Signal Break</td><td>Wide Break</td><td>4U</td><td>SIG-C03 → HFN-N05</td></tr>
+                        <tr><td>LNC-01</td><td>Direct Null Lance</td><td>Pierce</td><td>3U</td><td>SIG-C03 → HFN-N08</td></tr>
+                        <tr><td>RPS-01</td><td>Radial Pulse System</td><td>Shock Ring</td><td>2U</td><td>HFN-N04</td></tr>
+                        <tr><td>FRC-01</td><td>Fractured Output Chain</td><td>Split Strike</td><td>5U</td><td>SIG-C01 → HFN-N07</td></tr>
+                        <tr><td>ECH-01</td><td>Echoed Strike Loop</td><td>Aftershock</td><td>4U</td><td>SIG-C01 → HFN-N09</td></tr>
+                        <tr><td>PSF-01</td><td>Proximity Sweep Field</td><td>Wide Net</td><td>3U</td><td>ESP-D01 → SIG-C03</td></tr>
+                        <tr><td>ASF-01</td><td>Anchored Sweep Field</td><td>Tracking Arc</td><td>4U</td><td>ESP-D03 → SIG-C03</td></tr>
+                        <tr><td>MSF-01</td><td>Multi-Sweep Filter</td><td>Noise Map</td><td>5U</td><td>ESP-D02 → SIG-C02 → SIG-C03</td></tr>
+                        <tr><td>LNZ-01</td><td>Local Null Zone</td><td>Void Field</td><td>3U</td><td>HFN-N02</td></tr>
+                        <tr><td>SPF-01</td><td>Static Perimeter Field</td><td>Iron Curtain</td><td>9U</td><td>ESP-D02 → SIG-C02 → HFN-N03</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <a class="nav-link" href="../module-lattice/">→ MODULE LATTICE</a>
+            <a class="nav-link" href="../routine/">→ ROUTINE</a>
+          <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+          <a class="nav-link" href="../operator-registry/">→ OPERATOR REGISTRY</a>
+          <a class="nav-link" href="../">→ KERNEL</a>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>

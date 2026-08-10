@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MODULE LATTICE</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(1200px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:54px;
+        line-height:0.95;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+    }
+
+    p{ margin:0 0 14px 0; }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    /* ===== CATEGORY HEADERS ===== */
+
+    .category-section{
+        margin-top:40px;
+    }
+
+    .category-section:first-of-type{
+        margin-top:20px;
+    }
+
+    .category-header{
+        font-family:"Courier New", monospace;
+        font-size:14px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--fg);
+        border-bottom:1px solid var(--fg);
+        padding-bottom:8px;
+        margin-bottom:16px;
+    }
+
+    .category-header .count{
+        color:var(--dim);
+        font-weight:400;
+        font-size:12px;
+        margin-left:12px;
+        letter-spacing:1px;
+    }
+
+    /* ===== MODULE GRID ===== */
+
+    .module-grid{
+        display:grid;
+        grid-template-columns:repeat(3, 1fr);
+        gap:14px;
+        margin-bottom:8px;
+    }
+
+    /* card container — matches routine's plain border + full invert-on-state look,
+       no tinted idle fill, no badge overlay */
+    .module-card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+        cursor:pointer;
+        background:var(--bg);
+        transition:background 0.15s, color 0.15s;
+        position:relative;
+    }
+
+    .module-card:hover,
+    .module-card.selected{
+        background:var(--fg);
+        color:var(--bg);
+    }
+
+    /* dim text rides along with the invert instead of staying var(--dim) on a white card */
+    .module-card:hover .module-callsign,
+    .module-card:hover .module-meta,
+    .module-card:hover .module-appearance,
+    .module-card:hover .module-use,
+    .module-card:hover .module-limit,
+    .module-card.selected .module-callsign,
+    .module-card.selected .module-meta,
+    .module-card.selected .module-appearance,
+    .module-card.selected .module-use,
+    .module-card.selected .module-limit{
+        color:rgba(0,0,0,0.55);
+    }
+
+    .module-code{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        font-weight:700;
+        text-transform:uppercase;
+        margin:0 0 4px 0;
+        color:inherit;
+    }
+
+    .module-name{
+        font-family:"Times New Roman", serif;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.3px;
+        margin:0 0 8px 0;
+        color:inherit;
+    }
+
+    .module-callsign{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-bottom:8px;
+    }
+
+    .module-meta{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+        color:var(--dim);
+        display:flex;
+        gap:14px;
+        flex-wrap:wrap;
+        margin-bottom:8px;
+    }
+
+    .module-meta .tag{
+        border:1px solid currentColor;
+        padding:1px 8px;
+        font-size:9px;
+        text-transform:uppercase;
+    }
+
+    .module-appearance{
+        font-size:13px;
+        color:var(--dim);
+        margin-bottom:6px;
+        font-style:italic;
+    }
+
+    .module-function{
+        font-size:13px;
+        color:inherit;
+        margin-bottom:4px;
+    }
+
+    .module-function strong{
+        font-weight:400;
+    }
+
+    .module-use{
+        font-size:12px;
+        color:var(--dim);
+        margin-bottom:4px;
+    }
+
+    .module-limit{
+        font-size:12px;
+        color:var(--dim);
+        font-style:italic;
+    }
+
+    /* minimal select control — quiet by default, only takes on weight once selected */
+    .module-select-btn{
+        margin-top:10px;
+        background:none;
+        color:inherit;
+        border:1px solid currentColor;
+        opacity:0.55;
+        font-family:"Courier New", monospace;
+        font-size:10px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        padding:6px 14px;
+        cursor:pointer;
+        transition:opacity 0.15s;
+        width:100%;
+    }
+
+    .module-select-btn:hover,
+    .module-select-btn.selected{
+        opacity:1;
+    }
+
+    /* ===== ACTION ROW ===== */
+
+    .action-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:20px;
+        padding-top:20px;
+        border-top:1px solid var(--line);
+    }
+
+    button.btn{
+        background:var(--bg);
+        color:var(--fg);
+        border:1px solid var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        padding:10px 16px;
+        cursor:pointer;
+        transition:background 0.15s, color 0.15s;
+    }
+
+    button.btn:hover{
+        background:var(--fg);
+        color:var(--bg);
+    }
+
+    button.btn.ghost{
+        border-color:var(--line);
+        color:var(--dim);
+    }
+
+    button.btn.ghost:hover{
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--fg);
+    }
+
+    button.btn.success{
+        border-color:var(--fg);
+        background:rgba(255,255,255,0.05);
+    }
+
+    button.btn.success:hover{
+        background:var(--fg);
+        color:var(--bg);
+    }
+
+    .stats{
+        display:flex;
+        gap:24px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-top:12px;
+        flex-wrap:wrap;
+    }
+
+    .stats strong{
+        color:var(--fg);
+    }
+
+    .status-line{
+        margin-top:14px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        min-height:1.4em;
+        border:1px solid var(--line);
+        padding:12px 14px;
+        transition:background 0.15s, color 0.15s;
+        display:none;
+    }
+
+    .status-line.show{
+        display:block;
+    }
+
+    .status-line.flash{
+        background:var(--fg);
+        color:var(--bg);
+    }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{
+        border-bottom-color:var(--fg);
+    }
+
+    @media (max-width: 768px){
+        .module-grid{
+            grid-template-columns:1fr;
+        }
+        h1{ font-size:38px; }
+        .module-card{
+            padding:12px 14px;
+        }
+    }
+
+    @media (max-width: 600px){
+        .module-meta{
+            flex-direction:column;
+            gap:4px;
+        }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <p class="eyebrow">NODE // 008</p>
+    <h1>MODULE LATTICE</h1>
+    <div class="whitebox">ULTRABLACK OPERATOR — FORERUNNER TERMINAL</div>
+
+    <div class="terminal-note">
+        CLICK A MODULE TO SELECT IT. SELECTED MODULES SAVE AS CARDS TO YOUR LOCAL INVENTORY.<br>
+        USE SELECT ALL / CLEAR ALL FOR BULK CHANGES, THEN SAVE SELECTED TO COMMIT THEM.
+    </div>
+
+    <hr>
+
+    <div class="stats">
+        <span>SELECTED: <strong id="selectedCount">0</strong></span>
+        <span>TOTAL MODULES: <strong id="totalCount">0</strong></span>
+        <span>SLOTS IF SAVED: <strong id="slotsUsed">0</strong></span>
+    </div>
+
+    <div id="moduleContainer"></div>
+
+    <div class="action-row">
+        <button class="btn ghost" id="selectAllBtn" type="button">SELECT ALL</button>
+        <button class="btn ghost" id="clearAllBtn" type="button">CLEAR ALL</button>
+        <button class="btn success" id="saveToInventoryBtn" type="button">SAVE SELECTED TO INVENTORY</button>
+    </div>
+
+    <div class="status-line" id="statusLine"></div>
+
+    <hr>
+    <a class="nav-link" href="../routine/">→ ROUTINE</a>
+    <a class="nav-link" href="../forerunner/">→ FORERUNNER</a>
+    <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+    <a class="nav-link" href="../operator-registry/">→ Operator Registry</a>
+    <a class="nav-link" href="../">→ Kernel</a>
+
+</main>
+<script src="module-lattice.js"></script>
+</body>
+</html>

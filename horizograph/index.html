@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HORIZOGRAPH</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(1280px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .page-head{
+        margin-bottom:34px;
+    }
+
+    .head-left{
+        max-width:900px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+        max-width:100%;
+        word-break:break-word;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    .hero-tag{
+        margin-top:18px;
+    }
+
+    .columns{
+        column-count:3;
+        column-gap:42px;
+        column-fill:balance;
+    }
+
+    .columns section,
+    .columns p,
+    .columns h2,
+    .columns h3,
+    .columns table,
+    .columns .callout,
+    .columns .terminal-note,
+    .columns .break-block{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+        page-break-inside:avoid;
+    }
+
+    section{
+        margin:0 0 28px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+        break-after:avoid;
+    }
+
+    .part-title{
+        font-family:"Times New Roman", serif;
+        font-size:44px;
+        line-height:0.95;
+        margin:0 0 10px 0;
+        font-weight:550;
+        font-style:normal;
+        letter-spacing:1px;
+        color:var(--fg);
+    }
+
+    .field-subtitle{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:16px 0 6px 0;
+    }
+
+    .field-subtitle:first-of-type{
+        margin-top:4px;
+    }
+
+    .article-label{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 10px 0;
+    }
+
+    .article-label.whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-weight:700;
+        margin:0 0 12px 0;
+    }
+
+    p{
+        margin:0 0 14px 0;
+        text-align:justify;
+        text-justify:inter-word;
+    }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .callout{
+        margin:12px 0;
+        padding-left:14px;
+        border-left:1px solid var(--line);
+        color:var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+        column-span:all;
+    }
+
+    .span-all{
+        column-span:all;
+    }
+
+    .break-block{
+        margin:30px 0 18px;
+        padding:14px 0 0;
+        border-top:1px solid var(--line);
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        margin:14px 0 18px;
+        font-size:14px;
+        line-height:1.5;
+        table-layout:fixed;
+    }
+
+    th, td{
+        border:1px solid var(--line);
+        padding:10px 10px;
+        vertical-align:top;
+        text-align:left;
+        overflow-wrap:break-word;
+    }
+
+    th{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        font-weight:700;
+        background:var(--fg);
+        color:var(--bg);
+        border-color:var(--bg);
+    }
+
+    .small-table{
+        font-size:13px;
+    }
+
+    .small-table td,
+    .small-table th{
+        padding:8px 8px;
+    }
+
+    .table-scroll{
+        width:100%;
+        overflow-x:auto;
+        margin:14px 0 18px;
+    }
+
+    .table-scroll table{
+        margin:0;
+        min-width:640px;
+    }
+
+    .param-table{
+        font-size:13px;
+        line-height:1.5;
+    }
+
+    .param-table td strong{
+        display:inline;
+    }
+
+    .card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+    }
+
+    .card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.4px;
+    }
+
+    .card ol,
+    .card ul{
+        margin:0;
+        padding-left:20px;
+    }
+
+    .card li{
+        margin:0 0 6px 0;
+    }
+
+    .module-card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+        margin:0 0 16px 0;
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+    }
+
+    .module-card .mcode{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 4px 0;
+    }
+
+    .module-card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.3px;
+        font-style:normal;
+    }
+
+    .module-card .mmeta{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    .module-card p{
+        font-size:14px;
+        text-align:left;
+        margin:0 0 8px 0;
+    }
+
+    .category-head{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:36px 0 16px 0;
+        border-top:1px solid var(--line);
+        padding-top:26px;
+    }
+
+    .category-head-first{
+        border-top:none;
+        padding-top:0;
+        margin-top:6px;
+    }
+
+    .module-grid{
+        display:grid;
+        grid-template-columns:repeat(2, 1fr);
+        gap:16px;
+        margin:0 0 8px 0;
+    }
+
+    .module-grid .module-card{
+        margin:0;
+    }
+
+    @media (max-width: 900px){
+        .module-grid{ grid-template-columns:1fr; }
+    }
+
+    .echo-register ul{
+        column-count:3;
+        column-gap:28px;
+    }
+
+    .echo-register li{
+        break-inside:avoid;
+        -webkit-column-break-inside:avoid;
+    }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{
+        border-bottom-color:var(--fg);
+    }
+
+    @media (max-width: 1100px){
+        .columns{ column-count:2; }
+        h1{ font-size:52px; }
+        .part-title{ font-size:38px; }
+        .echo-register ul{ column-count:2; }
+    }
+
+    @media (max-width: 780px){
+        main{ width:min(92vw, 720px); margin:80px auto 60px; }
+        .columns{ column-count:1; }
+        h1{ font-size:42px; }
+        .part-title{ font-size:32px; }
+        table{ font-size:12px; }
+        .param-table{ font-size:11.5px; }
+        .small-table{ font-size:12px; }
+        .echo-register ul{ column-count:1; }
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <div class="page-head">
+        <div class="head-left">
+            <p class="eyebrow">NODE // 004</p>
+            <h1><span style="white-space:nowrap;">KIND-IV OPERATOR</span><br>HORIZOGRAPH</h1>
+            <div class="whitebox hero-tag">ULTRABLACK</div>
+        </div>
+    </div>
+
+    <div class="columns">
+
+        <section>
+            <div class="article-label whitebox">ARTICLE I — DEFINITIONS</div>
+            <p><strong>§1.1</strong> A KIND-IV Operator (Horizograph) is an individual with no direct ESP capability and no field instrumentation.</p>
+            <p><strong>§1.2</strong> All interaction with ESP occurs through trace-quantity residue designated AFTERIMAGES.</p>
+            <div class="callout">&gt;&gt; NO EQUIPMENT<br>&gt;&gt; NO EMISSION<br>&gt;&gt; RESIDUE ONLY</div>
+            <div class="callout">&gt;&gt; INPUT ACCEPTED<br>&gt;&gt; SYSTEM INITIALIZED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE II — ACQUISITION</div>
+            <p><strong>§2.1</strong> An Afterimage is acquired only through direct sustained observation of a paracausal event.</p>
+            <p><strong>§2.2</strong> Acquisition is passive. The Operant does not generate the phenomenon; the Operant witnesses it.</p>
+            <p><strong>§2.3</strong> Each Afterimage class requires a distinct observation condition. Conditions are non-substitutable.</p>
+            <div class="callout">&gt;&gt; WITNESS CONFIRMED<br>&gt;&gt; RESIDUE RETAINED</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE III — RELEASE PROTOCOL</div>
+            <p><strong>§3.1</strong> A held Afterimage may be released to produce one bounded, temporary effect.</p>
+            <p><strong>§3.2</strong> Release is terminal. The Afterimage is consumed and cannot be recovered.</p>
+            <p><strong>§3.3</strong> Effect duration is fixed at acquisition and cannot be extended.</p>
+            <div class="callout">&gt;&gt; SPENT<br>&gt;&gt; NOT RECOVERABLE</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE IV — CONSTELLATION FORMATION</div>
+            <p><strong>§4.1</strong> Two or more specified Afterimages held simultaneously and unreleased form a bound configuration designated a CONSTELLATION.</p>
+            <p><strong>§4.2</strong> Constellations are:</p>
+            <div class="callout">&gt;&gt; permanent, while intact<br>&gt;&gt; passive<br>&gt;&gt; non-stacking with themselves</div>
+            <p><strong>§4.3</strong> A Constellation confers a fixed modifier or mechanic for as long as every member Afterimage remains held and unreleased.</p>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE V — COLLAPSE PRINCIPLE</div>
+            <p><strong>§5.1</strong> Releasing any Afterimage that is a member of a Constellation immediately and irreversibly collapses that Constellation.</p>
+            <p><strong>§5.2</strong> Collapse is total. Partial retention does not preserve partial effect.</p>
+            <p><strong>§5.3</strong> An Afterimage held as part of more than one Constellation, if released, collapses all Constellations of which it is a member.</p>
+            <div class="callout">&gt;&gt; STRUCTURE BROKEN<br>&gt;&gt; MECHANIC VOID</div>
+        </section>
+
+        <section>
+            <div class="article-label whitebox">ARTICLE VI — LIMITATIONS</div>
+            <p><strong>§6.1</strong> The Operant cannot manufacture, transfer, or duplicate an Afterimage.</p>
+            <p><strong>§6.2</strong> Retention capacity is finite and classified under Failure Index <span class="mono">[REDACTED]</span>.</p>
+            <p><strong>§6.3</strong> The Operant's decision to hold or release remains the sole point of operator agency in the system.</p>
+            <div class="terminal-note">&gt;&gt;REPEATED INPUT DETECTED<br>&gt;&gt;ORIGIN MATCH: NONE</div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">KIND-IV DEPLOYMENT BRIEF</div>
+            <div class="mono">OPERATOR ACCESS // VIOLATION CODE: [REDACTED]</div>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2 class="part-title">HORIZOGRAPH FIELD PROCEDURE</h2>
+            <p class="mono">On sanctioned Afterimage retention and Constellation integrity</p>
+            <hr>
+        </section>
+
+        <section class="span-all">
+            <h2>OPERATIONAL DIRECTIVES</h2>
+            <h3 class="field-subtitle">Acquisition</h3>
+            <p>Afterimages are not equipped, rolled, or selected. Each is acquired in the field by satisfying its observation condition. Conditions are recorded exactly as witnessed. No approximation is permitted.</p>
+            <br>
+            <h3 class="field-subtitle">Retention</h3>
+            <p>An acquired Afterimage is held indefinitely until released. Holding produces no effect on its own. An Afterimage held in isolation grants nothing beyond its potential.</p>
+            <br>
+            <h3 class="field-subtitle">Release</h3>
+            <p>Release is a declared action, resolved immediately. The stated effect applies once and the Afterimage is discarded.</p>
+            <div class="callout">&gt;&gt; 1 Afterimage held → 0 effect<br>&gt;&gt; 1 Afterimage released → 1 bounded effect, consumed</div>
+            <h3 class="field-subtitle">Constellation Integrity</h3>
+            <p>Constellations exist only while every required Afterimage remains unreleased. There is no partial Constellation state.</p>
+            <div class="callout">&gt;&gt; ALL MEMBERS HELD → CONSTELLATION ACTIVE<br>&gt;&gt; ANY MEMBER RELEASED → CONSTELLATION COLLAPSED</div>
+        </section>
+
+        <section class="span-all">
+            <h2>EXECUTION MODEL</h2>
+            <div class="callout">&gt;&gt; Afterimages → small, immediate, consumed<br>&gt;&gt; Constellations → durable, passive, revocable</div>
+            <h3 class="field-subtitle">Trade Condition</h3>
+            <p>The Operant faces a standing choice at all times:</p>
+            <div class="callout">&gt;&gt; spend now for a small bounded gain<br>&gt;&gt; hold indefinitely for a standing structural gain</div>
+            <p>The two cannot be taken together for the same Afterimage.</p>
+        </section>
+
+        <section class="span-all">
+            <h2>DESIGN INTENT</h2>
+            <p>Horizographs accumulate rather than generate. They do not act on the field directly; they carry residue of what they witnessed and decide, continuously, whether that residue is worth more spent or worth more kept.</p>
+            <h3 class="field-subtitle">Tactical Consequence</h3>
+            <div class="callout">&gt;&gt; Early observation → low inventory, no structure<br>&gt;&gt; Mid accumulation → partial Constellations, exposed<br>&gt;&gt; Late retention → full Constellation set, fragile to loss</div>
+            <h3 class="field-subtitle">Field Directive</h3>
+            <p>Protect held inventory. A forced release, self-inflicted or compelled, is structural damage, not merely resource loss.</p>
+            <div class="callout">&gt;&gt; Observe before acting<br>&gt;&gt; Weigh spend against hold<br>&gt;&gt; Treat every release as a demolition, not a purchase</div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">AFTERIMAGE TELEMETRY DIRECTORY</div>
+            <div class="mono">Full acquisition condition and release effect, organized by detection category</div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head category-head-first">OPTICAL</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-OPT01 — GIMBAL</div>
+                    <h3>Call Sign: "Gimbal"</h3>
+                    <div class="mmeta">Category: OPTICAL</div>
+                    <p><strong>Acquire:</strong> Confirm an anomaly rotating independent of its travel vector under continuous visual contact, full scene duration.</p>
+                    <p><strong>Release:</strong> Until scene end, attacks against the Operant gain no bonus from flanking, rear position, or superior positioning.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-OPT02 — GREEN PYRAMID</div>
+                    <h3>Call Sign: "Green Pyramid"</h3>
+                    <div class="mmeta">Category: OPTICAL</div>
+                    <p><strong>Acquire:</strong> Confirm identical impossible geometry from three independent viewpoints.</p>
+                    <p><strong>Release:</strong> Until scene end, cover, concealment, and line-of-sight penalties from physical obstacles are ignored.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-OPT03 — JELLYFISH</div>
+                    <h3>Call Sign: "Jellyfish"</h3>
+                    <div class="mmeta">Category: OPTICAL</div>
+                    <p><strong>Acquire:</strong> Confirm an anomaly holding fixed position against active environmental force.</p>
+                    <p><strong>Release:</strong> Until next turn, the Operant cannot be knocked prone, pushed, pulled, or forcibly moved.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-OPT04 — HALO</div>
+                    <h3>Call Sign: "Halo"</h3>
+                    <div class="mmeta">Category: OPTICAL</div>
+                    <p><strong>Acquire:</strong> Confirm a luminous ring persisting around an anomaly independent of angle or lighting change.</p>
+                    <p><strong>Release:</strong> The next Pale loss this scene is reduced by 2.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">THERMAL</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-THM01 — TIC TAC</div>
+                    <h3>Call Sign: "Tic Tac"</h3>
+                    <div class="mmeta">Category: THERMAL</div>
+                    <p><strong>Acquire:</strong> Confirm instantaneous acceleration, stop, or altitude change of an anomaly, corroborated by a second witness.</p>
+                    <p><strong>Release:</strong> Immediately gain an additional Movement after completing any Procedure.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-THM02 — COLD CORE</div>
+                    <h3>Call Sign: "Cold Core"</h3>
+                    <div class="mmeta">Category: THERMAL</div>
+                    <p><strong>Acquire:</strong> Confirm total thermal absence during active manifestation.</p>
+                    <p><strong>Release:</strong> Restore one Pale to its maximum value.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-THM03 — WHITE EMBER</div>
+                    <h3>Call Sign: "White Ember"</h3>
+                    <div class="mmeta">Category: THERMAL</div>
+                    <p><strong>Acquire:</strong> Confirm residual heat persisting after the source anomaly has vanished.</p>
+                    <p><strong>Release:</strong> The next successful attack ignores Pale and damages the Reading directly.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-THM04 — BLACKBODY</div>
+                    <h3>Call Sign: "Blackbody"</h3>
+                    <div class="mmeta">Category: THERMAL</div>
+                    <p><strong>Acquire:</strong> Confirm a heat source unclassifiable by any known system.</p>
+                    <p><strong>Release:</strong> The next attack cannot be reduced by armor, resistance, or comparable damage reduction.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">RADAR</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-RAD01 — GHOST RETURN</div>
+                    <h3>Call Sign: "Ghost Return"</h3>
+                    <div class="mmeta">Category: RADAR</div>
+                    <p><strong>Acquire:</strong> Confirm the same anomaly as simultaneously present and absent across differing detection methods.</p>
+                    <p><strong>Release:</strong> One attack against the Operant automatically misses.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-RAD02 — SPLIT ECHO</div>
+                    <h3>Call Sign: "Split Echo"</h3>
+                    <div class="mmeta">Category: RADAR</div>
+                    <p><strong>Acquire:</strong> Confirm one anomaly registering in multiple locations through sensor interference or duplication.</p>
+                    <p><strong>Release:</strong> Resolve the next Procedure against two separate targets.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-RAD03 — FALSE HORIZON</div>
+                    <h3>Call Sign: "False Horizon"</h3>
+                    <div class="mmeta">Category: RADAR</div>
+                    <p><strong>Acquire:</strong> Confirm an anomaly whose distance cannot be consistently resolved.</p>
+                    <p><strong>Release:</strong> Until next turn, creatures beyond Adjacent range cannot target the Operant.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-RAD04 — COAST TRACK</div>
+                    <h3>Call Sign: "Coast Track"</h3>
+                    <div class="mmeta">Category: RADAR</div>
+                    <p><strong>Acquire:</strong> Maintain sensor contact with an anomaly after it exits direct view.</p>
+                    <p><strong>Release:</strong> The next Procedure ignores penalties from invisibility, darkness, concealment, or loss of vision.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">ATMOSPHERIC</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-ATM01 — GOFAST</div>
+                    <h3>Call Sign: "GoFast"</h3>
+                    <div class="mmeta">Category: ATMOSPHERIC</div>
+                    <p><strong>Acquire:</strong> Maintain continuous observation of a rapidly moving anomaly through to loss of contact.</p>
+                    <p><strong>Release:</strong> Double Movement for one turn.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-ATM02 — PLASMA WAKE</div>
+                    <h3>Call Sign: "Plasma Wake"</h3>
+                    <div class="mmeta">Category: ATMOSPHERIC</div>
+                    <p><strong>Acquire:</strong> Confirm atmospheric distortion persisting after the source anomaly disappears.</p>
+                    <p><strong>Release:</strong> Leave a false position. Until next turn, attacks target the previous location unless the attacker is Adjacent.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-ATM03 — PRESSURE SCAR</div>
+                    <h3>Call Sign: "Pressure Scar"</h3>
+                    <div class="mmeta">Category: ATMOSPHERIC</div>
+                    <p><strong>Acquire:</strong> Confirm physical displacement occurring without visible cause.</p>
+                    <p><strong>Release:</strong> Push every adjacent creature one space directly away from the Operant.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-ATM04 — SHEAR FRONT</div>
+                    <h3>Call Sign: "Shear Front"</h3>
+                    <div class="mmeta">Category: ATMOSPHERIC</div>
+                    <p><strong>Acquire:</strong> Confirm wind, rain, dust, or debris dividing sharply around an anomaly without displacing it.</p>
+                    <p><strong>Release:</strong> Difficult terrain does not affect the Operant until end of next turn.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">SPATIAL</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-SPT01 — FASTWALKER</div>
+                    <h3>Call Sign: "Fastwalker"</h3>
+                    <div class="mmeta">Category: SPATIAL</div>
+                    <p><strong>Acquire:</strong> Confirm an anomaly entering or exiting an inaccessible location without traversing intervening space.</p>
+                    <p><strong>Release:</strong> Instantly reposition anywhere within normal Movement range.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-SPT02 — NEGATIVE PARALLAX</div>
+                    <h3>Call Sign: "Negative Parallax"</h3>
+                    <div class="mmeta">Category: SPATIAL</div>
+                    <p><strong>Acquire:</strong> Confirm an object whose apparent position varies by observer.</p>
+                    <p><strong>Release:</strong> Swap positions with any visible creature.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-SPT03 — DEAD VECTOR</div>
+                    <h3>Call Sign: "Dead Vector"</h3>
+                    <div class="mmeta">Category: SPATIAL</div>
+                    <p><strong>Acquire:</strong> Confirm an anomaly in motion with no identifiable vector.</p>
+                    <p><strong>Release:</strong> The next attack or Procedure cannot be reacted to.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-SPT04 — BLIND ANGLE</div>
+                    <h3>Call Sign: "Blind Angle"</h3>
+                    <div class="mmeta">Category: SPATIAL</div>
+                    <p><strong>Acquire:</strong> Confirm an anomaly vanishing only when viewed from one specific direction.</p>
+                    <p><strong>Release:</strong> Move through one occupied space or solid obstacle no thicker than a doorway during the next Movement.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">COGNITIVE</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-COG01 — MISSING FRAME</div>
+                    <h3>Call Sign: "Missing Frame"</h3>
+                    <div class="mmeta">Category: COGNITIVE</div>
+                    <p><strong>Acquire:</strong> Confirm an unexplained memory lapse shared by multiple witnesses.</p>
+                    <p><strong>Release:</strong> Repeat the last successful Procedure without spending an Action.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-COG02 — OBSERVER DRIFT</div>
+                    <h3>Call Sign: "Observer Drift"</h3>
+                    <div class="mmeta">Category: COGNITIVE</div>
+                    <p><strong>Acquire:</strong> Record mutually incompatible accounts of the same anomalous event.</p>
+                    <p><strong>Release:</strong> One creature immediately loses its next Reaction.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-COG03 — STATIC MEMORY</div>
+                    <h3>Call Sign: "Static Memory"</h3>
+                    <div class="mmeta">Category: COGNITIVE</div>
+                    <p><strong>Acquire:</strong> Recall verifiable detail erased or altered by anomalous activity.</p>
+                    <p><strong>Release:</strong> Ask the GM one yes-or-no question about the current scene. The answer must be truthful.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-COG04 — SIGNAL BLEED</div>
+                    <h3>Call Sign: "Signal Bleed"</h3>
+                    <div class="mmeta">Category: COGNITIVE</div>
+                    <p><strong>Acquire:</strong> Confirm two independent observers unknowingly describing the identical impossible detail.</p>
+                    <p><strong>Release:</strong> Reroll one failed Procedure.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <div class="category-head">FORMATION</div>
+        </section>
+
+        <section class="span-all">
+            <div class="module-grid">
+                <div class="module-card">
+                    <div class="mcode">AIT-FRM01 — BLACK TRIANGLE</div>
+                    <h3>Call Sign: "Black Triangle"</h3>
+                    <div class="mmeta">Category: FORMATION</div>
+                    <p><strong>Acquire:</strong> Confirm three anomalous phenomena in synchronized formation, single encounter.</p>
+                    <p><strong>Release:</strong> The next Procedure by the Operant or an ally is automatically treated as Stamped.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-FRM02 — MOSUL ORB</div>
+                    <h3>Call Sign: "Mosul Orb"</h3>
+                    <div class="mmeta">Category: FORMATION</div>
+                    <p><strong>Acquire:</strong> Confirm a luminous sphere holding perfectly stable position, minimum one minute, no visible propulsion.</p>
+                    <p><strong>Release:</strong> Until scene end, FIX one additional Afterimage without discarding it.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-FRM03 — ECHELON</div>
+                    <h3>Call Sign: "Echelon"</h3>
+                    <div class="mmeta">Category: FORMATION</div>
+                    <p><strong>Acquire:</strong> Confirm four or more anomalies holding precise geometric spacing while changing direction in unison.</p>
+                    <p><strong>Release:</strong> Up to three allies within sight may each immediately move one space without provoking reactions.</p>
+                </div>
+
+                <div class="module-card">
+                    <div class="mcode">AIT-FRM04 — ANGEL FLIGHT</div>
+                    <h3>Call Sign: "Angel Flight"</h3>
+                    <div class="mmeta">Category: FORMATION</div>
+                    <p><strong>Acquire:</strong> Confirm a formation separating into independent contacts before recombining into a single track.</p>
+                    <p><strong>Release:</strong> The next Procedure by every ally who can see the Operant gains Stamped.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">BOUND CONSTELLATION DIRECTORY</div>
+            <div class="mono">Fixed Afterimage sets cleared for standing field authorization — collapse on any single release</div>
+        </section>
+
+        <div class="module-card">
+            <div class="mcode">CST-01 — FIRST CONTACT</div>
+            <h3>First Contact</h3>
+            <div class="mmeta">Requires: Gimbal + Tic Tac</div>
+            <div class="mmeta">Mechanic: INITIAL LOCK</div>
+            <p>The first Procedure performed each scene is automatically Stamped.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-02 — FALSE DAWN</div>
+            <h3>False Dawn</h3>
+            <div class="mmeta">Requires: Ghost Return + False Horizon</div>
+            <div class="mmeta">Mechanic: MISIDENTIFICATION</div>
+            <p>The first attack against the Operant each combat must be rerolled.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-03 — NULL VECTOR</div>
+            <h3>Null Vector</h3>
+            <div class="mmeta">Requires: GoFast + Fastwalker</div>
+            <div class="mmeta">Mechanic: IMPOSSIBLE TRANSIT</div>
+            <p>Once each round, the first movement ignores terrain, obstacles, engagement, and difficult terrain.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-04 — STILL SKY</div>
+            <h3>Still Sky</h3>
+            <div class="mmeta">Requires: Jellyfish + Cold Core</div>
+            <div class="mmeta">Mechanic: STABLE FRAME</div>
+            <p>Whenever Pale is restored, restore +1 additional Pale.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-05 — PARALLAX</div>
+            <h3>Parallax</h3>
+            <div class="mmeta">Requires: Negative Parallax + Green Pyramid</div>
+            <div class="mmeta">Mechanic: IMPOSSIBLE GEOMETRY</div>
+            <p>Adjacent spaces may be treated as connected even when separated by walls, gaps, elevation, or other solid barriers.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-06 — NIMITZ</div>
+            <h3>Nimitz</h3>
+            <div class="mmeta">Requires: Gimbal + Tic Tac + GoFast</div>
+            <div class="mmeta">Mechanic: VECTOR LOCK</div>
+            <p>Whenever a Procedure completes, immediately move up to full Movement without provoking reactions.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-07 — BLUE BOOK</div>
+            <h3>Blue Book</h3>
+            <div class="mmeta">Requires: Gimbal + Green Pyramid + Static Memory</div>
+            <div class="mmeta">Mechanic: CLASSIFICATION</div>
+            <p>The first time an unknown anomaly is encountered, the GM must reveal one fundamental rule governing it — weakness, instinct, limitation, or operating principle.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-08 — SILENT FLEET</div>
+            <h3>Silent Fleet</h3>
+            <div class="mmeta">Requires: Black Triangle + Ghost Return + Fastwalker</div>
+            <div class="mmeta">Mechanic: DISTRIBUTED PRESENCE</div>
+            <p>After completing a Procedure, teleport to any space occupied earlier that scene.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-09 — MOSAIC</div>
+            <h3>Mosaic</h3>
+            <div class="mmeta">Requires: Observer Drift + Missing Frame + Split Echo</div>
+            <div class="mmeta">Mechanic: CONTINUITY ERROR</div>
+            <p>Once per scene, after any creature resolves an Action, choose to resolve its movement before or after that Action, regardless of original order.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-10 — EVENT HORIZON</div>
+            <h3>Event Horizon</h3>
+            <div class="mmeta">Requires: Cold Core + Plasma Wake + Dead Vector</div>
+            <div class="mmeta">Mechanic: FRAME COLLAPSE</div>
+            <p>The first time each scene a Pale value reaches 0, immediately restore that Pale to its maximum value.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-11 — BLACK VAULT</div>
+            <h3>Black Vault</h3>
+            <div class="mmeta">Requires: Gimbal + Ghost Return + Split Echo + Static Memory</div>
+            <div class="mmeta">Mechanic: RECURSIVE OBSERVATION</div>
+            <p>Every Procedure Stamped remains Stamped for the remainder of the scene.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-12 — SKYHOOK</div>
+            <h3>Skyhook</h3>
+            <div class="mmeta">Requires: GoFast + Dead Vector + Black Triangle + Fastwalker</div>
+            <div class="mmeta">Mechanic: FIRE CONTROL SOLUTION</div>
+            <p>Once each combat, designate one visible creature as LOCKED. Procedures targeting it are Stamped; attacks against it ignore cover; it cannot benefit from concealment.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-13 — GRAVEYARD ORBIT</div>
+            <h3>Graveyard Orbit</h3>
+            <div class="mmeta">Requires: Tic Tac + Jellyfish + Negative Parallax + Pressure Scar</div>
+            <div class="mmeta">Mechanic: ZERO INERTIA</div>
+            <p>Immunity to forced movement. Whenever another creature would move the Operant, the Operant may instead move the same distance in any direction.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-14 — MAJESTIC</div>
+            <h3>Majestic</h3>
+            <div class="mmeta">Requires: Gimbal + Tic Tac + GoFast + Mosul Orb + Ghost Return</div>
+            <div class="mmeta">Mechanic: SENSOR FUSION</div>
+            <p>Every Procedure is treated as Stamped. Whenever two d20 are rolled, reroll one of them.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-15 — CONSTELLATION 46</div>
+            <h3>Constellation 46</h3>
+            <div class="mmeta">Requires: Green Pyramid + Static Memory + Missing Frame + Observer Drift + Split Echo</div>
+            <div class="mmeta">Mechanic: PATTERN COMPLETION</div>
+            <p>Once per scene, declare two visible phenomena manifestations of the same anomaly. The GM must adjudicate them using one shared property for the remainder of the encounter.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-16 — CELESTIAL MERIDIAN</div>
+            <h3>Celestial Meridian</h3>
+            <div class="mmeta">Requires: GoFast + Fastwalker + Dead Vector + Negative Parallax + Plasma Wake</div>
+            <div class="mmeta">Mechanic: ABSOLUTE POSITION</div>
+            <p>Position cannot be altered by any effect except the Operant's own movement. Movement always ends exactly where chosen.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-17 — CONSTELLATION ZERO</div>
+            <h3>Constellation Zero</h3>
+            <div class="mmeta">Requires: Any six unique Afterimage Telemetries</div>
+            <div class="mmeta">Mechanic: OBSERVER EFFECT</div>
+            <p>Once per session, after any die is rolled, declare the result unobserved. Erase the roll completely. The action replays from the beginning with entirely new dice. Nothing from the original resolution remains.</p>
+        </div>
+
+        <div class="module-card">
+            <div class="mcode">CST-18 — OMEGA SKY</div>
+            <h3>Omega Sky</h3>
+            <div class="mmeta">Requires: Gimbal + Tic Tac + GoFast + Black Triangle + Ghost Return + Fastwalker</div>
+            <div class="mmeta">Mechanic: CONTINUOUS SOLUTION</div>
+            <p>Permanent LOCK state. Every Procedure is automatically Stamped. Movement never provokes reactions. The first time each scene a Reading would be lost, prevent that damage and instead lose an equal amount of Pale from any Reading of choice.</p>
+        </div>
+
+        <section class="span-all break-block">
+            <div class="article-label whitebox">ULTRABRIEF</div>
+            <div class="mono">Afterimages and bound Constellations — master reference tables</div>
+        </section>
+
+        <section class="span-all">
+            <h2>AFTERIMAGE MASTER TABLE</h2>
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Call Sign</th>
+                            <th>Category</th>
+                            <th>Acquire Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>AIT-OPT01</td><td>Gimbal</td><td>OPTICAL</td><td>Rotation independent of travel, sustained visual contact</td></tr>
+                        <tr><td>AIT-OPT02</td><td>Green Pyramid</td><td>OPTICAL</td><td>Same impossible geometry, three viewpoints</td></tr>
+                        <tr><td>AIT-OPT03</td><td>Jellyfish</td><td>OPTICAL</td><td>Fixed position against active environmental force</td></tr>
+                        <tr><td>AIT-OPT04</td><td>Halo</td><td>OPTICAL</td><td>Persisting luminous ring, angle/lighting independent</td></tr>
+                        <tr><td>AIT-THM01</td><td>Tic Tac</td><td>THERMAL</td><td>Instantaneous acceleration/stop/altitude change, corroborated</td></tr>
+                        <tr><td>AIT-THM02</td><td>Cold Core</td><td>THERMAL</td><td>Total thermal absence during active manifestation</td></tr>
+                        <tr><td>AIT-THM03</td><td>White Ember</td><td>THERMAL</td><td>Residual heat after source vanishes</td></tr>
+                        <tr><td>AIT-THM04</td><td>Blackbody</td><td>THERMAL</td><td>Thermal signature unclassifiable by known systems</td></tr>
+                        <tr><td>AIT-RAD01</td><td>Ghost Return</td><td>RADAR</td><td>Simultaneously present and absent across methods</td></tr>
+                        <tr><td>AIT-RAD02</td><td>Split Echo</td><td>RADAR</td><td>Multiple locations via interference or duplication</td></tr>
+                        <tr><td>AIT-RAD03</td><td>False Horizon</td><td>RADAR</td><td>Distance cannot be consistently resolved</td></tr>
+                        <tr><td>AIT-RAD04</td><td>Coast Track</td><td>RADAR</td><td>Sensor contact maintained after visual loss</td></tr>
+                        <tr><td>AIT-ATM01</td><td>GoFast</td><td>ATMOSPHERIC</td><td>Continuous observation through loss of contact</td></tr>
+                        <tr><td>AIT-ATM02</td><td>Plasma Wake</td><td>ATMOSPHERIC</td><td>Atmospheric distortion persisting post-disappearance</td></tr>
+                        <tr><td>AIT-ATM03</td><td>Pressure Scar</td><td>ATMOSPHERIC</td><td>Physical displacement, no visible cause</td></tr>
+                        <tr><td>AIT-ATM04</td><td>Shear Front</td><td>ATMOSPHERIC</td><td>Environmental matter dividing sharply, anomaly unaffected</td></tr>
+                        <tr><td>AIT-SPT01</td><td>Fastwalker</td><td>SPATIAL</td><td>Enter/exit inaccessible location without traversal</td></tr>
+                        <tr><td>AIT-SPT02</td><td>Negative Parallax</td><td>SPATIAL</td><td>Apparent position varies by observer</td></tr>
+                        <tr><td>AIT-SPT03</td><td>Dead Vector</td><td>SPATIAL</td><td>Motion with no identifiable vector</td></tr>
+                        <tr><td>AIT-SPT04</td><td>Blind Angle</td><td>SPATIAL</td><td>Disappearance from one specific viewing direction only</td></tr>
+                        <tr><td>AIT-COG01</td><td>Missing Frame</td><td>COGNITIVE</td><td>Shared unexplained memory lapse, multiple witnesses</td></tr>
+                        <tr><td>AIT-COG02</td><td>Observer Drift</td><td>COGNITIVE</td><td>Mutually incompatible accounts, same event</td></tr>
+                        <tr><td>AIT-COG03</td><td>Static Memory</td><td>COGNITIVE</td><td>Verifiable detail erased or altered anomalously</td></tr>
+                        <tr><td>AIT-COG04</td><td>Signal Bleed</td><td>COGNITIVE</td><td>Independent observers describe identical impossible detail</td></tr>
+                        <tr><td>AIT-FRM01</td><td>Black Triangle</td><td>FORMATION</td><td>Three synchronized phenomena, single encounter</td></tr>
+                        <tr><td>AIT-FRM02</td><td>Mosul Orb</td><td>FORMATION</td><td>Stable sphere, one minute minimum, no propulsion</td></tr>
+                        <tr><td>AIT-FRM03</td><td>Echelon</td><td>FORMATION</td><td>Four-plus anomalies, precise spacing, unison direction change</td></tr>
+                        <tr><td>AIT-FRM04</td><td>Angel Flight</td><td>FORMATION</td><td>Formation splits then recombines to single track</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="span-all">
+            <h2>BOUND CONSTELLATIONS — MASTER TABLE</h2>
+            <div class="table-scroll">
+                <table class="small-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Call Sign</th>
+                            <th>Requires</th>
+                            <th>Mechanic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>CST-01</td><td>First Contact</td><td>Gimbal + Tic Tac</td><td>Initial Lock</td></tr>
+                        <tr><td>CST-02</td><td>False Dawn</td><td>Ghost Return + False Horizon</td><td>Misidentification</td></tr>
+                        <tr><td>CST-03</td><td>Null Vector</td><td>GoFast + Fastwalker</td><td>Impossible Transit</td></tr>
+                        <tr><td>CST-04</td><td>Still Sky</td><td>Jellyfish + Cold Core</td><td>Stable Frame</td></tr>
+                        <tr><td>CST-05</td><td>Parallax</td><td>Negative Parallax + Green Pyramid</td><td>Impossible Geometry</td></tr>
+                        <tr><td>CST-06</td><td>Nimitz</td><td>Gimbal + Tic Tac + GoFast</td><td>Vector Lock</td></tr>
+                        <tr><td>CST-07</td><td>Blue Book</td><td>Gimbal + Green Pyramid + Static Memory</td><td>Classification</td></tr>
+                        <tr><td>CST-08</td><td>Silent Fleet</td><td>Black Triangle + Ghost Return + Fastwalker</td><td>Distributed Presence</td></tr>
+                        <tr><td>CST-09</td><td>Mosaic</td><td>Observer Drift + Missing Frame + Split Echo</td><td>Continuity Error</td></tr>
+                        <tr><td>CST-10</td><td>Event Horizon</td><td>Cold Core + Plasma Wake + Dead Vector</td><td>Frame Collapse</td></tr>
+                        <tr><td>CST-11</td><td>Black Vault</td><td>Gimbal + Ghost Return + Split Echo + Static Memory</td><td>Recursive Observation</td></tr>
+                        <tr><td>CST-12</td><td>Skyhook</td><td>GoFast + Dead Vector + Black Triangle + Fastwalker</td><td>Fire Control Solution</td></tr>
+                        <tr><td>CST-13</td><td>Graveyard Orbit</td><td>Tic Tac + Jellyfish + Negative Parallax + Pressure Scar</td><td>Zero Inertia</td></tr>
+                        <tr><td>CST-14</td><td>Majestic</td><td>Gimbal + Tic Tac + GoFast + Mosul Orb + Ghost Return</td><td>Sensor Fusion</td></tr>
+                        <tr><td>CST-15</td><td>Constellation 46</td><td>Green Pyramid + Static Memory + Missing Frame + Observer Drift + Split Echo</td><td>Pattern Completion</td></tr>
+                        <tr><td>CST-16</td><td>Celestial Meridian</td><td>GoFast + Fastwalker + Dead Vector + Negative Parallax + Plasma Wake</td><td>Absolute Position</td></tr>
+                        <tr><td>CST-17</td><td>Constellation Zero</td><td>Any six unique Afterimage Telemetries</td><td>Observer Effect</td></tr>
+                        <tr><td>CST-18</td><td>Omega Sky</td><td>Gimbal + Tic Tac + GoFast + Black Triangle + Ghost Return + Fastwalker</td><td>Continuous Solution</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <a class="nav-link" href="../afterimage-telemetry/">→ AFTERIMAGE TELEMETRY</a>
+            <a class="nav-link" href="../constellation/">→ CONSTELLATION</a>
+            <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+            <a class="nav-link" href="../operator-registry/">→ OPERATOR REGISTRY</a>
+            <a class="nav-link" href="../">→ KERNEL</a>
+        </section>
+
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,402 @@
+:root{
+    --bg:#000;
+    --fg:#fff;
+    --dim:rgba(255,255,255,0.55);
+    --line:rgba(255,255,255,0.22);
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html, body{
+    margin:0;
+    padding:0;
+    background:var(--bg);
+    color:var(--fg);
+    font-family:"Times New Roman", Georgia, serif;
+    font-size:18px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+}
+
+main{
+    width:720px;
+    max-width:90%;
+    margin:110px auto;
+}
+
+main.wide{
+    width:900px;
+}
+
+.eyebrow{
+    font-family:"Courier New", monospace;
+    font-size:12px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin:0 0 8px 0;
+}
+
+h1{
+    font-family:"Times New Roman", serif;
+    font-size:50px;
+    margin:0 0 26px 0;
+    font-weight:550;
+    letter-spacing:1px;
+    transform:scaleY(1.4);
+    transform-origin:center;
+}
+
+h2{
+    font-size:20px;
+    margin-top:60px;
+    font-weight:400;
+    font-style:italic;
+    color:var(--dim);
+}
+
+p{
+    margin:20px 0;
+}
+
+.meta{
+    font-family:"Courier New", monospace;
+    font-size:13px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin:6px 0;
+}
+
+input{
+    width:100%;
+    background:transparent;
+    box-sizing:border-box;
+    color:var(--fg);
+    border:1px solid var(--fg);
+    padding:14px 16px;
+    font-family:inherit;
+    font-size:18px;
+    transition:border-color .2s ease;
+    text-transform:uppercase;
+    outline:none;
+}
+
+input:focus{
+    outline:none;
+    border-bottom-color:var(--fg);
+}
+
+input::placeholder{
+    color:var(--fg);
+}
+
+button{
+    margin-top: 35px;
+    background:transparent;
+    color:var(--fg);
+    border:1px solid var(--fg);
+    padding:13px 22px;
+    font-family:"Courier New", monospace;
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+}
+
+button:hover{
+    background:var(--fg);
+    color:var(--bg);
+}
+
+.whitebox{
+    background:var(--fg);
+    color:var(--bg);
+    display:inline-block;
+    padding:5px 10px;
+    font-family:"Courier New", monospace;
+    font-size:12px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    font-weight:700;
+}
+
+.status{
+    margin-top:25px;
+    font-style:italic;
+    color:var(--dim);
+    min-height:1.4em;
+}
+
+hr{
+    border:none;
+    border-top:1px solid var(--line);
+    margin:50px 0;
+}
+
+a{
+    color:var(--fg);
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+    transition:border-color .2s ease;
+}
+
+a:hover{
+    border-bottom-color:var(--fg);
+}
+
+.nav-link{
+    display:block;
+    margin-top:18px;
+    font-family:"Courier New", monospace;
+    font-size:13px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    border-bottom:1px solid var(--line);
+}
+
+.nav-link:hover{
+    border-bottom-color:var(--fg);
+}
+
+/* ===== INVENTORY ===== */
+
+.inventory-container{
+    margin-top: 16px;
+}
+
+.inventory-section{
+    margin-bottom: 24px;
+}
+
+.inventory-section h3{
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin: 0 0 12px 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+}
+
+.card-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 12px;
+}
+
+.card-item{
+    border: 1px solid var(--line);
+    padding: 12px 14px;
+    transition: border-color 0.2s;
+}
+
+.card-item:hover{
+    border-color: var(--fg);
+}
+
+.card-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.card-name{
+    font-family: "Times New Roman", serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.remove-card-btn{
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.remove-card-btn:hover{
+    color: var(--fg);
+}
+
+.card-details{
+    font-family: "Courier New", monospace;
+    font-size: 11px;
+    color: var(--dim);
+    line-height: 1.6;
+}
+
+.card-desc{
+    margin-bottom: 2px;
+}
+
+.card-desc.noise{
+    color: var(--fg);
+}
+
+.card-tag{
+    display: inline-block;
+    border: 1px solid var(--line);
+    padding: 1px 8px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+    margin-right: 4px;
+}
+
+.empty-inventory{
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    color: var(--dim);
+    padding: 20px 0;
+    text-align: center;
+    border: 1px dashed var(--line);
+}
+
+/* ===== PROCEDURE TABLE ===== */
+
+.procedure-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+}
+
+.procedure-table th {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 2px solid var(--fg);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 700;
+}
+
+.procedure-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+}
+
+.procedure-table .proc-group-header td {
+    padding: 14px 8px 6px 8px;
+    border-bottom: 1px solid var(--fg);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--fg);
+}
+
+.procedure-table .proc-group-header .group-reading {
+    font-weight: 400;
+    color: var(--dim);
+    font-size: 12px;
+    margin-left: 16px;
+    letter-spacing: 1px;
+}
+
+.procedure-table .proc-row.even {
+    background: rgba(255,255,255,0.03);
+}
+
+.procedure-table .proc-name-cell {
+    font-family: "Times New Roman", serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.procedure-table .proc-desc-cell {
+    font-size: 11px;
+    color: var(--dim);
+}
+
+.procedure-table .proc-reading-cell {
+    font-size: 12px;
+    color: var(--dim);
+    text-align: center;
+}
+
+.procedure-table .proc-stamp-cell {
+    text-align: center;
+}
+
+.procedure-table .stamp-dot {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--fg);
+    background: var(--bg);
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+    transition: background 0.15s;
+}
+
+.procedure-table .stamp-dot.on {
+    background: var(--fg);
+}
+
+.procedure-table .proc-result-cell {
+    font-size: 12px;
+    color: var(--dim);
+    min-width: 120px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.procedure-table .proc-action-cell {
+    text-align: center;
+}
+
+.procedure-table .roll-btn {
+    background: var(--bg);
+    border: 1px solid var(--fg);
+    color: var(--fg);
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.procedure-table .roll-btn:hover {
+    background: var(--fg);
+    color: var(--bg);
+}
+
+@media (max-width: 768px) {
+    .procedure-table {
+        font-size: 11px;
+    }
+    .procedure-table .proc-name-cell {
+        font-size: 13px;
+    }
+    .procedure-table .proc-result-cell {
+        min-width: 80px;
+        max-width: 100px;
+    }
+    .procedure-table th,
+    .procedure-table td {
+        padding: 6px 4px;
+    }
+}
+
+@media (max-width: 600px){
+    .card-grid{
+        grid-template-columns: 1fr;
+    }
+}

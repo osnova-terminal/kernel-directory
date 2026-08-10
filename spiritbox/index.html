@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SPIRITBOX</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .archive-entry {
+            border: 1px solid var(--line);
+            margin-bottom: 14px;
+        }
+
+        .archive-entry summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 20px 24px;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .archive-entry summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .archive-entry summary::marker {
+            content: "";
+        }
+
+        .entry-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .entry-index {
+            color: var(--dim);
+        }
+
+        .entry-title {
+            color: var(--fg);
+        }
+
+        .entry-class {
+            color: var(--dim);
+        }
+
+        .entry-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-shrink: 0;
+        }
+
+        .entry-status {
+            padding: 4px 9px;
+            border: 1px solid var(--fg);
+        }
+
+        .entry-status.decoded {
+            color: var(--fg);
+        }
+
+        .toggle-icon::before {
+            content: "+";
+        }
+
+        .archive-entry[open] .toggle-icon::before {
+            content: "–";
+        }
+
+        .archive-entry[open] summary {
+            border-bottom: 1px solid var(--line);
+        }
+
+        .entry-body {
+            padding: 28px 24px 32px 24px;
+        }
+
+        .entry-mechanism {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--dim2, #3a3a3a);
+            margin-bottom: 16px;
+        }
+
+        .cipher-text {
+            font-family: "Courier New", monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+            line-height: 2;
+            word-spacing: 14px;
+            white-space: pre-wrap;
+            min-height: 6.5em;
+            color: var(--fg);
+        }
+
+        .cipher-text.decoded {
+            color: var(--fg);
+        }
+
+        .key-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 28px;
+        }
+
+        .key-row input {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--fg);
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+            letter-spacing: 2px;
+            padding: 12px 14px;
+            text-transform: uppercase;
+        }
+
+        .key-row input:focus {
+            outline: none;
+            border-color: var(--fg);
+        }
+
+        .key-row button {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--fg);
+            font-family: "Courier New", monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .key-row button:hover {
+            border-color: var(--fg);
+        }
+
+        .decode-status {
+            margin-top: 14px;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--dim);
+            min-height: 1.4em;
+        }
+
+        .decode-status.decoded {
+            color: var(--dim);
+        }
+
+        .archive-empty {
+            font-family: "Courier New", monospace;
+            font-size: 13px;
+            letter-spacing: 1px;
+            color: var(--dim);
+            text-transform: uppercase;
+        }
+
+        .wheel-shell {
+            margin-top: 28px;
+            border: 1px solid var(--line);
+            padding: 26px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wheel-static {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: .5;
+            background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0px, rgba(255, 255, 255, .025) 1px, transparent 1px, transparent 3px);
+        }
+
+        .wheel-wrap {
+            display: flex;
+            gap: 36px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .wheel {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .wheel-ring {
+            position: absolute;
+            inset: 0;
+        }
+
+        .wheel-outer .wc {
+            position: absolute;
+            font-size: 11px;
+            color: var(--dim);
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+        }
+
+        .wheel-inner {
+            position: absolute;
+            inset: 26px;
+            border: 1px solid var(--fg);
+            border-radius: 50%;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .wheel-inner.dragging {
+            cursor: grabbing;
+        }
+
+        .wheel-inner .wc {
+            position: absolute;
+            font-size: 11px;
+            color: var(--fg);
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            letter-spacing: 2px;
+            color: var(--fg);
+            pointer-events: none;
+        }
+
+        .wheel-readout {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .wheel-readout-label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--dim2, #3a3a3a);
+            margin-bottom: 10px;
+        }
+
+        .wheel-readout-text {
+            font-size: 14px;
+            letter-spacing: 1px;
+            line-height: 1.9;
+            word-spacing: 8px;
+            min-height: 4.5em;
+            color: var(--fg);
+        }
+
+        .spectrum-box {
+            border: 1px solid var(--line);
+            padding: 22px 22px 14px 22px;
+        }
+
+        .spectrum-label {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--dim);
+            text-transform: uppercase;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .spectrum {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 100px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .spec-col {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            height: 100%;
+            align-items: flex-end;
+        }
+
+        .spec-bar {
+            width: 100%;
+            max-width: 5px;
+            background: var(--dim2, #3a3a3a);
+            transition: height 0.3s ease;
+        }
+
+        .spec-bar.top {
+            background: var(--fg);
+        }
+
+        .spectrum-ticks {
+            display: flex;
+            gap: 2px;
+            margin-top: 6px;
+        }
+
+        .spec-tick {
+            flex: 1;
+            text-align: center;
+            font-size: 8px;
+            letter-spacing: 1px;
+            color: var(--dim2, #3a3a3a);
+        }
+
+        @media (max-width: 600px) {
+            .entry-left {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .entry-right {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .wheel-wrap {
+                flex-direction: column;
+            }
+            .wheel {
+                width: 180px;
+                height: 180px;
+            }
+            .wheel-outer .wc {
+                font-size: 9px;
+                width: 12px;
+                height: 12px;
+            }
+            .wheel-inner .wc {
+                font-size: 9px;
+                width: 12px;
+                height: 12px;
+            }
+            .wheel-inner {
+                inset: 20px;
+            }
+            .wheel-center {
+                font-size: 16px;
+            }
+            .cipher-text {
+                font-size: 14px;
+                word-spacing: 8px;
+            }
+            .key-row {
+                flex-wrap: wrap;
+            }
+            .key-row input {
+                min-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <p class="eyebrow">NODE // 005</p>
+        <h1>SPIRITBOX</h1>
+        <div class="whitebox">ULTRABLACK OPERATOR</div>
+        <hr>
+        <div id="archive"></div>
+        <hr>
+        <div class="spectrum-box">
+            <div class="spectrum-label">
+                <span>SIGNAL SPECTRUM</span>
+                <span id="specStatus">n=<span id="specCount"></span></span>
+            </div>
+            <div class="spectrum" id="spectrum"></div>
+            <div class="spectrum-ticks" id="spectrumTicks"></div>
+        </div>
+        <hr>
+        <a class="nav-link" href="../operator-registry">→ OPERATOR REGISTRY</a>
+        <a class="nav-link" href="../">→ KERNEL</a>
+    </main>
+    <script>
+        /* ============ cipher data ============ */
+        const MESSAGES = [{
+            id: "cipher-01",
+            label: "TRANSMISSION 01",
+            classification: "ULTRABLACK",
+            type: "vigenere",
+            ciphertext: "CKACQA YFBKN WVG JOGKG TRHRESF GVZ SWYAOGS HZR OMCVAIS MEAWZPZRG WISMY BSZS"
+        }, {
+            id: "cipher-02",
+            label: "TRANSMISSION 02",
+            classification: "ULTRABLACK",
+            type: "caesar",
+            ciphertext: "ESP DTRYLW HLD YPGPC WZDE TE HLD ZYWJ HLTETYR QZC ESP CTRSE QCPBFPYNJ"
+        }];
+
+        /* ============ shared helpers ============ */
+        function vigDecrypt(text, key) {
+            const keyLetters = key.toUpperCase().split("").filter(c => c >= "A" && c <= "Z");
+            if (keyLetters.length === 0) return null;
+            let ki = 0,
+                out = "";
+            for (const c of text.toUpperCase()) {
+                if (c >= "A" && c <= "Z") {
+                    const shift = keyLetters[ki % keyLetters.length].charCodeAt(0) - 65;
+                    const code = ((c.charCodeAt(0) - 65 - shift) + 26) % 26;
+                    out += String.fromCharCode(code + 65);
+                    ki++;
+                } else out += c;
+            }
+            return out;
+        }
+
+        function caesarDecrypt(text, shift) {
+            let out = "";
+            for (const c of text.toUpperCase()) {
+                if (c >= "A" && c <= "Z") {
+                    const code = ((c.charCodeAt(0) - 65 - shift) + 26) % 26;
+                    out += String.fromCharCode(code + 65);
+                } else out += c;
+            }
+            return out;
+        }
+
+        function lockedView(text) {
+            const letters = text.replace(/[^A-Z]/gi, "").toUpperCase();
+            const blocks = [];
+            for (let i = 0; i < letters.length; i += 5) blocks.push(letters.slice(i, i + 5));
+            const rows = [];
+            for (let i = 0; i < blocks.length; i += 8) rows.push(blocks.slice(i, i + 8).join("  "));
+            return rows.join("\n");
+        }
+
+        function scramble(text) {
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            return text.split("").map(c => {
+                if (c >= "A" && c <= "Z") return Math.random() < 0.65 ? alphabet[Math.floor(Math.random() * 26)] : c;
+                return c;
+            }).join("");
+        }
+
+        const glitchTimers = {};
+
+        function playGlitch(id, finalText) {
+            const el = document.getElementById("display-" + id);
+            if (!el) return;
+            if (glitchTimers[id]) { clearTimeout(glitchTimers[id]);
+                delete glitchTimers[id]; }
+            el.classList.add("shake");
+            let frame = 0;
+            const totalFrames = 3;
+
+            function step() {
+                if (frame < totalFrames) {
+                    el.textContent = scramble(finalText);
+                    frame++;
+                    glitchTimers[id] = setTimeout(step, 45);
+                } else {
+                    el.textContent = finalText;
+                    el.classList.remove("shake");
+                    delete glitchTimers[id];
+                }
+            }
+            step();
+        }
+
+        const idleTimers = {};
+
+        function startIdle(id, ciphertext, isLockedFn) {
+            clearInterval(idleTimers[id]);
+            idleTimers[id] = setInterval(() => {
+                if (!isLockedFn()) return;
+                const el = document.getElementById("display-" + id);
+                if (!el) return;
+                el.textContent = scramble(lockedView(ciphertext));
+            }, 850);
+        }
+
+        /* ============ entry markup ============ */
+        function buildEntryMarkup(msg, index) {
+            const num = String(index + 1).padStart(2, "0");
+            const mechanism = msg.type === "vigenere" ? "MECHANISM // VIGENÈRE — KEY REQUIRED" :
+                "MECHANISM // CAESAR — MANUAL SHIFT WHEEL";
+
+            const bodyControls = msg.type === "vigenere" ?
+                `
+            <div class="key-row">
+                <input id="key-${msg.id}" autocomplete="off" placeholder="ENTER KEY">
+                <button type="button" data-clear="${msg.id}">CLEAR</button>
+            </div>
+            <div class="decode-status" id="status-${msg.id}"></div>
+            ` :
+                `
+            <div class="decode-status" id="status-${msg.id}"></div>
+            <div class="wheel-shell" id="wheelshell-${msg.id}"></div>
+            `;
+
+            return `
+            <summary>
+                <span class="entry-left">
+                    <span class="entry-index">${num}</span>
+                    <span class="entry-title">${msg.label}</span>
+                    <span class="entry-class">${msg.classification}</span>
+                </span>
+                <span class="entry-right">
+                    <span class="entry-status" id="rowstatus-${msg.id}">NOISE</span>
+                    <span class="toggle-icon"></span>
+                </span>
+            </summary>
+            <div class="entry-body">
+                <div class="entry-mechanism">${mechanism}</div>
+                <div class="cipher-text" id="display-${msg.id}"></div>
+                ${bodyControls}
+            </div>
+            `;
+        }
+
+        /* ============ vigenere entries ============ */
+        function renderVigenere(msg) {
+            const display = document.getElementById("display-" + msg.id);
+            const status = document.getElementById("status-" + msg.id);
+            const rowStatus = document.getElementById("rowstatus-" + msg.id);
+            const keyInput = document.getElementById("key-" + msg.id);
+            const key = keyInput.value.trim();
+
+            if (key.length === 0) {
+                playGlitch(msg.id, lockedView(msg.ciphertext));
+                display.classList.remove("decoded");
+                status.textContent = "";
+                status.classList.remove("decoded");
+                rowStatus.textContent = "NOISE";
+                rowStatus.classList.remove("decoded");
+                return;
+            }
+
+            const decoded = vigDecrypt(msg.ciphertext, key);
+            playGlitch(msg.id, decoded);
+            display.classList.add("decoded");
+            status.textContent = "— KEY APPLIED : " + key.toUpperCase() + " —";
+            status.classList.add("decoded");
+            rowStatus.textContent = "SIGNAL";
+            rowStatus.classList.add("decoded");
+        }
+
+        /* ============ caesar entries (lazy wheel) ============ */
+        const ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const wheelState = {};
+
+        function placeRing(container, radius, letters, rotationDeg, center) {
+            container.innerHTML = "";
+            letters.forEach((letter, i) => {
+                const angle = (i / 26) * 360 + rotationDeg - 90;
+                const rad = angle * Math.PI / 180;
+                const x = center + radius * Math.cos(rad);
+                const y = center + radius * Math.sin(rad);
+                const span = document.createElement("span");
+                span.className = "wc";
+                span.textContent = letter;
+                span.style.left = x + "px";
+                span.style.top = y + "px";
+                container.appendChild(span);
+            });
+        }
+
+        function buildWheel(msg) {
+            if (wheelState[msg.id]) return;
+
+            const shell = document.getElementById("wheelshell-" + msg.id);
+            shell.innerHTML = `
+            <div class="wheel-static"></div>
+            <div class="wheel-wrap">
+                <div class="wheel">
+                    <div class="wheel-ring wheel-outer" id="wo-${msg.id}"></div>
+                    <div class="wheel-inner" id="wi-${msg.id}">
+                        <div class="wheel-ring" id="wil-${msg.id}"></div>
+                    </div>
+                    <div class="wheel-center" id="wc-${msg.id}">A</div>
+                </div>
+                <div class="wheel-readout">
+                    <div class="wheel-readout-label">DECODE PREVIEW AT CURRENT OFFSET</div>
+                    <div class="wheel-readout-text" id="wt-${msg.id}"></div>
+                </div>
+            </div>
+            `;
+
+            const wheelOuter = document.getElementById("wo-" + msg.id);
+            const wheelInnerLetters = document.getElementById("wil-" + msg.id);
+            const wheelInner = document.getElementById("wi-" + msg.id);
+            const wheelCenter = document.getElementById("wc-" + msg.id);
+            const wheelText = document.getElementById("wt-" + msg.id);
+            const rowStatus = document.getElementById("rowstatus-" + msg.id);
+            const status = document.getElementById("status-" + msg.id);
+            const display = document.getElementById("display-" + msg.id);
+
+            const OUTER_R = 95;
+            const INNER_R = 72;
+            const CENTER = 110;
+
+            placeRing(wheelOuter, OUTER_R, ALPHA, 0, CENTER);
+
+            let rotation = 0;
+
+            function apply() {
+                wheelInner.style.transform = "rotate(" + rotation + "deg)";
+                placeRing(wheelInnerLetters, INNER_R, ALPHA, 0, CENTER);
+                const shift = (((Math.round(rotation / (360 / 26)) % 26) + 26) % 26);
+                wheelCenter.textContent = ALPHA[shift];
+
+                if (shift === 0) {
+                    playGlitch(msg.id, lockedView(msg.ciphertext));
+                    display.classList.remove("decoded");
+                    wheelText.textContent = "";
+                    status.textContent = "";
+                    status.classList.remove("decoded");
+                    rowStatus.textContent = "NOISE";
+                    rowStatus.classList.remove("decoded");
+                    return;
+                }
+
+                const decoded = caesarDecrypt(msg.ciphertext, shift);
+                playGlitch(msg.id, decoded);
+                display.classList.add("decoded");
+                wheelText.textContent = decoded;
+                status.textContent = "— SHIFT APPLIED : " + shift + " (" + ALPHA[shift] + ") —";
+                status.classList.add("decoded");
+                rowStatus.textContent = "SIGNAL";
+                rowStatus.classList.add("decoded");
+            }
+
+            apply();
+
+            let dragging = false,
+                startAngle = 0,
+                startRotation = 0;
+
+            function angleFromCenter(clientX, clientY) {
+                const rect = wheelInner.parentElement.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                return Math.atan2(clientY - cy, clientX - cx) * 180 / Math.PI;
+            }
+
+            function dragStart(clientX, clientY) {
+                dragging = true;
+                wheelInner.classList.add("dragging");
+                wheelInner.style.transition = "";
+                startAngle = angleFromCenter(clientX, clientY);
+                startRotation = rotation;
+            }
+
+            function dragMove(clientX, clientY) {
+                if (!dragging) return;
+                const current = angleFromCenter(clientX, clientY);
+                rotation = startRotation + (current - startAngle);
+                apply();
+            }
+
+            function dragEnd() {
+                if (!dragging) return;
+                dragging = false;
+                wheelInner.classList.remove("dragging");
+                wheelInner.style.transition = "transform .25s ease";
+                setTimeout(() => { wheelInner.style.transition = ""; }, 260);
+            }
+
+            wheelInner.addEventListener("mousedown", e => dragStart(e.clientX, e.clientY));
+            window.addEventListener("mousemove", e => dragMove(e.clientX, e.clientY));
+            window.addEventListener("mouseup", dragEnd);
+
+            wheelInner.addEventListener("touchstart", e => {
+                const t = e.touches[0];
+                dragStart(t.clientX, t.clientY);
+            }, { passive: true });
+            window.addEventListener("touchmove", e => {
+                if (!dragging) return;
+                const t = e.touches[0];
+                dragMove(t.clientX, t.clientY);
+            }, { passive: true });
+            window.addEventListener("touchend", dragEnd);
+
+            wheelState[msg.id] = {
+                rotation: () => rotation,
+                setShift: (shift) => {
+                    rotation = shift * (360 / 26);
+                    wheelInner.style.transition = "transform .3s ease";
+                    apply();
+                    setTimeout(() => { wheelInner.style.transition = ""; }, 320);
+                }
+            };
+
+            startIdle(msg.id, msg.ciphertext, () => {
+                const shift = (((Math.round(rotation / (360 / 26)) % 26) + 26) % 26);
+                return shift === 0;
+            });
+        }
+
+        /* ============ archive init ============ */
+        document.addEventListener("DOMContentLoaded", () => {
+            const archive = document.getElementById("archive");
+
+            if (MESSAGES.length === 0) {
+                archive.innerHTML = '<p class="archive-empty">NO TRANSMISSIONS ON FILE</p>';
+                return;
+            }
+
+            MESSAGES.forEach((msg, i) => {
+                const entry = document.createElement("details");
+                entry.className = "archive-entry";
+                entry.dataset.id = msg.id;
+                entry.innerHTML = buildEntryMarkup(msg, i);
+                archive.appendChild(entry);
+
+                if (msg.type === "vigenere") {
+                    playGlitch(msg.id, lockedView(msg.ciphertext));
+                    startIdle(msg.id, msg.ciphertext, () => document.getElementById("key-" + msg.id).value.trim()
+                        .length === 0);
+                    document.getElementById("key-" + msg.id).addEventListener("input", () => renderVigenere(msg));
+                } else if (msg.type === "caesar") {
+                    document.getElementById("display-" + msg.id).textContent = lockedView(msg.ciphertext);
+                    entry.addEventListener("toggle", () => {
+                        if (entry.open) buildWheel(msg);
+                    });
+                }
+            });
+
+            archive.addEventListener("click", (e) => {
+                const clearBtn = e.target.closest("[data-clear]");
+                if (clearBtn) {
+                    e.preventDefault();
+                    const id = clearBtn.dataset.clear;
+                    const msg = MESSAGES.find(m => m.id === id);
+                    document.getElementById("key-" + id).value = "";
+                    renderVigenere(msg);
+                    return;
+                }
+            });
+
+            buildSpectrum();
+        });
+
+        /* ============ signal spectrum ============ */
+        function buildSpectrum() {
+            const combined = MESSAGES.map(m => m.ciphertext).join("");
+            const letters = combined.replace(/[^A-Z]/gi, "").toUpperCase();
+            const counts = {};
+            ALPHA.forEach(l => counts[l] = 0);
+            for (const c of letters) counts[c]++;
+            const maxCount = Math.max(...Object.values(counts), 1);
+            document.getElementById("specCount").textContent = letters.length;
+
+            const spectrum = document.getElementById("spectrum");
+            const ticks = document.getElementById("spectrumTicks");
+            spectrum.innerHTML = "";
+            ticks.innerHTML = "";
+
+            ALPHA.forEach((letter, i) => {
+                const col = document.createElement("div");
+                col.className = "spec-col";
+                const bar = document.createElement("div");
+                const base = (counts[letter] / maxCount) * 100;
+                bar.className = "spec-bar" + (counts[letter] === maxCount ? " top" : "");
+                bar.style.height = Math.max(base, 3) + "%";
+                col.appendChild(bar);
+                spectrum.appendChild(col);
+
+                const tick = document.createElement("div");
+                tick.className = "spec-tick";
+                tick.textContent = letter;
+                ticks.appendChild(tick);
+            });
+        }
+    </script>
+</body>
+</html>

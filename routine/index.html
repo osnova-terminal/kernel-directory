@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROUTINE</title>
+<link rel="icon" href="../favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="../style.css">
+<style>
+    :root{
+        --bg:#000;
+        --fg:#fff;
+        --dim:rgba(255,255,255,0.55);
+        --line:rgba(255,255,255,0.22);
+    }
+
+    *{ box-sizing:border-box; }
+
+    html, body{
+        margin:0;
+        padding:0;
+        background:var(--bg);
+        color:var(--fg);
+        font-family:"Times New Roman", Georgia, serif;
+        font-size:18px;
+        line-height:1.7;
+        -webkit-font-smoothing:antialiased;
+    }
+
+    body{ padding-bottom:80px; }
+
+    main{
+        width:min(980px, 92vw);
+        margin:110px auto 80px;
+    }
+
+    .eyebrow{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin:0 0 8px 0;
+    }
+
+    h1{
+        font-family:"Times New Roman", serif;
+        font-size:58px;
+        line-height:0.92;
+        margin:0 0 18px 0;
+        font-weight:550;
+        letter-spacing:1px;
+        transform:scaleY(1.15);
+        transform-origin:left top;
+    }
+
+    .whitebox{
+        background:var(--fg);
+        color:var(--bg);
+        display:inline-block;
+        padding:5px 10px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        font-weight:700;
+    }
+
+    hr{
+        border:none;
+        border-top:1px solid var(--line);
+        margin:30px 0;
+    }
+
+    h2{
+        font-size:19px;
+        margin:0 0 10px 0;
+        font-weight:500;
+        font-style:italic;
+        color:var(--fg);
+    }
+
+    p{
+        margin:0 0 14px 0;
+    }
+
+    .mono{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        line-height:1.8;
+    }
+
+    .terminal-note{
+        margin:14px 0 0;
+        padding:12px 14px;
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        line-height:1.9;
+        color:var(--fg);
+    }
+
+    /* ===== CHAIN RAIL ===== */
+
+    .rail-wrap{
+        margin:20px 0 6px;
+    }
+
+    .rail{
+        display:flex;
+        flex-wrap:wrap;
+        align-items:stretch;
+        gap:0;
+        min-height:96px;
+        border:1px solid var(--line);
+        padding:18px;
+    }
+
+    .rail-empty{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        width:100%;
+    }
+
+    .chain-node{
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+        border:1px solid var(--fg);
+        padding:10px 12px;
+        min-width:150px;
+        max-width:180px;
+        cursor:grab;
+        background:var(--bg);
+        position:relative;
+    }
+
+    .chain-node.dragging{
+        opacity:0.35;
+    }
+
+    .chain-node .cn-code{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1px;
+        font-weight:700;
+        margin-bottom:4px;
+    }
+
+    .chain-node .cn-name{
+        font-family:"Times New Roman", serif;
+        font-size:14px;
+        line-height:1.3;
+        margin-bottom:6px;
+    }
+
+    .chain-node .cn-meta{
+        font-family:"Courier New", monospace;
+        font-size:10.5px;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    .chain-node .cn-controls{
+        display:flex;
+        justify-content:space-between;
+        margin-top:8px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+    }
+
+    .chain-node .cn-controls button{
+        background:none;
+        border:none;
+        color:var(--dim);
+        cursor:pointer;
+        padding:2px 4px;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+    }
+
+    .chain-node .cn-controls button:hover{
+        color:var(--fg);
+    }
+
+    .connector{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        min-width:34px;
+        font-family:"Courier New", monospace;
+        font-size:16px;
+        color:var(--dim);
+    }
+
+    .connector.mismatch{
+        color:var(--fg);
+    }
+
+    .connector.mismatch::after{
+        content:"✕";
+    }
+
+    .connector.ok::after{
+        content:"→";
+    }
+
+    .connector.attached::after{
+        content:"·";
+        font-size:22px;
+    }
+
+    .legend{
+        display:flex;
+        flex-wrap:wrap;
+        gap:22px;
+        margin:10px 0 0;
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    /* ===== STATS / RESULT ===== */
+
+    .stat-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:24px;
+        margin:20px 0 0;
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+    }
+
+    .stat-row strong{
+        color:var(--fg);
+    }
+
+    .result-panel{
+        margin-top:22px;
+        border:1px solid var(--line);
+        padding:20px 22px;
+        min-height:5em;
+    }
+
+    .result-status{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-bottom:8px;
+    }
+
+    .result-name{
+        font-family:"Times New Roman", serif;
+        font-size:26px;
+        letter-spacing:0.5px;
+        min-height:1.2em;
+    }
+
+    .result-name.shake{
+        color:var(--dim);
+    }
+
+    .result-sub{
+        font-family:"Courier New", monospace;
+        font-size:12px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        color:var(--dim);
+        margin-top:8px;
+    }
+
+    /* ===== ACTIONS ===== */
+
+    .action-row{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin:16px 0 0;
+    }
+
+    button.btn, .key-row button{
+        background:var(--bg);
+        color:var(--fg);
+        border:1px solid var(--fg);
+        font-family:"Courier New", monospace;
+        font-size:11.5px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        padding:10px 16px;
+        cursor:pointer;
+    }
+
+    button.btn:hover{
+        background:var(--fg);
+        color:var(--bg);
+    }
+
+    .key-row{
+        display:flex;
+        gap:10px;
+        margin-top:16px;
+        flex-wrap:wrap;
+    }
+
+    .key-row input{
+        flex:1;
+        min-width:220px;
+        background:var(--bg);
+        color:var(--fg);
+        border:1px solid var(--line);
+        font-family:"Courier New", monospace;
+        letter-spacing:1.5px;
+        padding:10px 12px;
+        text-transform:uppercase;
+    }
+
+    .key-row input::placeholder{
+        color:var(--dim);
+        text-transform:uppercase;
+    }
+
+    .manual-note{
+        margin-top:6px;
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+        color:var(--dim);
+    }
+
+    /* ===== DIRECTORY ===== */
+
+    .category-head{
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:3px;
+        text-transform:uppercase;
+        font-weight:700;
+        color:var(--fg);
+        margin:36px 0 16px 0;
+        border-top:1px solid var(--line);
+        padding-top:26px;
+    }
+
+    .category-head-first{
+        border-top:none;
+        padding-top:0;
+        margin-top:6px;
+    }
+
+    .module-grid{
+        display:grid;
+        grid-template-columns:repeat(3, 1fr);
+        gap:14px;
+    }
+
+    .module-card{
+        border:1px solid var(--line);
+        padding:14px 14px 12px;
+        cursor:pointer;
+        background:var(--bg);
+        transition:background 0.15s, color 0.15s;
+        position:relative;
+    }
+
+    .module-card:hover{
+        background:var(--fg);
+        color:var(--bg);
+    }
+
+    .module-card:hover .mc-dim{
+        color:rgba(0,0,0,0.55);
+    }
+
+    .module-card .mcode{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1.5px;
+        text-transform:uppercase;
+        margin:0 0 4px 0;
+        color:inherit;
+    }
+
+    .module-card h3{
+        margin:0 0 8px 0;
+        font-size:15px;
+        font-weight:600;
+        letter-spacing:0.3px;
+        font-style:normal;
+        color:inherit;
+    }
+
+    .module-card .mmeta{
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+        text-transform:uppercase;
+    }
+
+    .mc-dim{ color:var(--dim); }
+
+    .mc-count{
+        position:absolute;
+        top:10px;
+        right:12px;
+        font-family:"Courier New", monospace;
+        font-size:11px;
+        letter-spacing:1px;
+    }
+
+    @media (max-width: 720px){
+        h1{ font-size:42px; }
+        .module-grid{ grid-template-columns:repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px){
+        .module-grid{ grid-template-columns:1fr; }
+    }
+
+    .nav-link{
+        display:block;
+        margin-top:18px;
+        font-family:"Courier New", monospace;
+        font-size:13px;
+        letter-spacing:2px;
+        text-transform:uppercase;
+        border-bottom:1px solid var(--line);
+        color:var(--fg);
+        text-decoration:none;
+        width:max-content;
+    }
+
+    .nav-link:hover{
+        border-bottom-color:var(--fg);
+    }
+</style>
+</head>
+<body>
+<main>
+
+    <p class="eyebrow">NODE // 009</p>
+    <h1>ROUTINE</h1>
+    <div class="whitebox">ULTRABLACK OPERATOR - FORERUNNER TERMINAL</div>
+
+    <div class="terminal-note">
+        SELECT MODULES BELOW TO APPEND THEM TO THE ACTIVE CHAIN.<br>
+        DRAG A CHAIN NODE TO REORDER, OR USE ◂ ▸ / ✕ ON EACH NODE.<br>
+        ALTERNATIVELY, TYPE A SEQUENCE OF CODES DIRECTLY BELOW.<br>
+        THE SYSTEM WILL FLAG ANY MATCH AGAINST THE AUTHORIZED ROUTINE TABLE.
+    </div>
+
+    <hr>
+
+    <h2>Active Chain</h2>
+    <div class="rail-wrap">
+        <div class="rail" id="rail">
+            <div class="rail-empty">NO MODULES ATTACHED</div>
+        </div>
+        <div class="legend">
+            <span>→ SIGNAL ACCEPTED</span>
+            <span>✕ PORT MISMATCH</span>
+            <span>· PASSIVE ATTACHMENT</span>
+        </div>
+    </div>
+
+    <div class="stat-row">
+        <span>CHAIN LOAD: <strong id="statSize">0U</strong></span>
+        <span>MODULES: <strong id="statCount">0</strong></span>
+        <span>PORT INTEGRITY: <strong id="statIntegrity">—</strong></span>
+    </div>
+
+    <div class="result-panel">
+        <div class="result-status" id="resultStatus">STATUS: IDLE — AWAITING MODULE INPUT</div>
+        <div class="result-name" id="resultName"></div>
+        <div class="result-sub" id="resultSub"></div>
+    </div>
+
+    <div class="action-row">
+        <button class="btn" id="clearBtn" type="button">CLEAR CHAIN</button>
+    </div>
+
+    <div class="key-row">
+        <input id="manualInput" autocomplete="off" placeholder="e.g. ESP-D03, SIG-C01, SIG-C03, HFN-N05">
+        <button class="btn" id="buildBtn" type="button">BUILD FROM INPUT</button>
+    </div>
+    <div class="manual-note">CODES SEPARATED BY COMMA OR ARROW. UNRECOGNIZED CODES ARE IGNORED.</div>
+
+    <hr>
+
+    <h2>Module Directory</h2>
+    <p class="mono">Select a module to append it to the active chain</p>
+
+    <div id="directory"></div>
+
+    <hr>
+    <a class="nav-link" href="../module-lattice/">→ MODULE LATTICE</a>
+    <a class="nav-link" href="../forerunner/">→ FORERUNNER</a>
+    <a class="nav-link" href="../spiritbox/">→ SPIRITBOX</a>
+    <a class="nav-link" href="../operator-registry/">→ OPERATOR REGISTRY</a>
+    <a class="nav-link" href="../">→ KERNEL</a>
+
+</main>
+<script src="routine.js"></script>
+</body>
+</html>
