@@ -1408,11 +1408,31 @@
             overflow: hidden;
             mix-blend-mode: normal;
         }
+
+        /* STAMP GLITCH — Devour only. A single oversized block/braille
+           glyph that slams onto a random spot on screen and vanishes,
+           layered above everything on the page, text included. */
+        .stamp-glitch {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            line-height: 1;
+            white-space: pre;
+            color: #3a3a3a;
+            user-select: none;
+            transition: opacity 0.03s linear;
+        }
     </style>
 </head>
 <body>
 
     <div class="ambient-glitch" id="ambientGlitch" aria-hidden="true"></div>
+    <div class="stamp-glitch" id="stampGlitch" aria-hidden="true"></div>
 
     <div class="container">
 
@@ -2454,12 +2474,104 @@
                 tickAmbientFlicker(stage);
             }
 
+            // STAMP GLITCH — Devour only. A single oversized block/braille
+            // glyph slams onto a random spot on screen and vanishes almost
+            // immediately, at an irregular pace, layered under all text.
+            let stampTimer = null;
+            let stampHideTimer = null;
+            // Stamp glitches draw only from box-drawing and braille glyphs —
+            // no block/geometric shapes or alphanumeric symbols.
+            const STAMP_BOX_CHARS = '─│┌┐└┘├┤┬┴┼═║╔╗╚╝╠╣╦╩╬';
+            const STAMP_BRAILLE_CHARS = '⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵⠿⠶⠾⠷⠹';
+            const STAMP_GLYPHS = STAMP_BOX_CHARS + STAMP_BRAILLE_CHARS;
+
+            function stampNoiseLine(len) {
+                let out = '';
+                for (let i = 0; i < len; i++) {
+                    out += STAMP_GLYPHS[Math.floor(Math.random() * STAMP_GLYPHS.length)];
+                }
+                return out;
+            }
+
+            function spawnStamp() {
+                const el = document.getElementById('stampGlitch');
+                if (!el) return;
+
+                // Rotation of stamp kinds — an oversized box-drawing/braille
+                // glyph, plus a stamped line of box-drawing/braille noise text.
+                const kind = Math.random() < 0.55 ? 'glyph' : 'text';
+                let text, size, estWidth, estHeight;
+
+                if (kind === 'glyph') {
+                    const glyphCount = 1 + Math.floor(Math.random() * 2);
+                    text = '';
+                    for (let i = 0; i < glyphCount; i++) {
+                        text += STAMP_GLYPHS[Math.floor(Math.random() * STAMP_GLYPHS.length)];
+                    }
+                    size = 50 + Math.random() * 170;
+                    estWidth = size * glyphCount * 0.9;
+                    estHeight = size;
+                } else {
+                    const lineCount = Math.random() < 0.3 ? 2 : 1;
+                    const lineLens = [];
+                    const lines = [];
+                    for (let i = 0; i < lineCount; i++) {
+                        const len = 6 + Math.floor(Math.random() * 14);
+                        lineLens.push(len);
+                        lines.push(stampNoiseLine(len));
+                    }
+                    text = lines.join('\n');
+                    size = 16 + Math.random() * 26;
+                    estWidth = size * Math.max(...lineLens) * 0.62;
+                    estHeight = size * lineCount * 1.15;
+                }
+
+                const maxTop = Math.max(0, window.innerHeight - estHeight);
+                const maxLeft = Math.max(0, window.innerWidth - estWidth);
+                const top = Math.random() * maxTop;
+                const left = Math.random() * maxLeft;
+                const rot = (Math.random() - 0.5) * 26;
+                const bright = Math.random() < 0.3;
+
+                el.textContent = text;
+                el.style.fontSize = size.toFixed(0) + 'px';
+                el.style.letterSpacing = kind === 'text' ? '2px' : 'normal';
+                el.style.top = top.toFixed(0) + 'px';
+                el.style.left = left.toFixed(0) + 'px';
+                el.style.transform = `rotate(${rot.toFixed(1)}deg)`;
+                el.style.color = bright ? '#ffffff' : '#050505';
+                el.style.opacity = (bright ? 0.4 + Math.random() * 0.3 : 0.55 + Math.random() * 0.3).toFixed(2);
+
+                if (stampHideTimer) clearTimeout(stampHideTimer);
+                stampHideTimer = setTimeout(() => { el.style.opacity = '0'; }, 60 + Math.random() * 90);
+            }
+
+            function tickStamp() {
+                spawnStamp();
+                const nextDelay = 250 + Math.random() * 950;
+                stampTimer = setTimeout(tickStamp, nextDelay);
+            }
+
+            function stopStampGlitch() {
+                if (stampTimer) { clearTimeout(stampTimer); stampTimer = null; }
+                if (stampHideTimer) { clearTimeout(stampHideTimer); stampHideTimer = null; }
+                const el = document.getElementById('stampGlitch');
+                if (el) el.style.opacity = '0';
+            }
+
+            function startStampGlitch() {
+                stopStampGlitch();
+                if (prefersReducedMotion) return;
+                tickStamp();
+            }
+
             function applyStageEffect() {
                 const figureStage = document.getElementById('figureStage');
                 const ambient = document.getElementById('ambientGlitch');
                 if (figureStage) figureStage.classList.remove('disp-feed', 'disp-devour');
                 if (ambient) ambient.classList.remove('level-1', 'level-2');
                 stopAmbientGlitch();
+                stopStampGlitch();
 
                 if (!selectedKindlingId) return;
 
@@ -2471,6 +2583,7 @@
                     if (figureStage) figureStage.classList.add('disp-devour');
                     if (ambient) ambient.classList.add('level-2');
                     startAmbientGlitch(140, 'devour');
+                    startStampGlitch();
                 }
                 // nibble: normal black screen, kindling sigil + calm readout, no ambient static
             }
