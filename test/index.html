@@ -180,9 +180,63 @@
     @media(prefers-reduced-motion:reduce){
         .tier-badge.t3, .rite-sigil-wrap.misfire{animation:none !important;}
     }
+
+    /* ============ CARD SHAKE — tied to each row's own tier ============ */
+    .rite-shake{ display:contents; }
+    .rite-row.ignite-1 .rite-shake > *{ animation:cardJitterLow .55s infinite steps(9); }
+    .rite-row.ignite-2 .rite-shake > *{ animation:cardJitterHigh .32s infinite steps(10); }
+    @keyframes cardJitterLow{
+        0%{transform:translate(0,0) rotate(0deg);} 11%{transform:translate(.6px,-.7px) rotate(-.06deg);}
+        22%{transform:translate(-.8px,.3px) rotate(.09deg);} 33%{transform:translate(.4px,.8px) rotate(-.04deg);}
+        44%{transform:translate(-.9px,-.4px) rotate(.07deg);} 56%{transform:translate(.7px,.5px) rotate(-.1deg);}
+        67%{transform:translate(-.3px,-.9px) rotate(.05deg);} 78%{transform:translate(.8px,.2px) rotate(-.07deg);}
+        89%{transform:translate(-.6px,.6px) rotate(.03deg);} 100%{transform:translate(0,0) rotate(0deg);}
+    }
+    @keyframes cardJitterHigh{
+        0%{transform:translate(0,0) rotate(0deg);} 10%{transform:translate(1.8px,-2.1px) rotate(-.18deg);}
+        20%{transform:translate(-2.4px,.8px) rotate(.25deg);} 30%{transform:translate(1px,2.4px) rotate(-.13deg);}
+        40%{transform:translate(-2.6px,-1.1px) rotate(.21deg);} 50%{transform:translate(2px,1.5px) rotate(-.28deg);}
+        60%{transform:translate(-.8px,-2.7px) rotate(.14deg);} 70%{transform:translate(2.5px,.4px) rotate(-.22deg);}
+        80%{transform:translate(-1.7px,2.2px) rotate(.11deg);} 90%{transform:translate(1px,-1.3px) rotate(-.16deg);}
+        100%{transform:translate(0,0) rotate(0deg);}
+    }
+    @media(prefers-reduced-motion:reduce){
+        .rite-row.ignite-1 .rite-shake > *, .rite-row.ignite-2 .rite-shake > *{ animation:none !important; }
+    }
+
+    /* ============ AMBIENT GLITCH — whole-page braille/box static,
+       intensity driven by how many Rites are Feed/Devour right now ============ */
+    .ambient-glitch{
+        position:fixed; inset:0; z-index:500; pointer-events:none; opacity:0;
+        font-family:var(--font-mono); font-size:11px; line-height:14px; letter-spacing:1px;
+        color:#3a3a3a; white-space:pre; overflow:hidden;
+    }
+
+    /* ============ STAMP GLITCH — Devour only ============ */
+    .stamp-glitch{
+        position:fixed; top:0; left:0; z-index:1000; pointer-events:none; opacity:0;
+        font-family:var(--font-mono); font-weight:700; line-height:1; white-space:pre; color:#3a3a3a;
+        user-select:none; transition:opacity .03s linear;
+    }
+
+    /* ============ GLITCH-IN — register tab switch transition ============ */
+    .rite-list.glitching{ animation:glitchIn .3s steps(1) both; }
+    @keyframes glitchIn{
+        0%{opacity:0; transform:translate(-8px,0) scaleY(1.03); clip-path:inset(0 0 42% 0); filter:contrast(2.2) brightness(1.6) saturate(0);}
+        8%{opacity:1; transform:translate(6px,0); clip-path:inset(18% 0 0 0); filter:contrast(1.8) brightness(1.3) hue-rotate(8deg);}
+        16%{opacity:.85; transform:translate(-5px,0); clip-path:inset(0 0 65% 0); filter:contrast(2.4) brightness(.7);}
+        24%{opacity:1; transform:translate(4px,0); clip-path:inset(48% 0 0 0); filter:contrast(1.4) brightness(1.4);}
+        33%{opacity:.9; transform:translate(-2px,0); clip-path:inset(0 0 12% 0); filter:contrast(1.9) brightness(.85);}
+        45%{opacity:1; transform:translate(2px,0); clip-path:inset(0); filter:contrast(1.2) brightness(1.1);}
+        60%{opacity:1; transform:translate(0,0); clip-path:inset(0); filter:none;}
+        100%{opacity:1; transform:translate(0,0); clip-path:inset(0); filter:none;}
+    }
+    @media(prefers-reduced-motion:reduce){ .rite-list.glitching{ animation:none !important; } }
 </style>
 </head>
 <body>
+<div class="ambient-glitch" id="ambientGlitch" aria-hidden="true"></div>
+<div class="stamp-glitch" id="stampGlitch" aria-hidden="true"></div>
 <div class="container">
 
     <p class="eyebrow">NODE // 018</p>
@@ -565,6 +619,11 @@ function renderKeepChips(){
             activeKeep = on ? btn.dataset.keep : null;
             if (on) btn.classList.add('active');
             renderRows();
+            const list = document.getElementById('riteList');
+            list.classList.remove('glitching');
+            void list.offsetWidth;
+            list.classList.add('glitching');
+            setTimeout(() => list.classList.remove('glitching'), 300);
         });
     });
 }
@@ -598,7 +657,7 @@ function renderRows(){
         const tier = tierState.get(k.id) || 0;
 
         const row = document.createElement('div');
-        row.className = 'rite-row';
+        row.className = 'rite-row' + (tier === 1 ? ' ignite-1' : tier >= 2 ? ' ignite-2' : '');
         row.dataset.id = k.id;
         row.dataset.group = k.group;
 
@@ -606,6 +665,7 @@ function renderRows(){
         const baseLines = segs.map(s => `<line class="sig-base" x1="${s[0].toFixed(1)}" y1="${s[1].toFixed(1)}" x2="${s[2].toFixed(1)}" y2="${s[3].toFixed(1)}"></line>`).join('');
 
         row.innerHTML = `
+            <div class="rite-shake">
             <div class="rite-sigil-col">
                 <div class="rite-sigil-wrap${tier>0?' ignited':''}" data-id="${k.id}">
                     <svg viewBox="0 0 100 88">
@@ -652,6 +712,7 @@ function renderRows(){
                         </div>`;
                     })()}
                 </div>
+            </div>
             </div>
         `;
         list.appendChild(row);
@@ -754,6 +815,7 @@ function escalate(id){
     tier = tier >= 3 ? 1 : tier + 1;
     tierState.set(id, tier);
 
+    const row = document.querySelector(`.rite-row[data-id="${id}"]`);
     const wrap = document.querySelector(`.rite-sigil-wrap[data-id="${id}"]`);
     const badge = document.querySelector(`[data-badge="${id}"]`);
     if (wrap) wrap.classList.add('ignited');
@@ -761,12 +823,174 @@ function escalate(id){
         badge.className = 'tier-badge ' + badgeClassForTier(tier);
         badge.textContent = badgeTextForTier(tier);
     }
+    if (row){
+        row.classList.remove('ignite-1','ignite-2');
+        if (tier === 1) row.classList.add('ignite-1');
+        else if (tier >= 2) row.classList.add('ignite-2');
+    }
     document.querySelectorAll(`.rite-col.self[data-id="${id}"]`).forEach(col => {
         col.classList.toggle('active', Number(col.dataset.tierCol) === tier);
     });
 
     addLog(`BANNED — "${k.title.toUpperCase()}" · SELF · ${STAGE_LABELS[tier-1].toUpperCase()}`);
+    updateGlobalEffects();
 }
+
+/* ============================================================
+   GLOBAL EFFECTS — ambient full-page static and stamp bursts
+   scale with how many Rites are currently Feed/Devour across
+   the whole page, rather than a single selected card.
+   ============================================================ */
+const NOISE_CHARS = '░▒▓█▀▄▌▐▖▗▘▝▚▞■□▪▫◆◇▲△▼▽●○─│┼┤├┬┴╬╫╪⠿⠶⠛⠹⠭⠽⠾⠷#%&*/\\~^';
+function noiseLine(len){
+    let out = '';
+    for (let i = 0; i < len; i++) out += NOISE_CHARS[Math.floor(Math.random() * NOISE_CHARS.length)];
+    return out;
+}
+
+let ambientInterval = null, ambientFlickerTimer = null;
+const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const AMBIENT_TONES = {
+    feed:   { bright:{color:'#a8a8a8', op:[.14,.22]}, mid:{color:'#3a3a3a', op:[.08,.15]}, dark:{color:'#050505', op:[.02,.05]} },
+    devour: { bright:{color:'#ffffff', op:[.28,.44]}, mid:{color:'#3a3a3a', op:[.14,.24]}, dark:{color:'#050505', op:[.04,.09]} }
+};
+
+function fillAmbientGlitch(){
+    const el = document.getElementById('ambientGlitch');
+    if (!el) return;
+    const cols = Math.max(20, Math.floor(window.innerWidth / 8));
+    const rows = Math.max(10, Math.floor(window.innerHeight / 14));
+    const lines = [];
+    for (let r = 0; r < rows; r++) lines.push(noiseLine(cols));
+    el.textContent = lines.join('\n');
+}
+
+function tickAmbientFlicker(stage){
+    const el = document.getElementById('ambientGlitch');
+    if (!el) return;
+    const tones = AMBIENT_TONES[stage];
+    const roll = Math.random();
+    const pick = roll < .16 ? tones.bright : (roll < .4 ? tones.dark : tones.mid);
+    const op = pick.op[0] + Math.random() * (pick.op[1] - pick.op[0]);
+    el.style.color = pick.color;
+    el.style.opacity = op.toFixed(3);
+    const base = stage === 'devour' ? 35 : 80, spread = stage === 'devour' ? 220 : 420;
+    ambientFlickerTimer = setTimeout(() => tickAmbientFlicker(stage), base + Math.random() * spread);
+}
+
+function stopAmbientGlitch(){
+    if (ambientInterval) { clearInterval(ambientInterval); ambientInterval = null; }
+    if (ambientFlickerTimer) { clearTimeout(ambientFlickerTimer); ambientFlickerTimer = null; }
+    const el = document.getElementById('ambientGlitch');
+    if (el) { el.style.opacity = ''; el.style.color = ''; }
+}
+
+function startAmbientGlitch(speedMs, stage){
+    stopAmbientGlitch();
+    fillAmbientGlitch();
+    ambientInterval = setInterval(fillAmbientGlitch, speedMs);
+    const el = document.getElementById('ambientGlitch');
+    if (prefersReducedMotion){
+        if (el){ el.style.color = '#3a3a3a'; el.style.opacity = stage === 'devour' ? '.2' : '.14'; }
+        return;
+    }
+    tickAmbientFlicker(stage);
+}
+
+const STAMP_BOX_CHARS = '─│┌┐└┘├┤┬┴┼═║╔╗╚╝╠╣╦╩╬';
+const STAMP_BRAILLE_CHARS = '⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵⠿⠶⠾⠷';
+const STAMP_GLYPHS = STAMP_BOX_CHARS + STAMP_BRAILLE_CHARS;
+function stampNoiseLine(len){
+    let out = '';
+    for (let i = 0; i < len; i++) out += STAMP_GLYPHS[Math.floor(Math.random() * STAMP_GLYPHS.length)];
+    return out;
+}
+
+let stampTimer = null, stampHideTimer = null;
+function spawnStamp(){
+    const el = document.getElementById('stampGlitch');
+    if (!el) return;
+    const kind = Math.random() < .55 ? 'glyph' : 'text';
+    let text, size, estWidth, estHeight;
+    if (kind === 'glyph'){
+        const glyphCount = 1 + Math.floor(Math.random() * 2);
+        text = '';
+        for (let i = 0; i < glyphCount; i++) text += STAMP_GLYPHS[Math.floor(Math.random() * STAMP_GLYPHS.length)];
+        size = 50 + Math.random() * 170;
+        estWidth = size * glyphCount * .9; estHeight = size;
+    } else {
+        const lineCount = Math.random() < .3 ? 2 : 1;
+        const lineLens = []; const lines = [];
+        for (let i = 0; i < lineCount; i++){ const len = 6 + Math.floor(Math.random() * 14); lineLens.push(len); lines.push(stampNoiseLine(len)); }
+        text = lines.join('\n');
+        size = 16 + Math.random() * 26;
+        estWidth = size * Math.max(...lineLens) * .62; estHeight = size * lineCount * 1.15;
+    }
+    const bgRoll = Math.random();
+    const bgMode = bgRoll < .55 ? 'none' : (bgRoll < .78 ? 'white' : 'black');
+    const padX = kind === 'text' ? size * .32 : size * .14;
+    const padY = kind === 'text' ? size * .22 : size * .1;
+    if (bgMode !== 'none'){ estWidth += padX * 2; estHeight += padY * 2; }
+    const maxTop = Math.max(0, window.innerHeight - estHeight);
+    const maxLeft = Math.max(0, window.innerWidth - estWidth);
+    const top = Math.random() * maxTop, left = Math.random() * maxLeft;
+    const rot = (Math.random() - .5) * 26;
+    const bright = Math.random() < .3;
+
+    el.textContent = text;
+    el.style.fontSize = size.toFixed(0) + 'px';
+    el.style.letterSpacing = kind === 'text' ? '2px' : 'normal';
+    el.style.top = top.toFixed(0) + 'px';
+    el.style.left = left.toFixed(0) + 'px';
+    el.style.transform = `rotate(${rot.toFixed(1)}deg)`;
+
+    if (bgMode === 'white'){
+        el.style.background = '#ffffff'; el.style.border = 'none'; el.style.boxShadow = 'none';
+        el.style.padding = padY.toFixed(0) + 'px ' + padX.toFixed(0) + 'px';
+        el.style.color = '#000000'; el.style.opacity = (.85 + Math.random() * .15).toFixed(2);
+    } else if (bgMode === 'black'){
+        el.style.background = '#000000'; el.style.border = '1px solid rgba(255,255,255,.55)';
+        el.style.boxShadow = '0 0 14px rgba(255,255,255,.15)';
+        el.style.padding = padY.toFixed(0) + 'px ' + padX.toFixed(0) + 'px';
+        el.style.color = '#ffffff'; el.style.opacity = (.85 + Math.random() * .15).toFixed(2);
+    } else {
+        el.style.background = 'transparent'; el.style.border = 'none'; el.style.boxShadow = 'none'; el.style.padding = '0';
+        el.style.color = bright ? '#ffffff' : '#050505';
+        el.style.opacity = (bright ? .4 + Math.random() * .3 : .55 + Math.random() * .3).toFixed(2);
+    }
+    if (stampHideTimer) clearTimeout(stampHideTimer);
+    stampHideTimer = setTimeout(() => { el.style.opacity = '0'; }, 60 + Math.random() * 90);
+}
+
+function tickStamp(){ spawnStamp(); stampTimer = setTimeout(tickStamp, 250 + Math.random() * 950); }
+function stopStampGlitch(){
+    if (stampTimer) { clearTimeout(stampTimer); stampTimer = null; }
+    if (stampHideTimer) { clearTimeout(stampHideTimer); stampHideTimer = null; }
+    const el = document.getElementById('stampGlitch');
+    if (el) el.style.opacity = '0';
+}
+function startStampGlitch(){ stopStampGlitch(); if (!prefersReducedMotion) tickStamp(); }
+
+function updateGlobalEffects(){
+    let feedCount = 0, devourCount = 0;
+    tierState.forEach(t => { if (t === 2) feedCount++; if (t >= 3) devourCount++; });
+
+    if (devourCount > 0){
+        startAmbientGlitch(140, 'devour');
+        startStampGlitch();
+    } else if (feedCount > 0){
+        startAmbientGlitch(420, 'feed');
+        stopStampGlitch();
+    } else {
+        stopAmbientGlitch();
+        stopStampGlitch();
+    }
+}
+
+window.addEventListener('resize', () => {
+    const el = document.getElementById('ambientGlitch');
+    if (el && el.style.opacity && Number(el.style.opacity) > 0) fillAmbientGlitch();
+});
 
 /* ============================================================
    FIXED RITES + LOG
@@ -824,6 +1048,11 @@ function setupTabs(){
             btn.classList.add('active');
             currentReg = btn.dataset.reg;
             renderRows();
+            const list = document.getElementById('riteList');
+            list.classList.remove('glitching');
+            void list.offsetWidth;
+            list.classList.add('glitching');
+            setTimeout(() => list.classList.remove('glitching'), 300);
         });
     });
 }
