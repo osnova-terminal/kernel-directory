@@ -25,13 +25,47 @@
     .subhead{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.05em;color:var(--dim);line-height:1.8;max-width:640px;margin-bottom:1.6rem;}
     .subhead strong{color:var(--fg);}
 
+    /* ============ SIDE-BY-SIDE LAYOUT ============
+       Left column: Live Signal + register tabs + Keep filters + Fixed
+       Rites, sticky, does not scroll with the page.
+       Right column: the Kindling cards themselves, scrolling in their
+       own internal panel so the display stays in view at all times. */
+    .main-grid{
+        display:grid;
+        grid-template-columns: 340px minmax(0,1fr);
+        gap:1.6rem;
+        align-items:start;
+        margin-bottom:1.6rem;
+    }
+    .signal-col{
+        position:sticky;
+        top:1.2rem;
+        display:flex;
+        flex-direction:column;
+        gap:1.2rem;
+        max-height:calc(100vh - 2.4rem);
+        overflow-y:auto;
+        padding-right:.2rem;
+    }
+    .rites-col{min-width:0;}
+    .rite-list-panel{
+        max-height:calc(100vh - 2.4rem);
+        overflow-y:auto;
+        padding-right:.5rem;
+    }
+    @media(max-width:960px){
+        .main-grid{grid-template-columns:1fr;}
+        .signal-col{position:static; max-height:none; overflow-y:visible;}
+        .rite-list-panel{max-height:none; overflow-y:visible; padding-right:0;}
+    }
+
     /* ============ CONTROL BAR ============ */
     .control-bar{
-        position:sticky; top:0; z-index:40;
+        z-index:40;
         background:rgba(0,0,0,.92);
         backdrop-filter:blur(2px);
         border-top:1px solid var(--fg); border-bottom:1px solid var(--fg);
-        display:flex; margin-bottom:1.4rem;
+        display:flex;
     }
     .register-tabs{display:flex; flex:1 1 auto;}
     .reg-tab{
@@ -51,8 +85,8 @@
 
     /* ============ KEEPS — dotted-border filter cards ============ */
     .keeps-label{font-family:var(--font-mono); font-size:.58rem; letter-spacing:.26em; text-transform:uppercase; color:var(--dim); margin-bottom:.6rem;}
-    .keeps-section{margin-bottom:1.6rem;}
-    .keeps-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:.9rem;}
+    .keeps-section{margin-bottom:0;}
+    .keeps-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:.7rem;}
     .keep-card{
         position:relative;
         background-color:#000;
@@ -65,7 +99,7 @@
         background-position:top left, bottom left, top left, top right;
         background-size:18px 1px, 18px 1px, 1px 18px, 1px 18px;
         border:1px solid transparent;
-        padding:.95rem 1rem 1rem;
+        padding:.85rem .8rem .9rem;
         text-align:center;
         cursor:pointer;
         aspect-ratio:1/1;
@@ -77,13 +111,12 @@
         background-color:#fff; background-image:none; border-color:#000;
         --fg:#000; --dim:rgba(0,0,0,.6); --line:rgba(0,0,0,.3);
     }
-    .keep-name{font-family:var(--font-serif); font-size:1rem; font-weight:600; letter-spacing:.02em; color:var(--fg);}
-    .keep-tagline{display:none; font-family:var(--font-mono); font-size:.58rem; letter-spacing:.04em; color:var(--dim); font-style:italic; margin-top:.4rem;}
+    .keep-name{font-family:var(--font-serif); font-size:.92rem; font-weight:600; letter-spacing:.02em; color:var(--fg);}
+    .keep-tagline{display:none; font-family:var(--font-mono); font-size:.54rem; letter-spacing:.04em; color:var(--dim); font-style:italic; margin-top:.4rem;}
     .keep-card.selected .keep-tagline{display:block;}
-    @media(max-width:640px){ .keeps-grid{grid-template-columns:repeat(2,1fr);} }
 
     /* ============ FIXED RITES STRIP ============ */
-    .fixed-strip{border:1px solid var(--line); margin-bottom:1.6rem;}
+    .fixed-strip{border:1px solid var(--line);}
     .fixed-head{
         display:flex; justify-content:space-between; align-items:center; gap:.6rem;
         padding:.5rem .9rem; border-bottom:1px solid var(--line);
@@ -140,6 +173,8 @@
     .tier-badge.t1{color:var(--fg); border-color:var(--dim2);}
     .tier-badge.t2{color:var(--fg); border-color:var(--fg); font-weight:700;}
     .tier-badge.t3{color:var(--fg); border-color:var(--fg); font-weight:700; letter-spacing:.24em;}
+    @keyframes tierBadgeFlash{0%{filter:invert(1);}100%{filter:none;}}
+    .tier-badge.flash{animation:tierBadgeFlash .2s steps(2);}
 
     .keep-note{font-family:var(--font-mono); font-size:.5rem; letter-spacing:.08em; color:var(--dim2); text-transform:uppercase; text-align:center;}
 
@@ -273,15 +308,14 @@
     @media(prefers-reduced-motion:reduce){ .rite-list.glitching{ animation:none !important; } }
 
     /* ============================================================
-       LIVE SIGNAL — the restored CRT display. Non-sticky by design
-       (the old sticky-pin implementation was the actual bug); it
-       just sits in normal flow and reflects whichever Rite was most
-       recently Banned, escalating toward full white inversion as
-       that Rite's tier climbs.
+       LIVE SIGNAL — the restored CRT display. Sits at the top of
+       the sticky sidebar column so it stays visible next to the
+       card list at all times, escalating toward full white
+       inversion as the most recently Banned Rite's tier climbs.
        ============================================================ */
     .signal-label{font-family:var(--font-mono); font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:var(--dim); margin-bottom:.4rem;}
     .signal-frame{
-        border:2px solid #fff; background:#000; position:relative; overflow:hidden; margin-bottom:1.6rem;
+        border:2px solid #fff; background:#000; position:relative; overflow:hidden; cursor:pointer;
     }
     .signal-frame::before{
         content:""; position:absolute; inset:-4px; pointer-events:none; z-index:5;
@@ -291,7 +325,7 @@
     @keyframes scanlineDrift{0%{transform:translateY(0);}100%{transform:translateY(3px);}}
 
     .signal-stage{
-        position:relative; display:block; width:100%; height:min(30vh,220px); background:#000;
+        position:relative; display:block; width:100%; height:min(26vh,210px); background:#000;
     }
     .signal-stage::after{
         content:""; position:absolute; inset:0; pointer-events:none; z-index:6;
@@ -302,7 +336,7 @@
         --fg:#000; --dim:rgba(0,0,0,.6); background:#fff;
     }
 
-    .signal-shake{position:absolute; inset:0; display:flex; flex-direction:row; align-items:stretch;}
+    .signal-shake{position:absolute; inset:0; display:flex; flex-direction:column; align-items:stretch;}
     .signal-stage.disp-feed .signal-shake{animation:dispJitterFeed .5s infinite steps(9);}
     .signal-stage.disp-devour .signal-shake{animation:dispJitterDevour .28s infinite steps(10);}
     @keyframes dispJitterFeed{
@@ -322,7 +356,7 @@
         .signal-stage.disp-feed .signal-shake, .signal-stage.disp-devour .signal-shake{animation:none !important;}
     }
 
-    .signal-glyph{position:relative; flex:0 0 40%; overflow:hidden;}
+    .signal-glyph{position:relative; flex:0 0 58%; overflow:hidden;}
     .signal-glyph svg{width:100%; height:100%; display:block;}
     .signal-glyph svg .seal-line{stroke:var(--fg); stroke-width:1.6; stroke-linecap:round;}
     .signal-glyph svg .seal-decor{stroke:var(--dim2); stroke-width:1;}
@@ -332,10 +366,9 @@
     .signal-divider{flex:0 0 1px; align-self:stretch; background:var(--line);}
     .signal-text{
         position:relative; z-index:9; flex:1 1 auto; display:flex; flex-direction:column; justify-content:center;
-        gap:.4rem; padding:1rem 1.2rem; overflow:hidden; font-family:var(--font-mono);
+        gap:.4rem; padding:.9rem 1rem; overflow:hidden; font-family:var(--font-mono); text-align:center; align-items:center;
     }
-    .sg-category{font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);}
-    .sg-title{font-family:var(--font-serif); font-size:1.3rem; font-weight:600; line-height:1.25; color:var(--fg); min-height:1.3em; overflow-wrap:anywhere;}
+    .sg-title{font-family:var(--font-serif); font-size:1.15rem; font-weight:600; line-height:1.25; color:var(--fg); min-height:1.3em; overflow-wrap:anywhere;}
     .sg-stage{font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);}
 
     .signal-grain{
@@ -359,14 +392,6 @@
         60%{opacity:.5; transform:translate(-3px,-2px);} 80%{opacity:.2; transform:translate(2px,1px);}
         100%{opacity:0; transform:translate(0,0);}
     }
-
-    @media(max-width:640px){
-        .signal-shake{flex-direction:column;}
-        .signal-glyph{flex:0 0 48%;}
-        .signal-divider{flex:0 0 1px; width:auto; height:1px;}
-        .signal-text{padding:.8rem 1rem; text-align:center; align-items:center;}
-        .signal-stage{height:min(42vh,300px);}
-    }
 </style>
 </head>
 <body>
@@ -379,43 +404,52 @@
     <div class="whitebox">ULTRABLACK — DOOMER TERMINAL</div>
     <p class="subhead">Trace a Kindling's sigil to <strong>Ban</strong> it. A clean pass Nibbles it; trace again to push it to Feed, again to Devour. A broken trace misfires — nothing lands, nothing costs you. Every Rite reads in full below, no tapping required.</p>
 
-    <div class="signal-label">Live Signal</div>
-    <div class="signal-frame">
-        <div class="signal-stage" id="signalStage">
-            <div class="signal-shake" id="signalShake">
-                <div class="signal-glyph" id="signalGlyph"></div>
-                <div class="signal-divider"></div>
-                <div class="signal-text">
-                    <span class="sg-category" id="sgCategory"></span>
-                    <span class="sg-title" id="sgTitle"></span>
-                    <span class="sg-stage" id="sgStage"></span>
+    <div class="main-grid">
+        <div class="signal-col">
+            <div>
+                <div class="signal-label">Live Signal</div>
+                <div class="signal-frame">
+                    <div class="signal-stage" id="signalStage">
+                        <div class="signal-shake" id="signalShake">
+                            <div class="signal-glyph" id="signalGlyph"></div>
+                            <div class="signal-divider"></div>
+                            <div class="signal-text">
+                                <span class="sg-title" id="sgTitle"></span>
+                                <span class="sg-stage" id="sgStage"></span>
+                            </div>
+                            <div class="signal-grain"></div>
+                            <div class="signal-noise" id="signalNoise"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="signal-grain"></div>
-                <div class="signal-noise" id="signalNoise"></div>
+            </div>
+
+            <div class="control-bar">
+                <div class="register-tabs" id="registerTabs">
+                    <button class="reg-tab active" data-reg="all">ALL RITES<span class="rt-sub">18</span></button>
+                    <button class="reg-tab" data-reg="brain">HARD LOCK<span class="rt-sub">BRN</span></button>
+                    <button class="reg-tab" data-reg="nerve">RED SHIFT<span class="rt-sub">NRV</span></button>
+                    <button class="reg-tab" data-reg="frame">NEGATIVE BOX<span class="rt-sub">FRM</span></button>
+                </div>
+            </div>
+
+            <div class="keeps-section">
+                <div class="keeps-label">Filter by Keep</div>
+                <div class="keeps-grid" id="keepsGrid"></div>
+            </div>
+
+            <div class="fixed-strip">
+                <div class="fixed-head"><span>Fixed Rites</span><span id="fixedCount">00 Active</span></div>
+                <div class="fixed-body" id="fixedBody"></div>
+            </div>
+        </div>
+
+        <div class="rites-col">
+            <div class="rite-list-panel">
+                <div class="rite-list" id="riteList"></div>
             </div>
         </div>
     </div>
-
-    <div class="control-bar">
-        <div class="register-tabs" id="registerTabs">
-            <button class="reg-tab active" data-reg="all">ALL RITES<span class="rt-sub">18</span></button>
-            <button class="reg-tab" data-reg="brain">HARD LOCK<span class="rt-sub">BRN</span></button>
-            <button class="reg-tab" data-reg="nerve">RED SHIFT<span class="rt-sub">NRV</span></button>
-            <button class="reg-tab" data-reg="frame">NEGATIVE BOX<span class="rt-sub">FRM</span></button>
-        </div>
-    </div>
-
-    <div class="keeps-section">
-        <div class="keeps-label">Filter by Keep</div>
-        <div class="keeps-grid" id="keepsGrid"></div>
-    </div>
-
-    <div class="fixed-strip">
-        <div class="fixed-head"><span>Fixed Rites</span><span id="fixedCount">00 Active</span></div>
-        <div class="fixed-body" id="fixedBody"></div>
-    </div>
-
-    <div class="rite-list" id="riteList"></div>
 
     <div class="sigil-divider" id="dividerSynergy"></div>
     <div class="synergy-section">
@@ -593,6 +627,48 @@ function buildSeal(seed, mode){
         ${ticks}
         <g transform="translate(${TX.toFixed(1)},${TY.toFixed(1)}) scale(${SCALE})">${segLines}${decorRecolor}</g>
     </svg>`;
+}
+
+/* An empty ring frame with nothing traced inside it — the idle
+   state's blank glyph. */
+function buildBlankCircle(){
+    return `<svg viewBox="0 0 300 300">
+        <circle cx="150" cy="150" r="140" class="seal-ring"></circle>
+        <circle cx="150" cy="150" r="108" class="seal-ring"></circle>
+    </svg>`;
+}
+
+/* Draws a seal glyph into a container by animating each stroke's
+   stroke-dashoffset from full length to zero (a "kindling" trace-in)
+   instead of just dropping the finished SVG in place. Rings and
+   ticks fade in behind the strokes as they draw. */
+function paintSeal(container, html){
+    if (!container) return;
+    container.innerHTML = html;
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const lines = [...svg.querySelectorAll('.seal-line')];
+    const decor = [...svg.querySelectorAll('.seal-ring, .seal-tick')];
+    lines.forEach(line => {
+        let len = 40;
+        try { len = line.getTotalLength(); } catch(e){}
+        line.style.strokeDasharray = len;
+        line.style.strokeDashoffset = len;
+    });
+    decor.forEach(el => { el.style.opacity = '0'; });
+
+    requestAnimationFrame(() => {
+        lines.forEach((line,i) => {
+            line.style.transition = `stroke-dashoffset .55s cubic-bezier(.2,.7,.2,1) ${(i*0.018).toFixed(3)}s`;
+            line.style.strokeDashoffset = '0';
+        });
+        decor.forEach((el,i) => {
+            el.style.transition = `opacity .5s ease ${(0.05 + i*0.006).toFixed(3)}s`;
+            el.style.opacity = '1';
+        });
+    });
 }
 
 /* ============================================================
@@ -1007,28 +1083,35 @@ function wireSigilTrace(wrap, k, segs){
 function escalate(id){
     const k = ALL.find(x => x.id === id);
     let tier = tierState.get(id) || 0;
-    tier = tier >= 3 ? 1 : tier + 1;
+    tier = tier >= 3 ? 0 : tier + 1;   // Devour traced again releases it back to Dormant
     tierState.set(id, tier);
 
     const row = document.querySelector(`.rite-row[data-id="${id}"]`);
     const wrap = document.querySelector(`.rite-sigil-wrap[data-id="${id}"]`);
     const badge = document.querySelector(`[data-badge="${id}"]`);
-    if (wrap) wrap.classList.add('ignited');
+    if (wrap) wrap.classList.toggle('ignited', tier > 0);
     if (badge){
         badge.className = 'tier-badge ' + badgeClassForTier(tier);
         badge.textContent = badgeTextForTier(tier);
+        badge.classList.remove('flash'); void badge.offsetWidth; badge.classList.add('flash');
+        setTimeout(() => badge.classList.remove('flash'), 220);
     }
     if (row){
         row.classList.remove('ignite-1','ignite-2','ignite-3');
-        row.classList.add('ignite-' + tier);
+        if (tier > 0) row.classList.add('ignite-' + tier);
     }
     document.querySelectorAll(`.rite-col.self[data-id="${id}"]`).forEach(col => {
         col.classList.toggle('active', Number(col.dataset.tierCol) === tier);
     });
 
-    addLog(`BANNED — "${k.title.toUpperCase()}" · SELF · ${STAGE_LABELS[tier-1].toUpperCase()}`);
-    lastBannedId = id;
-    showSignal(k, tier);
+    if (tier === 0){
+        addLog(`UNBANNED — "${k.title.toUpperCase()}" · RETURNED TO DORMANT`);
+        if (lastBannedId === id){ lastBannedId = null; idleSignal(); }
+    } else {
+        addLog(`BANNED — "${k.title.toUpperCase()}" · SELF · ${STAGE_LABELS[tier-1].toUpperCase()}`);
+        lastBannedId = id;
+        showSignal(k, tier);
+    }
     updateGlobalEffects();
 }
 
@@ -1149,7 +1232,7 @@ function stampNoiseLine(len){
     return out;
 }
 
-let stampTimer = null, stampHideTimer = null;
+let stampTimer = null, stampHideTimer = null, stampDelayMin = 220, stampDelayMax = 850;
 function spawnStamp(){
     const el = document.getElementById('stampGlitch');
     if (!el) return;
@@ -1205,14 +1288,23 @@ function spawnStamp(){
     stampHideTimer = setTimeout(() => { el.style.opacity = '0'; }, 60 + Math.random() * 90);
 }
 
-function tickStamp(){ spawnStamp(); stampTimer = setTimeout(tickStamp, 250 + Math.random() * 950); }
+function tickStamp(){
+    spawnStamp();
+    if (stampDelayMax <= 600 && Math.random() < 0.4) setTimeout(spawnStamp, 40 + Math.random() * 90);
+    stampTimer = setTimeout(tickStamp, stampDelayMin + Math.random() * (stampDelayMax - stampDelayMin));
+}
 function stopStampGlitch(){
     if (stampTimer) { clearTimeout(stampTimer); stampTimer = null; }
     if (stampHideTimer) { clearTimeout(stampHideTimer); stampHideTimer = null; }
     const el = document.getElementById('stampGlitch');
     if (el) el.style.opacity = '0';
 }
-function startStampGlitch(){ stopStampGlitch(); if (!prefersReducedMotion) tickStamp(); }
+function startStampGlitch(min, max){
+    stopStampGlitch();
+    stampDelayMin = min != null ? min : 220;
+    stampDelayMax = max != null ? max : 850;
+    if (!prefersReducedMotion) tickStamp();
+}
 
 function updateGlobalEffects(){
     let feedCount = 0, devourCount = 0;
@@ -1220,10 +1312,10 @@ function updateGlobalEffects(){
 
     if (devourCount > 0){
         startAmbientGlitch(140, 'devour');
-        startStampGlitch();
+        startStampGlitch(110, 480);
     } else if (feedCount > 0){
         startAmbientGlitch(420, 'feed');
-        stopStampGlitch();
+        startStampGlitch(400, 1300);
     } else {
         stopAmbientGlitch();
         stopStampGlitch();
@@ -1260,23 +1352,24 @@ function idleSignal(){
     stopSignalReadout();
     const stage = document.getElementById('signalStage');
     const glyph = document.getElementById('signalGlyph');
-    const cat = document.getElementById('sgCategory');
     const title = document.getElementById('sgTitle');
     const stageLabel = document.getElementById('sgStage');
-    const mode = currentReg === 'all' ? 'brain' : currentReg;
-    const seed = hashString('IDLE_SEAL_' + mode);
     if (stage) stage.classList.remove('disp-feed','disp-devour');
-    if (glyph) glyph.innerHTML = buildSeal(seed, mode);
-    if (cat) cat.textContent = GROUP_LABEL[mode];
-    if (title) title.textContent = 'AWAITING SIGNAL';
-    if (stageLabel) stageLabel.textContent = 'IDLE';
+    if (title) title.textContent = '';
+    if (stageLabel) stageLabel.textContent = '';
+    if (glyph){
+        if (currentReg === 'all'){
+            glyph.innerHTML = buildBlankCircle();
+        } else {
+            paintSeal(glyph, buildSeal(hashString('DOMAIN_' + currentReg), currentReg));
+        }
+    }
 }
 
 function showSignal(k, tier){
     stopSignalReadout();
     const stage = document.getElementById('signalStage');
     const glyph = document.getElementById('signalGlyph');
-    const cat = document.getElementById('sgCategory');
     const title = document.getElementById('sgTitle');
     const stageLabel = document.getElementById('sgStage');
     const seed = k.id * 97 + hashString(k.title);
@@ -1286,8 +1379,7 @@ function showSignal(k, tier){
         if (tier === 2) stage.classList.add('disp-feed');
         if (tier >= 3) stage.classList.add('disp-devour');
     }
-    if (glyph) glyph.innerHTML = buildSeal(seed, k.group);
-    if (cat) cat.textContent = GROUP_LABEL[k.group];
+    paintSeal(glyph, buildSeal(seed, k.group));
     if (stageLabel) stageLabel.textContent = STAGE_LABELS[tier-1].toUpperCase();
 
     const corruptChance = [0.08, 0.4, 0.78][tier-1];
@@ -1359,6 +1451,19 @@ function setupTabs(){
     });
 }
 
+/* Clicking anywhere on the display frame clears the currently-shown
+   Rite from the Live Signal without touching its tier — a manual way
+   to throw the display back to idle. */
+function wireSignalReset(){
+    const frame = document.querySelector('.signal-frame');
+    if (!frame) return;
+    frame.addEventListener('click', () => {
+        if (lastBannedId === null) return;
+        lastBannedId = null;
+        idleSignal();
+    });
+}
+
 function initDividers(){
     const glyph = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" class="sd-mark"></circle><circle cx="12" cy="12" r="1.6" class="sd-dot"></circle><line x1="12" y1="2" x2="12" y2="5.4" class="sd-mark"></line><line x1="12" y1="18.6" x2="12" y2="22" class="sd-mark"></line></svg>`;
     ['dividerSynergy','dividerRiteLog'].forEach(id => {
@@ -1373,6 +1478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderRows();
     renderFixed();
     idleSignal();
+    wireSignalReset();
     document.getElementById('riteLogPanel').innerHTML = '<div class="log-empty">NO RITES BANNED</div>';
     initDividers();
     console.log('🔴 THE 18 KINDLINGS · ULTRABLACK — TRACE BUILD ONLINE');
