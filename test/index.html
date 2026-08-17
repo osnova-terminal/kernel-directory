@@ -157,17 +157,28 @@
         }
 
         /* ============================================================
-           HUD LAYOUT — the two Keeps that aren't wired into a group flank
-           the image panel: Black Nail/Red Salt to the left, Red Bone/
-           Black Thread to the right, each stacked top/bottom.
+           HUD LAYOUT — the original display: tabs + screen centered,
+           with two Keeps flanking each side. The whole block is now
+           position:sticky so it pins to the top of the viewport as
+           the register grids and Ritual Record scroll underneath it —
+           a single sticky element is far more reliable than the old
+           two-column sidebar grid, which depended on breakpoints and
+           row-height quirks to keep it pinned. Below phone width there
+           isn't room to keep it stuck without eating the whole screen,
+           so it unsticks and scrolls normally there.
            ============================================================ */
         .hud-layout {
             display: flex;
             align-items: flex-start;
             justify-content: center;
             gap: 1.1rem;
-            margin: 1rem auto 1.6rem;
             max-width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: #000;
+            padding: 1rem 0 1.2rem;
+            margin: 0 0 0.6rem;
         }
 
         .hud-side {
@@ -182,8 +193,13 @@
             .hud-side { width: 160px; }
         }
 
-        @media (max-width: 900px) {
-            .hud-layout { flex-direction: column; align-items: center; }
+        @media (max-width: 640px) {
+            .hud-layout {
+                flex-direction: column;
+                align-items: center;
+                position: static;
+                padding: 0.6rem 0 1rem;
+            }
             .hud-frame { order: -1; }
             .hud-side-left { order: 0; }
             .hud-side-right { order: 1; }
@@ -193,6 +209,11 @@
                 max-width: 640px;
             }
             .hud-side .keep-slot { flex: 1; }
+        }
+
+        .pinned-panel .hud-panel-body {
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .hud-tabs {
@@ -398,18 +419,9 @@
             filter: brightness(0.72) contrast(1.85) saturate(0);
         }
 
-        /* Bloom pass — a blurred, brightened duplicate of the seal, screen-blended
-           on top to spill light past the edges of bright strokes like a phosphor CRT. */
+        /* Bloom pass — disabled. The seal renders without the glow spill. */
         .ref-image-bloom {
-            z-index: 2;
-            pointer-events: none;
-            mix-blend-mode: screen;
-            opacity: 0.36;
-            filter: brightness(1.45) contrast(1.4) saturate(0) blur(8px);
-        }
-
-        .ref-image-bloom.bloom-strong {
-            opacity: 0.32;
+            display: none;
         }
 
         /* ============================================================
@@ -443,14 +455,9 @@
             opacity: 0.6;
         }
 
-        /* Secondary wider, softer halo layer for extra spread */
+        /* Secondary wider, softer halo layer — disabled along with the bloom pass */
         .figure-stage .bloom-halo {
-            position: absolute;
-            inset: 0;
-            z-index: 3;
-            pointer-events: none;
-            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 38%, transparent 70%);
-            mix-blend-mode: screen;
+            display: none;
         }
 
         /* Glitch / noise sweep shown briefly on tab switch */
@@ -2521,7 +2528,7 @@
             // Stamp glitches draw only from box-drawing and braille glyphs —
             // no block/geometric shapes or alphanumeric symbols.
             const STAMP_BOX_CHARS = '─│┌┐└┘├┤┬┴┼═║╔╗╚╝╠╣╦╩╬';
-            const STAMP_BRAILLE_CHARS = '⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵⠿⠶⠾⠷⠹';
+            const STAMP_BRAILLE_CHARS = '⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵⠿⠶⠾⠷';
             const STAMP_GLYPHS = STAMP_BOX_CHARS + STAMP_BRAILLE_CHARS;
 
             function stampNoiseLine(len) {
@@ -2565,6 +2572,20 @@
                     estHeight = size * lineCount * 1.15;
                 }
 
+                // Background mode — most stamps are bare glyphs on the
+                // transparent page, but a portion get a solid plate behind
+                // them (whitebox: white plate/black glyph, or the inverse:
+                // black plate/white glyph) so the stamps read as varied
+                // "sensor readout" chips rather than uniform noise.
+                const bgRoll = Math.random();
+                const bgMode = bgRoll < 0.55 ? 'none' : (bgRoll < 0.78 ? 'white' : 'black');
+                const padX = kind === 'text' ? size * 0.32 : size * 0.14;
+                const padY = kind === 'text' ? size * 0.22 : size * 0.1;
+                if (bgMode !== 'none') {
+                    estWidth += padX * 2;
+                    estHeight += padY * 2;
+                }
+
                 const maxTop = Math.max(0, window.innerHeight - estHeight);
                 const maxLeft = Math.max(0, window.innerWidth - estWidth);
                 const top = Math.random() * maxTop;
@@ -2578,8 +2599,29 @@
                 el.style.top = top.toFixed(0) + 'px';
                 el.style.left = left.toFixed(0) + 'px';
                 el.style.transform = `rotate(${rot.toFixed(1)}deg)`;
-                el.style.color = bright ? '#ffffff' : '#050505';
-                el.style.opacity = (bright ? 0.4 + Math.random() * 0.3 : 0.55 + Math.random() * 0.3).toFixed(2);
+
+                if (bgMode === 'white') {
+                    el.style.background = '#ffffff';
+                    el.style.border = 'none';
+                    el.style.boxShadow = 'none';
+                    el.style.padding = padY.toFixed(0) + 'px ' + padX.toFixed(0) + 'px';
+                    el.style.color = '#000000';
+                    el.style.opacity = (0.85 + Math.random() * 0.15).toFixed(2);
+                } else if (bgMode === 'black') {
+                    el.style.background = '#000000';
+                    el.style.border = '1px solid rgba(255,255,255,0.55)';
+                    el.style.boxShadow = '0 0 14px rgba(255,255,255,0.15)';
+                    el.style.padding = padY.toFixed(0) + 'px ' + padX.toFixed(0) + 'px';
+                    el.style.color = '#ffffff';
+                    el.style.opacity = (0.85 + Math.random() * 0.15).toFixed(2);
+                } else {
+                    el.style.background = 'transparent';
+                    el.style.border = 'none';
+                    el.style.boxShadow = 'none';
+                    el.style.padding = '0';
+                    el.style.color = bright ? '#ffffff' : '#050505';
+                    el.style.opacity = (bright ? 0.4 + Math.random() * 0.3 : 0.55 + Math.random() * 0.3).toFixed(2);
+                }
 
                 if (stampHideTimer) clearTimeout(stampHideTimer);
                 stampHideTimer = setTimeout(() => { el.style.opacity = '0'; }, 60 + Math.random() * 90);
