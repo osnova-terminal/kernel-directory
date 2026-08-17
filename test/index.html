@@ -232,6 +232,102 @@
         100%{opacity:1; transform:translate(0,0); clip-path:inset(0); filter:none;}
     }
     @media(prefers-reduced-motion:reduce){ .rite-list.glitching{ animation:none !important; } }
+
+    /* ============================================================
+       LIVE SIGNAL — the restored CRT display. Non-sticky by design
+       (the old sticky-pin implementation was the actual bug); it
+       just sits in normal flow and reflects whichever Rite was most
+       recently Banned, escalating toward full white inversion as
+       that Rite's tier climbs.
+       ============================================================ */
+    .signal-label{font-family:var(--font-mono); font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:var(--dim); margin-bottom:.4rem;}
+    .signal-frame{
+        border:2px solid #fff; background:#000; position:relative; overflow:hidden; margin-bottom:1.6rem;
+    }
+    .signal-frame::before{
+        content:""; position:absolute; inset:-4px; pointer-events:none; z-index:5;
+        background:repeating-linear-gradient(to bottom, rgba(0,0,0,.32) 0px, rgba(0,0,0,.32) 1px, transparent 1px, transparent 3px);
+        mix-blend-mode:multiply; animation:scanlineDrift 5s linear infinite;
+    }
+    @keyframes scanlineDrift{0%{transform:translateY(0);}100%{transform:translateY(3px);}}
+
+    .signal-stage{
+        position:relative; display:block; width:100%; height:min(30vh,220px); background:#000;
+    }
+    .signal-stage::after{
+        content:""; position:absolute; inset:0; pointer-events:none; z-index:6;
+        background:radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.18) 80%, rgba(0,0,0,.4) 100%);
+        mix-blend-mode:multiply;
+    }
+    .signal-stage.disp-feed, .signal-stage.disp-devour{
+        --fg:#000; --dim:rgba(0,0,0,.6); background:#fff;
+    }
+
+    .signal-shake{position:absolute; inset:0; display:flex; flex-direction:row; align-items:stretch;}
+    .signal-stage.disp-feed .signal-shake{animation:dispJitterFeed .5s infinite steps(9);}
+    .signal-stage.disp-devour .signal-shake{animation:dispJitterDevour .28s infinite steps(10);}
+    @keyframes dispJitterFeed{
+        0%{transform:translate(0,0);} 12%{transform:translate(1px,-1px);} 24%{transform:translate(-1px,1px);}
+        36%{transform:translate(1px,1px);} 48%{transform:translate(-1px,-1px);} 60%{transform:translate(1px,-1px);}
+        72%{transform:translate(-1px,1px);} 84%{transform:translate(1px,0);} 100%{transform:translate(0,0);}
+    }
+    @keyframes dispJitterDevour{
+        0%{transform:translate(0,0) rotate(0deg);} 10%{transform:translate(4px,-3px) rotate(-.4deg);}
+        20%{transform:translate(-4px,3px) rotate(.5deg);} 30%{transform:translate(3px,4px) rotate(-.3deg);}
+        40%{transform:translate(-5px,-2px) rotate(.45deg);} 50%{transform:translate(4px,3px) rotate(-.5deg);}
+        60%{transform:translate(-3px,-4px) rotate(.3deg);} 70%{transform:translate(5px,1px) rotate(-.4deg);}
+        80%{transform:translate(-4px,3px) rotate(.22deg);} 90%{transform:translate(3px,-3px) rotate(-.3deg);}
+        100%{transform:translate(0,0) rotate(0deg);}
+    }
+    @media(prefers-reduced-motion:reduce){
+        .signal-stage.disp-feed .signal-shake, .signal-stage.disp-devour .signal-shake{animation:none !important;}
+    }
+
+    .signal-glyph{position:relative; flex:0 0 40%; overflow:hidden;}
+    .signal-glyph svg{width:100%; height:100%; display:block;}
+    .signal-glyph svg .seal-line{stroke:var(--fg); stroke-width:1.6; stroke-linecap:round;}
+    .signal-glyph svg .seal-decor{stroke:var(--dim2); stroke-width:1;}
+    .signal-glyph svg .seal-ring{fill:none; stroke:var(--dim2); stroke-width:1;}
+    .signal-glyph svg .seal-tick{stroke:var(--dim2); stroke-width:1;}
+
+    .signal-divider{flex:0 0 1px; align-self:stretch; background:var(--line);}
+    .signal-text{
+        position:relative; z-index:9; flex:1 1 auto; display:flex; flex-direction:column; justify-content:center;
+        gap:.4rem; padding:1rem 1.2rem; overflow:hidden; font-family:var(--font-mono);
+    }
+    .sg-category{font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);}
+    .sg-title{font-family:var(--font-serif); font-size:1.3rem; font-weight:600; line-height:1.25; color:var(--fg); min-height:1.3em; overflow-wrap:anywhere;}
+    .sg-stage{font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);}
+
+    .signal-grain{
+        position:absolute; inset:-4px; pointer-events:none; z-index:4; opacity:.06;
+        background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.6) 0px, transparent 1px, transparent 2px),
+                          repeating-linear-gradient(90deg, rgba(255,255,255,.3) 0px, transparent 1px, transparent 3px);
+        animation:hudGrain .4s steps(2) infinite;
+    }
+    @keyframes hudGrain{0%{transform:translate(0,0);}100%{transform:translate(-2px,1px);}}
+
+    .signal-noise{
+        position:absolute; inset:0; z-index:7; pointer-events:none; opacity:0;
+        background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.5) 0px, rgba(255,255,255,.5) 1px, transparent 1px, transparent 3px),
+                          repeating-linear-gradient(90deg, rgba(255,255,255,.25) 0px, transparent 2px, transparent 5px);
+        mix-blend-mode:screen;
+    }
+    .signal-noise.flashing{animation:glitchNoiseFlash .26s steps(6);}
+    @keyframes glitchNoiseFlash{
+        0%{opacity:.7; transform:translate(0,0);} 15%{opacity:.15; transform:translate(6px,-3px);}
+        30%{opacity:.65; transform:translate(-8px,2px);} 45%{opacity:.1; transform:translate(4px,4px);}
+        60%{opacity:.5; transform:translate(-3px,-2px);} 80%{opacity:.2; transform:translate(2px,1px);}
+        100%{opacity:0; transform:translate(0,0);}
+    }
+
+    @media(max-width:640px){
+        .signal-shake{flex-direction:column;}
+        .signal-glyph{flex:0 0 48%;}
+        .signal-divider{flex:0 0 1px; width:auto; height:1px;}
+        .signal-text{padding:.8rem 1rem; text-align:center; align-items:center;}
+        .signal-stage{height:min(42vh,300px);}
+    }
 </style>
 </head>
 <body>
@@ -243,6 +339,23 @@
     <h1>KINDLINGS</h1>
     <div class="whitebox">ULTRABLACK — DOOMER TERMINAL</div>
     <p class="subhead">Trace a Kindling's sigil to <strong>Ban</strong> it. A clean pass Nibbles it; trace again to push it to Feed, again to Devour. A broken trace misfires — nothing lands, nothing costs you. Every Rite reads in full below, no tapping required.</p>
+
+    <div class="signal-label">Live Signal</div>
+    <div class="signal-frame">
+        <div class="signal-stage" id="signalStage">
+            <div class="signal-shake" id="signalShake">
+                <div class="signal-glyph" id="signalGlyph"></div>
+                <div class="signal-divider"></div>
+                <div class="signal-text">
+                    <span class="sg-category" id="sgCategory"></span>
+                    <span class="sg-title" id="sgTitle"></span>
+                    <span class="sg-stage" id="sgStage"></span>
+                </div>
+                <div class="signal-grain"></div>
+                <div class="signal-noise" id="signalNoise"></div>
+            </div>
+        </div>
+    </div>
 
     <div class="control-bar">
         <div class="register-tabs" id="registerTabs">
@@ -414,6 +527,29 @@ function buildSigil(seed, mode){
     if (mode === 'nerve') return sigilNerve(seed);
     if (mode === 'frame') return sigilBox(seed);
     return sigilOrganic(seed);
+}
+
+/* Large ring-and-tick seal for the Live Signal display, built from
+   the same segment/decor geometry as the per-row sigils, just scaled
+   and framed with an outer ring and tick marks. */
+function buildSeal(seed, mode){
+    const { segs, decor } = buildSigil(seed, mode);
+    const nTicks = 28;
+    let ticks = '';
+    for (let i = 0; i < nTicks; i++){
+        const a = (i / nTicks) * Math.PI * 2;
+        const r1 = 133, r2 = (i % 4 === 0) ? 115 : 123;
+        ticks += `<line x1="${(150+Math.cos(a)*r1).toFixed(1)}" y1="${(150+Math.sin(a)*r1).toFixed(1)}" x2="${(150+Math.cos(a)*r2).toFixed(1)}" y2="${(150+Math.sin(a)*r2).toFixed(1)}" class="seal-tick"></line>`;
+    }
+    const SCALE = 2.6, TX = 150 - 50*SCALE, TY = 150 - 44*SCALE;
+    const segLines = segs.map(s => `<line x1="${s[0].toFixed(1)}" y1="${s[1].toFixed(1)}" x2="${s[2].toFixed(1)}" y2="${s[3].toFixed(1)}" class="seal-line"></line>`).join('');
+    const decorRecolor = decor.replace(/class="sig-decor"/g,'class="seal-decor"').replace(/class="sig-node"/g,'class="seal-decor"');
+    return `<svg viewBox="0 0 300 300">
+        <circle cx="150" cy="150" r="140" class="seal-ring"></circle>
+        <circle cx="150" cy="150" r="108" class="seal-ring"></circle>
+        ${ticks}
+        <g transform="translate(${TX.toFixed(1)},${TY.toFixed(1)}) scale(${SCALE})">${segLines}${decorRecolor}</g>
+    </svg>`;
 }
 
 /* ============================================================
@@ -833,6 +969,8 @@ function escalate(id){
     });
 
     addLog(`BANNED — "${k.title.toUpperCase()}" · SELF · ${STAGE_LABELS[tier-1].toUpperCase()}`);
+    lastBannedId = id;
+    showSignal(k, tier);
     updateGlobalEffects();
 }
 
@@ -993,8 +1131,70 @@ window.addEventListener('resize', () => {
 });
 
 /* ============================================================
-   FIXED RITES + LOG
+   LIVE SIGNAL — shows whichever Rite was most recently Banned.
+   Escalates toward full white inversion and heavier jitter as
+   that Rite's tier climbs; corrupts its own title readout more
+   often the higher the tier goes.
    ============================================================ */
+let lastBannedId = null;
+let signalReadoutTimer = null;
+
+function stopSignalReadout(){
+    if (signalReadoutTimer) { clearTimeout(signalReadoutTimer); signalReadoutTimer = null; }
+}
+
+function flashSignal(){
+    const stage = document.getElementById('signalStage');
+    const noise = document.getElementById('signalNoise');
+    if (stage){ stage.classList.remove('flash'); void stage.offsetWidth; }
+    if (noise){ noise.classList.remove('flashing'); void noise.offsetWidth; noise.classList.add('flashing'); }
+    setTimeout(() => { if (noise) noise.classList.remove('flashing'); }, 280);
+}
+
+function idleSignal(){
+    stopSignalReadout();
+    const stage = document.getElementById('signalStage');
+    const glyph = document.getElementById('signalGlyph');
+    const cat = document.getElementById('sgCategory');
+    const title = document.getElementById('sgTitle');
+    const stageLabel = document.getElementById('sgStage');
+    const mode = currentReg === 'all' ? 'brain' : currentReg;
+    const seed = hashString('IDLE_SEAL_' + mode);
+    if (stage) stage.classList.remove('disp-feed','disp-devour');
+    if (glyph) glyph.innerHTML = buildSeal(seed, mode);
+    if (cat) cat.textContent = GROUP_LABEL[mode];
+    if (title) title.textContent = 'AWAITING SIGNAL';
+    if (stageLabel) stageLabel.textContent = 'IDLE';
+}
+
+function showSignal(k, tier){
+    stopSignalReadout();
+    const stage = document.getElementById('signalStage');
+    const glyph = document.getElementById('signalGlyph');
+    const cat = document.getElementById('sgCategory');
+    const title = document.getElementById('sgTitle');
+    const stageLabel = document.getElementById('sgStage');
+    const seed = k.id * 97 + hashString(k.title);
+
+    if (stage){
+        stage.classList.remove('disp-feed','disp-devour');
+        if (tier === 2) stage.classList.add('disp-feed');
+        if (tier >= 3) stage.classList.add('disp-devour');
+    }
+    if (glyph) glyph.innerHTML = buildSeal(seed, k.group);
+    if (cat) cat.textContent = GROUP_LABEL[k.group];
+    if (stageLabel) stageLabel.textContent = STAGE_LABELS[tier-1].toUpperCase();
+
+    const corruptChance = [0.08, 0.4, 0.78][tier-1];
+    const tickDelay = [900, 320, 130][tier-1];
+    function tick(){
+        if (!title || lastBannedId !== k.id) return;
+        title.textContent = Math.random() < corruptChance ? noiseLine(Math.min(24, k.title.length + Math.floor(Math.random()*5))) : k.title;
+        signalReadoutTimer = setTimeout(tick, tickDelay + Math.random()*150);
+    }
+    tick();
+    flashSignal();
+}
 function togglePin(key, title, tag){
     if (pinned.has(key)){
         pinned.delete(key);
@@ -1048,6 +1248,7 @@ function setupTabs(){
             btn.classList.add('active');
             currentReg = btn.dataset.reg;
             renderRows();
+            if (lastBannedId === null) idleSignal();
             const list = document.getElementById('riteList');
             list.classList.remove('glitching');
             void list.offsetWidth;
@@ -1070,6 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     renderRows();
     renderFixed();
+    idleSignal();
     document.getElementById('riteLogPanel').innerHTML = '<div class="log-empty">NO RITES BANNED</div>';
     initDividers();
     console.log('🔴 THE 18 KINDLINGS · ULTRABLACK — TRACE BUILD ONLINE');
