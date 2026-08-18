@@ -197,6 +197,8 @@
     }
     .rite-col.self.active .col-head{color:#fff; border-bottom-color:var(--fg);}
     .rite-col.self.active{background:rgba(255,255,255,.055); box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);}
+    .rite-col.self{cursor:pointer;}
+    .rite-col.self:hover{background:rgba(255,255,255,.03);}
     .col-effect{font-size:.8rem; line-height:1.65; margin-bottom:.5rem;}
     .col-demand{font-size:.72rem; line-height:1.6; color:var(--dim); font-style:italic;}
     .col-demand::before{content:"Demand — "; color:var(--dim2); font-style:normal;}
@@ -315,11 +317,12 @@
        ============================================================ */
     .signal-label{font-family:var(--font-mono); font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:var(--dim); margin-bottom:.4rem;}
     .signal-frame{
+        --dim: rgba(255,255,255,.63); --dim2: rgba(255,255,255,.42);
         border:2px solid #fff; background:#000; position:relative; overflow:hidden; cursor:pointer;
     }
     .signal-frame::before{
         content:""; position:absolute; inset:-4px; pointer-events:none; z-index:5;
-        background:repeating-linear-gradient(to bottom, rgba(0,0,0,.32) 0px, rgba(0,0,0,.32) 1px, transparent 1px, transparent 3px);
+        background:repeating-linear-gradient(to bottom, rgba(0,0,0,.37) 0px, rgba(0,0,0,.37) 1px, transparent 1px, transparent 3px);
         mix-blend-mode:multiply; animation:scanlineDrift 5s linear infinite;
     }
     @keyframes scanlineDrift{0%{transform:translateY(0);}100%{transform:translateY(3px);}}
@@ -329,7 +332,7 @@
     }
     .signal-stage::after{
         content:""; position:absolute; inset:0; pointer-events:none; z-index:6;
-        background:radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.18) 80%, rgba(0,0,0,.4) 100%);
+        background:radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.22) 80%, rgba(0,0,0,.47) 100%);
         mix-blend-mode:multiply;
     }
     .signal-stage.disp-feed, .signal-stage.disp-devour{
@@ -506,54 +509,76 @@ function hashString(str){
 }
 
 /* ============================================================
-   SIGIL GEOMETRY — every sigil is now built as a literal set of
-   line segments (straight lines only) so a pointer trace can be
-   hit-tested against it directly. Decoration (nodes, ticks, the
-   ground line) is drawn separately and is not part of the trace.
+   SIGIL GEOMETRY — every sigil is built as a literal set of
+   straight line segments so a pointer trace can be hit-tested
+   against it directly. Decoration (nodes, ticks, the ground line)
+   is drawn separately and is not part of the trace.
+
+   Each register gets its OWN geometric family — a fixed design
+   philosophy that every Kindling in that group follows, varied
+   only by seed:
+
+     BRN · Hard Lock    → WHEEL   — a hub with spokes radiating to
+                           a ring of points, some tips chorded
+                           together. Reads as a lock/dial mechanism.
+     NRV · Red Shift     → PULSE   — a single sequential jagged
+                           trace, left to right, like a nerve spike
+                           or EKG line. Never re-visits a point.
+     FRM · Negative Box  → BOX     — a quadrilateral with a bisecting
+                           diagonal. Reads as a frame/container.
    ============================================================ */
-function sigilOrganic(seed){
+
+/* BRN · LOCK — a single continuous angular trace: an open random
+   walk with turns that mostly alternate direction (a consistent
+   zigzag cadence, not a fully random one) so every Kindling in this
+   register — and the idle domain glyph itself, built by this same
+   function — reads as the same family of jagged circuit trace. */
+function sigilBrain(seed){
     const rng = mulberry32(seed);
-    const cx = 50, cy = 44, R = 33;
-    const n = 6 + Math.floor(rng() * 3);
-    const pts = [];
+    const n = 6 + Math.floor(rng() * 2); // 6–7 segments, kept tight for consistency
+    let x = 0, y = 0, angle = rng() * Math.PI * 2;
+    const raw = [[0,0]];
+    let dir = rng() < 0.5 ? 1 : -1;
     for (let i = 0; i < n; i++){
-        const a = (i / n) * Math.PI * 2 + (rng() - 0.5) * 0.4;
-        const r = R * (0.68 + rng() * 0.32);
-        pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+        const turn = (Math.PI * 0.32 + rng() * Math.PI * 0.24) * dir; // ~58°–101°, alternating
+        angle += turn;
+        dir = (rng() < 0.85) ? -dir : dir; // mostly alternates; rare repeat keeps it from feeling mechanical
+        const len = 10 + rng() * 6;
+        x += Math.cos(angle) * len;
+        y += Math.sin(angle) * len;
+        raw.push([x,y]);
     }
-    const order = [...Array(n).keys()];
-    for (let i = order.length - 1; i > 0; i--){
-        const j = Math.floor(rng() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-    }
-    const visit = 4 + Math.floor(rng() * (n - 2));
-    const path = order.slice(0, visit);
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+    raw.forEach(([px,py]) => { minX=Math.min(minX,px); maxX=Math.max(maxX,px); minY=Math.min(minY,py); maxY=Math.max(maxY,py); });
+    const w = Math.max(maxX-minX, 0.001), h = Math.max(maxY-minY, 0.001);
+    const scale = Math.min(52/w, 44/h);
+    const cx = 50, cy = 44;
+    const offX = cx - ((minX+maxX)/2)*scale, offY = cy - ((minY+maxY)/2)*scale;
+    const pts = raw.map(([px,py]) => [px*scale+offX, py*scale+offY]);
+
     const segs = [];
-    for (let i = 1; i < path.length; i++) segs.push([...pts[path[i-1]], ...pts[path[i]]]);
-    if (rng() < 0.5) segs.push([...pts[path[path.length-1]], ...pts[path[0]]]);
+    for (let i = 1; i < pts.length; i++) segs.push([pts[i-1][0], pts[i-1][1], pts[i][0], pts[i][1]]);
 
     let decor = '';
-    path.forEach(idx => {
-        const [x,y] = pts[idx];
-        if (rng() < 0.3) decor += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.6" class="sig-node"></circle>`;
-        else if (rng() < 0.45){
-            const a = rng() * Math.PI * 2;
-            decor += `<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(x+Math.cos(a)*5).toFixed(1)}" y2="${(y+Math.sin(a)*5).toFixed(1)}" class="sig-decor"></line>`;
-        }
-    });
-    const gY = cy + R * 0.98, gH = R * (0.42 + rng() * 0.22);
+    pts.forEach((p,i) => { if (i > 0 && i < pts.length - 1 && rng() < 0.35) decor += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.4" class="sig-node"></circle>`; });
+    const gY = cy + 33, gH = 14 + rng() * 8;
     decor += `<line x1="${(cx-gH).toFixed(1)}" y1="${gY.toFixed(1)}" x2="${(cx+gH).toFixed(1)}" y2="${gY.toFixed(1)}" class="sig-decor"></line>`;
     return { segs, decor };
 }
 
+/* NRV · BLINK — scattered waypoints across the whole field, visited
+   in a shuffled order as a single open chain. Random placement plus
+   a shuffled visit order makes the connecting lines cross and jump
+   erratically — reads as motion touching many places — while still
+   being one connected trace, not disconnected marks. */
 function sigilNerve(seed){
     const rng = mulberry32(seed);
-    const cx = 50, cy = 44, R = 33;
-    const n = 5 + Math.floor(rng() * 3);
+    const cx = 50, cy = 44, R = 32;
+    const n = 5 + Math.floor(rng() * 4); // 5–8 scattered waypoints
     const pts = [];
     for (let i = 0; i < n; i++){
-        const a = (i / n) * Math.PI * 2 + (rng() - 0.5) * 0.35;
-        const r = R * (0.62 + rng() * 0.35);
+        const a = rng() * Math.PI * 2;
+        const r = R * (0.15 + rng() * 0.82);
         pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
     }
     const order = [...Array(n).keys()];
@@ -561,22 +586,20 @@ function sigilNerve(seed){
         const j = Math.floor(rng() * (i + 1));
         [order[i], order[j]] = [order[j], order[i]];
     }
-    const visit = Math.min(n, 4 + Math.floor(rng() * Math.max(1, n - 3)));
-    const path = order.slice(0, visit);
     const segs = [];
-    for (let i = 1; i < path.length; i++) segs.push([...pts[path[i-1]], ...pts[path[i]]]);
-    if (rng() < 0.55) segs.push([...pts[path[path.length-1]], ...pts[path[0]]]);
+    for (let i = 1; i < n; i++){
+        const a = pts[order[i-1]], b = pts[order[i]];
+        segs.push([a[0], a[1], b[0], b[1]]);
+    }
 
     let decor = '';
-    path.forEach(idx => {
-        const [x,y] = pts[idx];
-        if (rng() < 0.3) decor += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.3" class="sig-node"></circle>`;
-    });
-    const gY = cy + R * 0.98, gH = R * (0.38 + rng() * 0.2);
+    order.forEach((idx,i) => { if (i > 0 && i < n - 1 && rng() < 0.35) decor += `<circle cx="${pts[idx][0].toFixed(1)}" cy="${pts[idx][1].toFixed(1)}" r="1.3" class="sig-node"></circle>`; });
+    const gY = cy + R * 0.98, gH = R * (0.4 + rng() * 0.2);
     decor += `<line x1="${(cx-gH).toFixed(1)}" y1="${gY.toFixed(1)}" x2="${(cx+gH).toFixed(1)}" y2="${gY.toFixed(1)}" class="sig-decor"></line>`;
     return { segs, decor };
 }
 
+/* FRM · BOX — quadrilateral frame with a bisecting diagonal */
 function sigilBox(seed){
     const rng = mulberry32(seed);
     const cx = 50, cy = 44;
@@ -603,7 +626,7 @@ function sigilBox(seed){
 function buildSigil(seed, mode){
     if (mode === 'nerve') return sigilNerve(seed);
     if (mode === 'frame') return sigilBox(seed);
-    return sigilOrganic(seed);
+    return sigilBrain(seed);
 }
 
 /* Large ring-and-tick seal for the Live Signal display, built from
@@ -991,7 +1014,17 @@ function renderRows(){
     });
 
     list.querySelectorAll('.col-pin').forEach(btn => {
-        btn.addEventListener('click', () => togglePin(btn.dataset.pin, btn.dataset.title, btn.dataset.tag));
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePin(btn.dataset.pin, btn.dataset.title, btn.dataset.tag);
+        });
+    });
+
+    list.querySelectorAll('.rite-col.self').forEach(col => {
+        col.addEventListener('click', (e) => {
+            if (e.target.closest('button')) return;
+            selectTier(Number(col.dataset.id), Number(col.dataset.tierCol));
+        });
     });
 }
 
@@ -1080,15 +1113,12 @@ function wireSigilTrace(wrap, k, segs){
     wrap.addEventListener('pointercancel', finish);
 }
 
-function escalate(id){
-    const k = ALL.find(x => x.id === id);
-    let tier = tierState.get(id) || 0;
-    tier = tier >= 3 ? 0 : tier + 1;   // Devour traced again releases it back to Dormant
-    tierState.set(id, tier);
+function applyTier(k, tier){
+    tierState.set(k.id, tier);
 
-    const row = document.querySelector(`.rite-row[data-id="${id}"]`);
-    const wrap = document.querySelector(`.rite-sigil-wrap[data-id="${id}"]`);
-    const badge = document.querySelector(`[data-badge="${id}"]`);
+    const row = document.querySelector(`.rite-row[data-id="${k.id}"]`);
+    const wrap = document.querySelector(`.rite-sigil-wrap[data-id="${k.id}"]`);
+    const badge = document.querySelector(`[data-badge="${k.id}"]`);
     if (wrap) wrap.classList.toggle('ignited', tier > 0);
     if (badge){
         badge.className = 'tier-badge ' + badgeClassForTier(tier);
@@ -1100,19 +1130,36 @@ function escalate(id){
         row.classList.remove('ignite-1','ignite-2','ignite-3');
         if (tier > 0) row.classList.add('ignite-' + tier);
     }
-    document.querySelectorAll(`.rite-col.self[data-id="${id}"]`).forEach(col => {
+    document.querySelectorAll(`.rite-col.self[data-id="${k.id}"]`).forEach(col => {
         col.classList.toggle('active', Number(col.dataset.tierCol) === tier);
     });
 
     if (tier === 0){
         addLog(`UNBANNED — "${k.title.toUpperCase()}" · RETURNED TO DORMANT`);
-        if (lastBannedId === id){ lastBannedId = null; idleSignal(); }
+        if (lastBannedId === k.id){ lastBannedId = null; idleSignal(); }
     } else {
         addLog(`BANNED — "${k.title.toUpperCase()}" · SELF · ${STAGE_LABELS[tier-1].toUpperCase()}`);
-        lastBannedId = id;
+        lastBannedId = k.id;
         showSignal(k, tier);
     }
     updateGlobalEffects();
+}
+
+function escalate(id){
+    const k = ALL.find(x => x.id === id);
+    let tier = tierState.get(id) || 0;
+    tier = tier >= 3 ? 0 : tier + 1;   // Devour traced again releases it back to Dormant
+    applyTier(k, tier);
+}
+
+/* Direct tier pick — clicking a Nibble/Feed/Devour column jumps
+   straight to that tier; clicking the already-active tier again
+   deselects it back to Dormant. */
+function selectTier(id, target){
+    const k = ALL.find(x => x.id === id);
+    const cur = tierState.get(id) || 0;
+    const tier = (cur === target) ? 0 : target;
+    applyTier(k, tier);
 }
 
 /* ============================================================
