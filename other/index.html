@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OTHERGRADE // NOTCH_CHANNEL</title>
+<style>
+  :root{
+    --bg:#000000; --fg:#ffffff; --dim:#7f7f7f; --dimmer:#3c3c3c; --line:#5a5a5a;
+    --red:#ff3b3b; --cyan:#5be3ff; --grn:#7cffb0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#0c0c0c;min-height:100vh;
+    font-family:"Courier New",Courier,monospace;color:var(--fg);}
+  ::selection{background:#fff;color:#000;}
+
+  .device{max-width:1180px;margin:20px auto;padding:8px 8px 12px;
+    background:linear-gradient(180deg,#cfcfcf,#8f8f8f 4px,#3a3a3a 6px,#161616 8px);}
+  .topstrip{height:8px;margin-bottom:7px;
+    background:repeating-linear-gradient(45deg,#e9e9e9 0 2px,#9c9c9c 2px 4px);}
+  .knob{width:10px;height:10px;border-radius:50%;background:#111;border:1.5px solid #999;
+    margin:0 0 -3px 12px;}
+
+  .screen{background:#000;position:relative;overflow:hidden;}
+  .screen::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,255,.028) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay;}
+
+  .layout{display:flex;}
+  .rail{width:18px;flex-shrink:0;border-right:1px solid var(--dimmer);
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:10px 0;}
+  .rail .vert{writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:3px;font-size:9px;color:var(--dim);}
+  .rail .dot{width:4px;height:4px;border:1px solid var(--dim);border-radius:50%;}
+
+  .main{flex:1;min-width:0;}
+
+  .codelines{padding:7px 12px 5px;font-size:10.5px;color:var(--dim);border-bottom:1px solid var(--dimmer);}
+  .codelines div{white-space:pre;}
+
+  .readout{display:flex;align-items:stretch;border-bottom:1px solid var(--dimmer);flex-wrap:wrap;}
+  .battery{display:flex;align-items:center;padding:9px 12px;border-right:1px solid var(--dimmer);}
+  .bignum{font-weight:bold;font-size:30px;letter-spacing:1px;padding:5px 14px;
+    border-right:1px solid var(--dimmer);white-space:nowrap;
+    text-shadow:1.3px 0 rgba(255,40,60,.5), -1.3px 0 rgba(60,220,255,.5);}
+  .bignum .neg{color:var(--dim);font-size:17px;margin-left:9px;text-shadow:none;}
+  .hatchbar{flex:1;min-width:150px;position:relative;border-right:1px solid var(--dimmer);
+    background:repeating-linear-gradient(45deg,#161616 0 3px,#000 3px 6px);overflow:hidden;}
+  .hatchbar-fill{position:absolute;inset:0 auto 0 0;height:100%;
+    background:repeating-linear-gradient(45deg,#fff 0 3px,#bbb 3px 6px);width:0%;transition:width .5s ease;}
+  .hatchbar-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:9.5px;letter-spacing:1px;mix-blend-mode:difference;color:#fff;}
+  .idtag{padding:9px 12px;font-size:12.5px;letter-spacing:.5px;white-space:nowrap;
+    text-shadow:1px 0 rgba(255,40,60,.45), -1px 0 rgba(60,220,255,.45);}
+
+  .subrow{padding:6px 12px;font-size:9.5px;letter-spacing:1px;color:var(--dim);
+    border-bottom:1px solid var(--dimmer);display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+  .status-kalma{color:var(--grn);}
+
+  .toolbar{display:flex;gap:7px;padding:9px 12px;border-bottom:1px solid var(--dimmer);flex-wrap:wrap;align-items:center;}
+  .toolbar button{background:transparent;border:1px solid var(--line);color:var(--fg);font-family:"Courier New",monospace;
+    font-size:10.5px;padding:6px 10px;cursor:pointer;}
+  .toolbar button:hover{background:var(--fg);color:#000;}
+  .toolbar input[type=number]{width:56px;background:#000;border:1px solid var(--line);color:var(--fg);
+    font-family:"Courier New",monospace;padding:6px;font-size:10.5px;}
+  .toolbar .spacer{flex:1;}
+  .toolbar .reset{color:var(--dim);border-color:var(--dimmer);}
+
+  .section-label{padding:12px 12px 2px;font-family:"Times New Roman",serif;font-size:13px;letter-spacing:3px;
+    text-transform:uppercase;transition:color .5s, opacity .5s;}
+  .section-label.locked-tier{color:var(--dimmer);opacity:.6;}
+  .section-label.unlocked-tier{color:var(--fg);opacity:1;}
+
+  .tier-connector{display:flex;justify-content:center;padding:2px 0;}
+  .tier-connector span{width:1px;height:22px;background:var(--dimmer);position:relative;display:block;}
+  .tier-connector span::before,.tier-connector span::after{content:"";position:absolute;left:50%;
+    width:4px;height:4px;border:1px solid var(--dimmer);border-radius:50%;transform:translateX(-50%);}
+  .tier-connector span::before{top:-2px;} .tier-connector span::after{bottom:-2px;}
+  .tier-connector.filled span{background:var(--fg);}
+  .tier-connector.filled span::before,.tier-connector.filled span::after{background:var(--fg);border-color:var(--fg);}
+
+  .notch-track{display:flex;gap:5px;padding:2px 12px 12px;flex-wrap:wrap;}
+  .notch-tick{width:16px;height:16px;border:1px solid var(--dimmer);display:flex;align-items:center;justify-content:center;
+    font-size:8px;color:var(--dimmer);transition:all .3s;flex-shrink:0;}
+  .notch-tick.available{border-color:var(--fg);color:var(--fg);animation:pulseborder 1.6s infinite;}
+  .notch-tick.carved{background:var(--fg);border-color:var(--fg);color:#000;}
+
+  @keyframes popIn{
+    from{opacity:0; transform:translateY(10px) scale(.94);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+  .reveal{animation:popIn .5s ease both;}
+
+  .section-sub{padding:0 12px 8px;font-size:10px;color:var(--dim);letter-spacing:.5px;}
+  .legend{padding:0 12px 8px;font-size:9px;color:var(--dimmer);letter-spacing:.5px;}
+  .legend .swatch{display:inline-block;width:9px;height:9px;vertical-align:-1px;margin-right:3px;}
+  .legend .sw-i{background:#fff;}
+  .legend .sw-o{background:#000;border:1px dotted #fff;}
+  .legend .sw-lock{background:#000;border:1px dotted var(--dimmer);}
+
+  .channel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;padding:0 12px 16px;}
+
+  .slot{display:flex;flex-direction:column;}
+  .slot-label{font-size:9px;color:var(--dim);letter-spacing:1px;padding-bottom:6px;display:flex;justify-content:space-between;}
+  .slot-label.on{color:var(--fg);}
+
+  .pair-row{display:flex;align-items:stretch;}
+
+  .pcard{flex:1;min-width:0;padding:10px 11px;display:flex;flex-direction:column;justify-content:center;
+    gap:4px;cursor:pointer;position:relative;min-height:118px;transition:outline-color .15s, box-shadow .15s;}
+  .pcard .h-name{font-size:12px;font-weight:bold;letter-spacing:.5px;}
+  .pcard .h-desc{font-size:9px;line-height:1.35;opacity:.85;}
+  .pcard .h-tag{font-size:8px;letter-spacing:1px;margin-top:2px;opacity:.7;}
+
+  .pcard.i-card{background:#fff;color:#000;border:1px solid #000;}
+  .pcard.i-card:hover{background:#e2e2e2;}
+  .pcard.o-card{background:#000;color:#fff;border:1px dotted #fff;}
+  .pcard.o-card:hover{background:#151515;}
+
+  .pcard.ghost{background:#000;color:var(--dimmer);border:1px dotted var(--dimmer);cursor:default;
+    align-items:center;text-align:center;justify-content:center;}
+
+  .pcard.active{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 12px rgba(255,255,255,.4);z-index:2;}
+  .pcard.active .active-tag{position:absolute;top:-9px;right:6px;background:#000;border:1px solid #fff;
+    color:#fff;font-size:7.5px;letter-spacing:1px;padding:1px 5px;}
+  .pcard.i-card.active .active-tag{background:#fff;color:#000;border-color:#000;}
+  .pcard.kalma-card{background:#000;color:var(--grn);border:1px solid var(--grn);align-items:center;
+    text-align:center;justify-content:center;outline:3px solid var(--grn);outline-offset:3px;
+    box-shadow:0 0 12px rgba(124,255,176,.35);}
+
+  .tether{flex:0 0 26px;position:relative;align-self:center;height:2px;background:var(--dimmer);}
+  .tether::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:6px;height:6px;border-radius:50%;background:var(--dimmer);border:1px solid var(--dimmer);}
+  .tether.engaged{background:var(--fg);}
+  .tether.engaged::before{background:#fff;border-color:#fff;}
+  .tether.ghost-tether{background:var(--dimmer);}
+  .tether.ghost-tether::before{background:#000;border:1px dotted var(--dimmer);}
+
+  .status-card{flex:1;border:1px dotted var(--dimmer);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;min-height:118px;padding:10px;text-align:center;}
+  .status-card.locked{color:var(--dimmer);font-size:9px;letter-spacing:2px;}
+  .status-card.available{border:1px solid var(--fg);color:var(--fg);}
+  .status-card .av-label{font-size:9px;letter-spacing:1.5px;}
+  .status-card .av-power{font-family:"Times New Roman",serif;font-size:16px;letter-spacing:1px;}
+
+  .carve-btn{font-size:10px;border:1px solid var(--fg);padding:6px 12px;letter-spacing:1px;
+    background:transparent;color:var(--fg);cursor:pointer;font-family:"Courier New",monospace;
+    animation:pulseborder 1.6s infinite;}
+  .carve-btn:hover{background:var(--fg);color:#000;}
+  @keyframes pulseborder{0%,100%{opacity:.5;}50%{opacity:1;}}
+
+  .u-loss{font-size:8.5px;color:var(--cyan);padding:6px 2px 0;font-style:italic;}
+
+  .kalma-banner{display:none;margin:0 12px 16px;border:1px solid var(--grn);padding:16px;text-align:center;}
+  .kalma-banner.show{display:block;}
+  .kalma-banner .kt{font-family:"Times New Roman",serif;font-size:24px;letter-spacing:8px;color:var(--grn);}
+  .kalma-banner p{font-size:10.5px;color:var(--dim);max-width:600px;margin:8px auto 0;}
+
+  .log-wrap{border-top:1px solid var(--dimmer);}
+  .log-feed{font-size:10px;line-height:1.65;max-height:140px;overflow-y:auto;color:var(--dim);padding:8px 12px 10px;}
+  .log-feed div{white-space:pre-wrap;}
+  .log-feed .noise-hit{color:var(--fg);}
+  .log-feed .kalma-hit{color:var(--grn);}
+
+  .footlines{border-top:1px solid var(--dimmer);padding:8px 12px;font-size:9.5px;color:var(--dim);
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .footlines div{max-width:48%;white-space:pre-line;}
+
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;}
+  .modal-bg.show{display:flex;}
+  .modal{border:1px solid var(--fg);background:#000;padding:20px;width:min(90vw,420px);}
+  .modal h3{font-family:"Times New Roman",serif;font-size:14px;letter-spacing:2px;margin:0 0 6px;}
+  .modal p{font-size:10.5px;color:var(--dim);margin:0 0 12px;}
+  .modal textarea{width:100%;background:#000;border:1px solid var(--line);color:var(--fg);
+    font-family:"Courier New",monospace;font-size:11.5px;padding:8px;min-height:68px;resize:vertical;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+  .modal-actions button{background:transparent;border:1px solid var(--line);color:var(--fg);
+    font-family:"Courier New",monospace;padding:6px 13px;font-size:10.5px;cursor:pointer;}
+  .modal-actions button:hover{background:var(--fg);color:#000;}
+  .modal-actions .confirm{border-color:var(--fg);}
+
+  @media(max-width:640px){ .rail{display:none;} .bignum{font-size:22px;} }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="topstrip"></div>
+  <div class="knob"></div>
+
+  <div class="screen">
+    <div class="layout">
+      <div class="rail">
+        <div class="dot"></div>
+        <div class="vert">KEPT // PIT</div>
+        <div class="dot"></div>
+      </div>
+
+      <div class="main">
+        <div class="codelines">
+          <div>kept.io -impls</div>
+          <div>-notch_channels (unstable)</div>
+          <div>load pit.package.static -bent -io -shade -freedraw</div>
+        </div>
+
+        <div class="readout">
+          <div class="battery">
+            <svg width="32" height="17" viewBox="0 0 34 18">
+              <rect x="1" y="1" width="28" height="16" fill="none" stroke="#fff" stroke-width="1.5"/>
+              <rect x="30" y="6" width="3" height="6" fill="#fff"/>
+              <rect id="battFill" x="3" y="3" width="0" height="12" fill="#fff"/>
+            </svg>
+          </div>
+          <div class="bignum" id="bigNoise">0<span class="neg" id="bigNeg">-10</span></div>
+          <div class="hatchbar"><div class="hatchbar-fill" id="hatchFill"></div><div class="hatchbar-label" id="hatchLabel">NOISE / 325</div></div>
+          <div class="idtag">id=KEPT.notch_channel</div>
+        </div>
+
+        <div class="subrow">
+          <div id="statusLine">KEPT STATUS: STABLE &nbsp;·&nbsp; NOTCH <span id="notchCount">0</span>/9</div>
+          <div id="nextLine">next threshold: 10</div>
+        </div>
+
+        <div class="toolbar">
+          <button id="fusedBtn">FIX (+5)</button>
+          <input type="number" id="manualAmt" placeholder="±n" />
+          <button id="manualBtn">APPLY</button>
+          <div class="spacer"></div>
+          <button class="reset" id="resetBtn">reset kept</button>
+        </div>
+
+        <div class="section-label">Kino</div>
+        <div class="section-sub">Base powers, free of Notches. Firing the O side generates Noise — the I side never does.</div>
+        <div class="legend"><span class="swatch sw-i"></span>I — light, clean, no Noise &nbsp;&nbsp; <span class="swatch sw-o"></span>O — shade, dotted, generates Noise</div>
+        <div class="channel-grid" id="kinoGrid"></div>
+
+        <div class="tier-connector" id="connector-1"><span></span></div>
+
+        <div class="section-label locked-tier" id="label-fantom">Fantom</div>
+        <div class="section-sub">Crossing a Noise threshold below only unlocks the <i>option</i> to carve — carving is a deliberate act that costs a permanent Loss. Once carved, firing either read of a Fantom power generates Noise (+3).</div>
+        <div class="legend"><span class="swatch sw-lock"></span>locked — threshold not yet crossed &nbsp;&nbsp; <span class="swatch sw-i"></span>I once carved &nbsp;&nbsp; <span class="swatch sw-o"></span>O once carved</div>
+        <div class="notch-track" id="notchTrack"></div>
+        <div class="channel-grid" id="notchGrid"></div>
+
+        <div class="tier-connector" id="connector-2"><span></span></div>
+
+        <div class="section-label locked-tier" id="label-kalma">Kalma</div>
+        <div class="section-sub">What's left. Not one more Notch to carve — every Notch you already have, unbound.</div>
+        <div class="channel-grid" id="kalmaGrid"></div>
+
+        <div class="kalma-banner" id="kalmaBanner">
+          <div class="kt">KALMA</div>
+          <p><b>NULL</b> — no I, no O. The pit with nothing left to argue with it. Every Kino O channel now runs continuous, free of Noise. Every carved Fantom channel runs unchained.</p>
+        </div>
+
+        <div class="log-wrap">
+          <div class="section-label" style="padding-top:9px;">Log</div>
+          <div class="section-sub" style="padding-bottom:5px;">latest first</div>
+          <div class="log-feed" id="logFeed"></div>
+        </div>
+
+        <div class="footlines">
+          <div>carve ONE (noise-bound) simulate / kept integrity&#10;(multi-notch overlays // static bleed switches)</div>
+          <div style="text-align:right;">(assign kept-01 pit-plane hand carving,&#10;fantom reserve data channel slot...)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">CARVE NOTCH</h3>
+    <p id="modalSub"></p>
+    <textarea id="lossInput" placeholder="Describe the Loss — a missing memory, a hand that won't stop shaking, a name that means nothing anymore..."></textarea>
+    <div class="modal-actions">
+      <button id="modalCancel">cancel</button>
+      <button class="confirm" id="modalConfirm">carve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(async function(){
+
+  const KINO = [
+    {name:"RANGED BURST", I:"Lumen",  Id:"fast, clean projectile",  O:"Tenebrae", Od:"larger, piercing, carries a Static side-effect"},
+    {name:"MELEE",        I:"Awl",    Id:"refracted strike",        O:"Flense",   Od:"hits what isn't fully physical, bypasses armor"},
+    {name:"DASH",         I:"Wend",   Id:"brief, ignores minor obstacles", O:"Undertow", Od:"the whole path damages what's in it"},
+    {name:"BARRIER",      I:"Ward",   Id:"deflects",                 O:"Maw",     Od:"absorbs and swallows"},
+    {name:"FALL CONTROL", I:"Alight", Id:"controlled landing",       O:"Founder", Od:"violent Static impact on landing"},
+    {name:"VERTICAL ERUPTION", I:"Psalm", Id:"straight up, clean",   O:"Dirge",   Od:"grows with your Notch count"}
+  ];
+
+  const THRESHOLDS = [
+    {n:1, req:10,  power:"Fang",                  Id:"mirrors your movement",              Od:"unchained at Notch 6 — hunts on its own", tier:"Fantom"},
+    {n:2, req:25,  power:"Wing",                  Id:"attached, carries you aloft",        Od:"the shade drags you higher than you meant to go", tier:"Fantom"},
+    {n:3, req:45,  power:"Wrath",                 Id:"mirrors you, takes the hit for you", Od:"unchained at Notch 8 — learns from what strikes you", tier:"Fantom"},
+    {n:4, req:70,  power:"Edge",                  Id:"follows your attacks, clean severance", Od:"unchained at Notch 7 — severs matter, Static, connections outright", tier:"Fantom"},
+    {n:5, req:100, power:"Zero Parade",            Id:"a handful of black rabbits, skittish", Od:"unchained at Notch 9 — the swarm moves as one, past counting", tier:"Fantom"},
+    {n:6, req:135, power:"Fang, unchained",        Id:"hunts independently, still answers to you", Od:"hunts on instinct alone", tier:"Fantom"},
+    {n:7, req:175, power:"Disaster Blade",         Id:"severs matter and Static cleanly",   Od:"severs connections outright", tier:"Fantom"},
+    {n:8, req:220, power:"Wrath, unchained",       Id:"acts independently, still yours",    Od:"learns from every hit, keeps the lesson", tier:"Fantom"},
+    {n:9, req:270, power:"Zero Parade, unchained", Id:"the swarm moves as one body",        Od:"multiplies past counting", tier:"Fantom"}
+  ];
+  const NULL_NOTCH = {power:"Null", Od:"the Shade at full, unfiltered output — nothing left to argue with the noise"};
+  const MAX_NOISE = 270;
+  const STORE_KEY = "othergrade-tracker-v6";
+
+  let state = { noise:0, kalmaActive:false, notches: THRESHOLDS.map(()=>({carved:false, loss:"", carvedAt:null, active:null})),
+    kinoActive: KINO.map(()=>null), log: [] };
+
+  // tracks what was already visible/carved on the previous render, so we only
+  // animate a "reveal" the moment something newly unlocks — not on every re-render
+  let seenAvailable = new Set();
+  let seenCarved = new Set();
+  let seenKalma = false;
+
+  async function loadState(){
+    try{
+      const res = await window.storage.get(STORE_KEY, false);
+      if(res && res.value){
+        const parsed = JSON.parse(res.value);
+        if(parsed && Array.isArray(parsed.notches) && parsed.notches.length===THRESHOLDS.length){
+          parsed.notches.forEach(n=>{ if(n.active===undefined) n.active=null; });
+          if(!Array.isArray(parsed.kinoActive) || parsed.kinoActive.length!==KINO.length){
+            parsed.kinoActive = KINO.map(()=>null);
+          }
+          if(typeof parsed.kalmaActive !== "boolean") parsed.kalmaActive = false;
+          state = parsed;
+        }
+      }
+    }catch(e){}
+  }
+  async function saveState(){
+    try{ await window.storage.set(STORE_KEY, JSON.stringify(state), false); }
+    catch(e){ console.error("save failed", e); }
+  }
+
+  function isKalma(){ return !!state.kalmaActive; }
+  function carvedCount(){ return state.notches.filter(n=>n.carved).length; }
+  function allCarved(){ return carvedCount() === THRESHOLDS.length; }
+  function nextLocked(){ for(let i=0;i<THRESHOLDS.length;i++){ if(!state.notches[i].carved) return THRESHOLDS[i]; } return null; }
+
+  function pushLog(text, cls){
+    const stamp = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    state.log.unshift({text:`[${stamp}] ${text}`, cls:cls||""});
+    state.log = state.log.slice(0,40);
+  }
+
+  function addNoise(amount, label){
+    if(isKalma() && amount>0){
+      pushLog(`${label} — NULL, no Noise generated (Kalma).`, "kalma-hit");
+      render(); saveState(); return;
+    }
+    state.noise = Math.max(0, state.noise+amount);
+    pushLog(`${label} — Noise ${amount>=0?'+':''}${amount} (now ${state.noise})`, amount>0?"noise-hit":"");
+    render(); saveState();
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function render(){
+    renderReadout();
+    renderKino();
+    renderNotchTrack();
+    renderNotches();
+    renderKalma();
+    renderLog();
+    document.getElementById("kalmaBanner").classList.toggle("show", isKalma());
+
+    const fantomOn = carvedCount() > 0;
+    document.getElementById("label-fantom").classList.toggle("unlocked-tier", fantomOn);
+    document.getElementById("label-fantom").classList.toggle("locked-tier", !fantomOn);
+    document.getElementById("connector-1").classList.toggle("filled", fantomOn);
+
+    document.getElementById("label-kalma").classList.toggle("unlocked-tier", isKalma());
+    document.getElementById("label-kalma").classList.toggle("locked-tier", !isKalma());
+    document.getElementById("connector-2").classList.toggle("filled", isKalma());
+  }
+
+  function renderNotchTrack(){
+    const track = document.getElementById("notchTrack");
+    track.innerHTML = THRESHOLDS.map((t,i)=>{
+      const entry = state.notches[i];
+      const cls = entry.carved ? "carved" : (state.noise>=t.req ? "available" : "");
+      return `<div class="notch-tick ${cls}" title="N${t.n} — ${t.power}">${t.n}</div>`;
+    }).join("");
+  }
+
+  function renderReadout(){
+    const next = nextLocked();
+    document.getElementById("bigNoise").innerHTML = `${state.noise}<span class="neg" id="bigNeg">${next? '-'+(next.req-state.noise): 'MAX'}</span>`;
+    const pct = Math.min(state.noise/MAX_NOISE,1)*100;
+    document.getElementById("hatchFill").style.width = pct+"%";
+    document.getElementById("hatchLabel").textContent = `NOISE ${state.noise} / ${MAX_NOISE}`;
+    document.getElementById("battFill").setAttribute("width", (pct/100*24).toFixed(1));
+    const statusEl = document.getElementById("statusLine");
+    statusEl.innerHTML = isKalma()
+      ? `<span class="status-kalma">KEPT STATUS: KALMA — NULL</span> &nbsp;·&nbsp; NOTCH ${carvedCount()}/9`
+      : `KEPT STATUS: STABLE &nbsp;·&nbsp; NOTCH ${carvedCount()}/9`;
+    document.getElementById("nextLine").textContent = next ? `next threshold: ${next.req}` : "all notches carved";
+  }
+
+  function renderKino(){
+    const wrap = document.getElementById("kinoGrid");
+    wrap.innerHTML = "";
+    KINO.forEach((k, idx)=>{
+      const activeSide = state.kinoActive[idx];
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      slot.innerHTML = `
+        <div class="slot-label ${activeSide?'on':''}"><span>K${idx}</span><span>${k.name}</span></div>
+        <div class="pair-row">
+          <div class="pcard i-card ${activeSide==='I'?'active':''}" data-kino-i="${idx}">
+            ${activeSide==='I'?'<span class="active-tag">ACTIVE</span>':''}
+            <div class="h-name">${k.I}</div>
+            <div class="h-desc">${k.Id}</div>
+            <div class="h-tag">I · CLEAN</div>
+          </div>
+          <div class="tether ${activeSide?'engaged':''}"></div>
+          <div class="pcard o-card ${activeSide==='O'?'active':''}" data-kino-o="${idx}">
+            ${activeSide==='O'?'<span class="active-tag">ACTIVE</span>':''}
+            <div class="h-name">${k.O}</div>
+            <div class="h-desc">${k.Od}</div>
+            <div class="h-tag">O · ${isKalma()?'CONTINUOUS':'+2 NOISE'}</div>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(slot);
+    });
+    wrap.querySelectorAll("[data-kino-i]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const idx = el.dataset.kinoI;
+        const k = KINO[idx];
+        state.kinoActive[idx] = 'I';
+        pushLog(`${k.I} used — clean, no Noise.`);
+        render(); saveState();
+      });
+    });
+    wrap.querySelectorAll("[data-kino-o]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const idx = el.dataset.kinoO;
+        const k = KINO[idx];
+        state.kinoActive[idx] = 'O';
+        if(isKalma()) addNoise(0, `${k.O} — running continuous`);
+        else addNoise(2, `${k.O} fired`);
+      });
+    });
+  }
+
+  function renderNotches(){
+    const wrap = document.getElementById("notchGrid");
+    wrap.innerHTML = "";
+    THRESHOLDS.filter(t=>t.tier==="Fantom").forEach((t)=>{
+      const i = t.n-1;
+      const entry = state.notches[i];
+      const available = !entry.carved && state.noise >= t.req;
+      const slot = document.createElement("div");
+      slot.className = "slot";
+
+      const labelOn = entry.carved || available;
+      const label = `<div class="slot-label ${labelOn?'on':''}"><span>N${t.n}</span><span>req ${t.req}</span></div>`;
+      const isNewCarve = entry.carved && !seenCarved.has(i);
+      const isNewAvailable = !entry.carved && available && !seenAvailable.has(i);
+      if(isNewCarve || isNewAvailable){
+        slot.classList.add("reveal");
+        slot.style.animationDelay = (i*40)+"ms";
+      }
+      let body;
+
+      if(entry.carved){
+        const activeSide = entry.active;
+        body = `<div class="pair-row">
+          <div class="pcard i-card ${activeSide==='I'?'active':''}" data-fantom-i="${i}">
+            ${activeSide==='I'?'<span class="active-tag">ACTIVE</span>':''}
+            <div class="h-name">${t.power}</div>
+            <div class="h-desc">${t.Id}</div>
+            <div class="h-tag">I · +3 NOISE</div>
+          </div>
+          <div class="tether ${activeSide?'engaged':''}"></div>
+          <div class="pcard o-card ${activeSide==='O'?'active':''}" data-fantom-o="${i}">
+            ${activeSide==='O'?'<span class="active-tag">ACTIVE</span>':''}
+            <div class="h-name">shade read</div>
+            <div class="h-desc">${t.Od}</div>
+            <div class="h-tag">O · +3 NOISE</div>
+          </div>
+        </div>
+        <div class="u-loss">Loss: ${escapeHtml(entry.loss)}</div>`;
+      } else if(available){
+        body = `<div class="pair-row"><div class="status-card available">
+          <div class="av-label">THRESHOLD CROSSED</div>
+          <div class="av-power">${t.power}</div>
+          <button class="carve-btn" data-carve="${i}">CARVE →</button>
+        </div></div>`;
+      } else {
+        body = `<div class="pair-row"><div class="status-card locked">· · LOCKED · ·<br>req ${t.req} Noise</div></div>`;
+      }
+
+      slot.innerHTML = label + body;
+      wrap.appendChild(slot);
+    });
+
+    wrap.querySelectorAll("[data-carve]").forEach(btn=>{
+      btn.addEventListener("click", ()=> onCarveClick(parseInt(btn.dataset.carve)));
+    });
+    wrap.querySelectorAll("[data-fantom-i]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const idx = el.dataset.fantomI;
+        const t = THRESHOLDS[idx];
+        state.notches[idx].active = 'I';
+        if(isKalma()) addNoise(0, `${t.power} (light read) — unchained, continuous`);
+        else addNoise(3, `${t.power} used — light read`);
+      });
+    });
+    wrap.querySelectorAll("[data-fantom-o]").forEach(el=>{
+      el.addEventListener("click", ()=>{
+        const idx = el.dataset.fantomO;
+        const t = THRESHOLDS[idx];
+        state.notches[idx].active = 'O';
+        if(isKalma()) addNoise(0, `${t.power} (shade read) — unchained, continuous`);
+        else addNoise(3, `${t.power} used — shade read`);
+      });
+    });
+
+    THRESHOLDS.forEach((t,i)=>{
+      const entry = state.notches[i];
+      if(entry.carved) seenCarved.add(i);
+      if(!entry.carved && state.noise>=t.req) seenAvailable.add(i);
+    });
+  }
+
+  function activateKalma(){
+    state.kalmaActive = true;
+    pushLog(`KALMA ACTIVATED — all ${THRESHOLDS.length} Notches carved. Every O side now runs continuous.`, "kalma-hit");
+    render(); saveState();
+  }
+
+  function renderKalma(){
+    const wrap = document.getElementById("kalmaGrid");
+    wrap.innerHTML = "";
+
+    if(!isKalma()){
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      if(allCarved()){
+        slot.innerHTML = `<div class="slot-label on"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
+          <div class="pair-row"><div class="status-card available">
+            <div class="av-label">ALL NOTCHES CARVED</div>
+            <div class="av-power">Kalma</div>
+            <button class="carve-btn" id="activateKalmaBtn">ACTIVATE →</button>
+          </div></div>`;
+      } else {
+        slot.innerHTML = `<div class="slot-label"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
+          <div class="pair-row"><div class="status-card locked">· · LOCKED · ·<br>requires all ${THRESHOLDS.length} Notches carved</div></div>`;
+      }
+      wrap.appendChild(slot);
+      const btn = document.getElementById("activateKalmaBtn");
+      if(btn) btn.addEventListener("click", activateKalma);
+      return;
+    }
+
+    const firstReveal = !seenKalma;
+    let revealIdx = 0;
+    function makeSlot(){
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      if(firstReveal){
+        slot.classList.add("reveal");
+        slot.style.animationDelay = (revealIdx*45)+"ms";
+        revealIdx++;
+      }
+      return slot;
+    }
+
+    // active — every Kino O side, every carved Fantom O side, plus the shade-only Null
+    KINO.forEach(k=>{
+      const slot = makeSlot();
+      slot.innerHTML = `<div class="slot-label on"><span>${k.name}</span></div>
+        <div class="pair-row">
+          <div class="pcard o-card active" style="flex:1;">
+            <span class="active-tag">ACTIVE</span>
+            <div class="h-name">${k.O}</div>
+            <div class="h-desc">${k.Od}</div>
+            <div class="h-tag">O · CONTINUOUS</div>
+          </div>
+        </div>`;
+      wrap.appendChild(slot);
+    });
+    THRESHOLDS.forEach((t,i)=>{
+      if(!state.notches[i].carved) return;
+      const slot = makeSlot();
+      slot.innerHTML = `<div class="slot-label on"><span>N${t.n}</span><span>${t.power}</span></div>
+        <div class="pair-row">
+          <div class="pcard o-card active" style="flex:1;">
+            <span class="active-tag">ACTIVE</span>
+            <div class="h-name">shade read</div>
+            <div class="h-desc">${t.Od}</div>
+            <div class="h-tag">O · CONTINUOUS</div>
+          </div>
+        </div>`;
+      wrap.appendChild(slot);
+    });
+    const nullSlot = makeSlot();
+    nullSlot.innerHTML = `<div class="slot-label on"><span>NULL</span><span>no I</span></div>
+      <div class="pair-row">
+        <div class="pcard o-card active" style="flex:1;">
+          <span class="active-tag">ACTIVE</span>
+          <div class="h-name">${NULL_NOTCH.power}</div>
+          <div class="h-desc">${NULL_NOTCH.Od}</div>
+          <div class="h-tag">O ONLY · CONTINUOUS</div>
+        </div>
+      </div>`;
+    wrap.appendChild(nullSlot);
+    seenKalma = true;
+  }
+
+  function onCarveClick(i){
+    const t = THRESHOLDS[i];
+    const entry = state.notches[i];
+    openModal({
+      title:`CARVE NOTCH ${t.n} — ${t.power.toUpperCase()}`,
+      sub:`Threshold ${t.req} reached. Crossing it only unlocked the option — carving is your choice, and it costs a permanent Loss.`,
+      value:"",
+      onConfirm:(val)=>{
+        entry.carved = true;
+        entry.loss = val || "(unspecified)";
+        entry.carvedAt = state.noise;
+        pushLog(`NOTCH ${t.n} CARVED — ${t.power}. Loss: ${entry.loss}`, t.tier==="Kalma"?"kalma-hit":"noise-hit");
+        render(); saveState();
+      }
+    });
+  }
+
+  function renderLog(){
+    const feed = document.getElementById("logFeed");
+    if(state.log.length===0){ feed.innerHTML = `<div>— no activity logged yet —</div>`; return; }
+    feed.innerHTML = state.log.map(l=>`<div class="${l.cls}">${escapeHtml(l.text)}</div>`).join("");
+  }
+
+  let modalCallback = null;
+  function openModal({title, sub, value, onConfirm}){
+    document.getElementById("modalTitle").textContent = title;
+    document.getElementById("modalSub").textContent = sub;
+    document.getElementById("lossInput").value = value || "";
+    modalCallback = onConfirm;
+    document.getElementById("modalBg").classList.add("show");
+    document.getElementById("lossInput").focus();
+  }
+  function closeModal(){ document.getElementById("modalBg").classList.remove("show"); modalCallback=null; }
+  document.getElementById("modalCancel").addEventListener("click", closeModal);
+  document.getElementById("modalBg").addEventListener("click", (e)=>{ if(e.target.id==="modalBg") closeModal(); });
+  document.getElementById("modalConfirm").addEventListener("click", ()=>{
+    const val = document.getElementById("lossInput").value.trim();
+    if(modalCallback) modalCallback(val);
+    closeModal();
+  });
+
+  document.getElementById("fusedBtn").addEventListener("click", ()=>{
+    if(isKalma()) addNoise(0, "Fix — no Noise (Kalma)");
+    else addNoise(5, "Fix invoked");
+  });
+  document.getElementById("manualBtn").addEventListener("click", ()=>{
+    const inp = document.getElementById("manualAmt");
+    const v = parseInt(inp.value);
+    if(!isNaN(v) && v!==0){ addNoise(v, "Manual adjustment"); inp.value=""; }
+  });
+  document.getElementById("resetBtn").addEventListener("click", async ()=>{
+    if(confirm("Reset this Kept? Noise, Notches, and Losses will be cleared permanently.")){
+      state = { noise:0, kalmaActive:false, notches: THRESHOLDS.map(()=>({carved:false, loss:"", carvedAt:null, active:null})),
+        kinoActive: KINO.map(()=>null), log:[] };
+      seenAvailable = new Set(); seenCarved = new Set(); seenKalma = false;
+      pushLog("Kept reset.");
+      render(); await saveState();
+    }
+  });
+
+  await loadState();
+  THRESHOLDS.forEach((t,i)=>{
+    const entry = state.notches[i];
+    if(entry.carved) seenCarved.add(i);
+    if(!entry.carved && state.noise>=t.req) seenAvailable.add(i);
+  });
+  seenKalma = isKalma();
+  if(state.log.length===0) pushLog("Kept status channel online.");
+  render();
+
+})();
+</script>
+</body>
+</html>
