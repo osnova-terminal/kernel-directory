@@ -1,1535 +1,1189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KINDLING</title>
-<style>
-    :root{
-        --bg:#000; --fg:#fff;
-        --dim: rgba(255,255,255,.55);
-        --dim2: rgba(255,255,255,.34);
-        --line: rgba(255,255,255,.20);
-        --hair: rgba(255,255,255,.14);
-        --font-serif:"Times New Roman",Georgia,"Palatino Linotype",serif;
-        --font-mono:"Courier New","SF Mono","Menlo",monospace;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notch Chart · othergrade</title>
+  <style>
+    /* ── base reset & variables ── */
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --dim: rgba(255,255,255,0.55);
+      --dim2: rgba(255,255,255,0.34);
+      --line: rgba(255,255,255,0.20);
+      --hair: rgba(255,255,255,0.14);
+      --red: #ff3b3b;
+      --cyan: #5be3ff;
+      --grn: #7cffb0;
+      --font-serif: "Times New Roman", Georgia, "Palatino Linotype", serif;
+      --font-mono: "Courier New", "SF Mono", "Menlo", monospace;
     }
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    html{background:var(--bg);color:var(--fg);font-family:var(--font-serif);font-size:17px;line-height:1.6;}
-    body{padding:1.8rem 1.1rem 6rem;min-height:100vh;background:var(--bg);}
-    .container{max-width:1280px;margin:0 auto;}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: var(--bg); color: var(--fg); font-family: var(--font-serif); font-size: 17px; line-height: 1.6; }
+    body { padding: 1.8rem 1.1rem 4rem; min-height: 100vh; background: var(--bg); }
+    .container { max-width: 1280px; margin: 0 auto; }
 
-    .eyebrow{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);margin-bottom:.15rem;}
-    h1{font-size:3rem;font-weight:600;line-height:1;letter-spacing:-.01em;margin-bottom:.15rem;}
-    .whitebox{background:var(--fg);color:var(--bg);display:inline-block;padding:.35rem .7rem;font-family:var(--font-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700;margin-bottom:1rem;}
-    .subhead{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.05em;color:var(--dim);line-height:1.8;max-width:640px;margin-bottom:1.6rem;}
-    .subhead strong{color:var(--fg);}
+    /* ── header ── */
+    .eyebrow { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.15rem; }
+    h1 { font-size: 3rem; font-weight: 600; line-height: 1; letter-spacing: -0.01em; margin-bottom: 0.15rem; }
+    .whitebox { background: var(--fg); color: var(--bg); display: inline-block; padding: 0.35rem 0.7rem; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 1rem; }
+    .subhead { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.05em; color: var(--dim); line-height: 1.8; max-width: 640px; margin-bottom: 1.6rem; }
+    .subhead strong { color: var(--fg); }
 
-    /* ============ SIDE-BY-SIDE LAYOUT ============
-       Left column: Live Signal + register tabs + Keep filters + Fixed
-       Rites, sticky, does not scroll with the page.
-       Right column: the Kindling cards themselves, scrolling in their
-       own internal panel so the display stays in view at all times. */
-    .main-grid{
-        display:grid;
-        grid-template-columns: 340px minmax(0,1fr);
-        gap:1.6rem;
-        align-items:start;
-        margin-bottom:1.6rem;
+    /* ── main grid ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 1.6rem;
+      align-items: start;
+      margin-bottom: 1.6rem;
     }
-    .signal-col{
-        position:sticky;
-        top:1.2rem;
-        display:flex;
-        flex-direction:column;
-        gap:1.2rem;
-        max-height:calc(100vh - 2.4rem);
-        overflow-y:auto;
-        padding-right:.2rem;
+    .signal-col {
+      position: sticky;
+      top: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      max-height: calc(100vh - 2.4rem);
+      overflow-y: auto;
+      padding-right: 0.2rem;
     }
-    .rites-col{min-width:0;}
-    .rite-list-panel{
-        max-height:calc(100vh - 2.4rem);
-        overflow-y:auto;
-        padding-right:.5rem;
+    .chart-col { min-width: 0; }
+    .chart-panel {
+      max-height: calc(100vh - 2.4rem);
+      overflow-y: auto;
+      padding-right: 0.5rem;
     }
-    @media(max-width:960px){
-        .main-grid{grid-template-columns:1fr;}
-        .signal-col{position:static; max-height:none; overflow-y:visible;}
-        .rite-list-panel{max-height:none; overflow-y:visible; padding-right:0;}
-    }
-
-    /* ============ CONTROL BAR ============ */
-    .control-bar{
-        z-index:40;
-        background:rgba(0,0,0,.92);
-        backdrop-filter:blur(2px);
-        border-top:1px solid var(--fg); border-bottom:1px solid var(--fg);
-        display:flex;
-    }
-    .register-tabs{display:flex; flex:1 1 auto;}
-    .reg-tab{
-        flex:1; background:transparent; border:none; border-right:1px solid var(--line);
-        color:var(--dim); font-family:var(--font-mono); font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
-        padding:.7rem .5rem; cursor:pointer; text-align:center;
-        text-shadow:0 0 1px rgba(255,255,255,.4);
-        transition:color .1s, text-shadow .1s;
-    }
-    .reg-tab .rt-sub{display:block; font-size:.5rem; opacity:.7; margin-top:2px; letter-spacing:.14em;}
-    .reg-tab:hover{color:#fff;}
-    .reg-tab.active{color:#fff; box-shadow:inset 0 -2px 0 #fff; text-shadow:0 0 2px #fff,0 0 10px rgba(255,255,255,.6);}
-
-    @media(max-width:720px){
-        .control-bar{flex-direction:column; align-items:stretch;}
+    @media (max-width: 960px) {
+      .main-grid { grid-template-columns: 1fr; }
+      .signal-col { position: static; max-height: none; overflow-y: visible; }
+      .chart-panel { max-height: none; overflow-y: visible; padding-right: 0; }
     }
 
-    /* ============ KEEPS — dotted-border filter cards ============ */
-    .keeps-label{font-family:var(--font-mono); font-size:.58rem; letter-spacing:.26em; text-transform:uppercase; color:var(--dim); margin-bottom:.6rem;}
-    .keeps-section{margin-bottom:0;}
-    .keeps-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:.7rem;}
-    .keep-card{
-        position:relative;
-        background-color:#000;
-        background-image:
-            repeating-linear-gradient(to right, var(--line) 0 9px, transparent 9px 18px),
-            repeating-linear-gradient(to right, var(--line) 0 9px, transparent 9px 18px),
-            repeating-linear-gradient(to bottom, var(--line) 0 9px, transparent 9px 18px),
-            repeating-linear-gradient(to bottom, var(--line) 0 9px, transparent 9px 18px);
-        background-repeat:repeat-x, repeat-x, repeat-y, repeat-y;
-        background-position:top left, bottom left, top left, top right;
-        background-size:18px 1px, 18px 1px, 1px 18px, 1px 18px;
-        border:1px solid transparent;
-        padding:.85rem .8rem .9rem;
-        text-align:center;
-        cursor:pointer;
-        aspect-ratio:1/1;
-        display:flex; flex-direction:column; align-items:center; justify-content:center;
-        transition:background-color .12s ease;
+    /* ── signal / status display ── */
+    .signal-label { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.4rem; }
+    .signal-frame {
+      border: 2px solid #fff;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+      cursor: default;
     }
-    .keep-card:hover{ --line: rgba(255,255,255,.55); }
-    .keep-card.selected{
-        background-color:#fff; background-image:none; border-color:#000;
-        --fg:#000; --dim:rgba(0,0,0,.6); --line:rgba(0,0,0,.3);
+    .signal-frame::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      pointer-events: none;
+      z-index: 5;
+      background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.37) 0px, rgba(0,0,0,0.37) 1px, transparent 1px, transparent 3px);
+      mix-blend-mode: multiply;
+      animation: scanlineDrift 5s linear infinite;
     }
-    .keep-name{font-family:var(--font-serif); font-size:.92rem; font-weight:600; letter-spacing:.02em; color:var(--fg);}
-    .keep-tagline{display:none; font-family:var(--font-mono); font-size:.54rem; letter-spacing:.04em; color:var(--dim); font-style:italic; margin-top:.4rem;}
-    .keep-card.selected .keep-tagline{display:block;}
+    @keyframes scanlineDrift { 0% { transform: translateY(0); } 100% { transform: translateY(3px); } }
 
-    /* ============ FIXED RITES STRIP ============ */
-    .fixed-strip{border:1px solid var(--line);}
-    .fixed-head{
-        display:flex; justify-content:space-between; align-items:center; gap:.6rem;
-        padding:.5rem .9rem; border-bottom:1px solid var(--line);
-        font-family:var(--font-mono); font-size:.58rem; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);
+    .signal-stage {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: min(26vh, 210px);
+      background: #000;
     }
-    .fixed-body{padding:.7rem .9rem; display:flex; flex-wrap:wrap; gap:.5rem;}
-    .fixed-empty{font-family:var(--font-mono); font-size:.56rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dim2);}
-    .fixed-pill{display:flex; align-items:center; gap:.5rem; border:1px solid var(--line); padding:.3rem .3rem .3rem .6rem; font-family:var(--font-mono); font-size:.6rem;}
-    .fixed-pill .fp-tag{color:var(--dim); font-size:.52rem; letter-spacing:.08em;}
-    .fixed-pill button{background:transparent; border:1px solid var(--line); color:var(--dim); font-family:var(--font-mono); cursor:pointer; padding:.15rem .4rem;}
-    .fixed-pill button:hover{color:#fff; border-color:#fff;}
-
-    /* ============ RITE ROW ============
-       --card-bg lets a single row invert to white on Devour without
-       touching any other row — every child below reads its color off
-       the same --fg/--dim/--line variables, so the invert cascades
-       for free (sigil strokes, badge, dividers, all of it). */
-    .rite-list{display:flex; flex-direction:column; gap:1px; background:var(--hair); border:1px solid var(--hair);}
-    .rite-row{
-        --card-bg:#000;
-        background:var(--card-bg); display:grid; grid-template-columns:120px 1fr; gap:1.3rem;
-        padding:1.1rem 1.2rem; align-items:start; position:relative;
-        transition:background-color .18s ease;
-    }
-    @media(max-width:600px){
-        .rite-row{grid-template-columns:1fr; justify-items:center; text-align:center;}
+    .signal-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 6;
+      background: radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.22) 80%, rgba(0,0,0,0.47) 100%);
+      mix-blend-mode: multiply;
     }
 
-    .rite-sigil-col{display:flex; flex-direction:column; align-items:center; gap:.55rem;}
-    .rite-sigil-wrap{
-        width:104px; height:96px; border:1px solid var(--line);
-        position:relative; touch-action:none; cursor:crosshair;
+    .signal-shake { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: stretch; }
+    .signal-glyph { position: relative; flex: 0 0 58%; overflow: hidden; }
+    .signal-glyph svg { width: 100%; height: 100%; display: block; }
+    .signal-glyph svg .seal-line { stroke: var(--fg); stroke-width: 1.6; stroke-linecap: round; }
+    .signal-glyph svg .seal-decor { stroke: var(--dim2); stroke-width: 1; }
+    .signal-glyph svg .seal-ring { fill: none; stroke: var(--dim2); stroke-width: 1; }
+    .signal-glyph svg .seal-tick { stroke: var(--dim2); stroke-width: 1; }
+
+    .signal-divider { flex: 0 0 1px; align-self: stretch; background: var(--line); }
+    .signal-text {
+      position: relative; z-index: 9; flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center;
+      gap: 0.4rem; padding: 0.9rem 1rem; overflow: hidden; font-family: var(--font-mono); text-align: center; align-items: center;
     }
-    .rite-sigil-wrap svg{width:100%; height:100%; display:block; overflow:visible;}
-    .rite-sigil-wrap.misfire{animation:misfireFlash .25s steps(2);}
-    @keyframes misfireFlash{
-        0%{filter:invert(1);} 50%{filter:invert(0);} 100%{filter:invert(1) opacity(.4);}
+    .sg-title { font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600; line-height: 1.25; color: var(--fg); min-height: 1.3em; overflow-wrap: anywhere; }
+    .sg-stage { font-size: 0.56rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); }
+
+    .signal-grain {
+      position: absolute; inset: -4px; pointer-events: none; z-index: 4; opacity: 0.06;
+      background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0px, transparent 1px, transparent 2px),
+                        repeating-linear-gradient(90deg, rgba(255,255,255,0.3) 0px, transparent 1px, transparent 3px);
+      animation: hudGrain 0.4s steps(2) infinite;
     }
-    .rite-sigil-wrap.ignited{border-color:var(--fg);}
+    @keyframes hudGrain { 0% { transform: translate(0,0); } 100% { transform: translate(-2px,1px); } }
 
-    .sig-base{fill:none; stroke:var(--dim2); stroke-width:1.3; stroke-linecap:round;}
-    .sig-hit{fill:none; stroke:var(--fg); stroke-width:1.9; stroke-linecap:round; opacity:0; transition:opacity .18s ease;}
-    .sig-hit.on{opacity:1;}
-    .sig-decor{fill:none; stroke:var(--dim2); stroke-width:.9; opacity:.7;}
-    .sig-node{fill:var(--dim2);}
-    .trace-cursor{fill:var(--fg); opacity:0;}
-    .trace-cursor.on{opacity:.85;}
-
-    /* Devour badge: no glow, no pulse — a plain bold label */
-    .tier-badge{
-        font-family:var(--font-mono); font-size:.54rem; letter-spacing:.18em; text-transform:uppercase;
-        color:var(--dim); border:1px solid var(--line); padding:.25rem .5rem; width:100%; text-align:center;
+    /* ── readout ── */
+    .readout {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--line);
+      background: #0a0a0a;
+      flex-wrap: wrap;
     }
-    .tier-badge.t1{color:var(--fg); border-color:var(--dim2);}
-    .tier-badge.t2{color:var(--fg); border-color:var(--fg); font-weight:700;}
-    .tier-badge.t3{color:var(--fg); border-color:var(--fg); font-weight:700; letter-spacing:.24em;}
-    @keyframes tierBadgeFlash{0%{filter:invert(1);}100%{filter:none;}}
-    .tier-badge.flash{animation:tierBadgeFlash .2s steps(2);}
-
-    .keep-note{font-family:var(--font-mono); font-size:.5rem; letter-spacing:.08em; color:var(--dim2); text-transform:uppercase; text-align:center;}
-
-    .rite-info{min-width:0;}
-    .rite-title-row{display:flex; flex-wrap:wrap; align-items:baseline; gap:.4rem .8rem; margin-bottom:.15rem;}
-    .rite-title{font-size:1.35rem; font-weight:600; letter-spacing:.01em;}
-    .rite-idx{font-family:var(--font-mono); font-size:.55rem; color:var(--dim2); letter-spacing:.1em;}
-    .rite-quote{font-style:italic; color:var(--dim); font-size:.85rem; margin-bottom:.7rem;}
-    .rite-tags{display:none;}
-
-    .rite-columns{
-        display:grid; grid-template-columns:repeat(auto-fit, minmax(175px,1fr));
-        gap:1px; background:var(--hair); border:1px solid var(--hair);
+    .bignum {
+      font-weight: bold;
+      font-size: 30px;
+      letter-spacing: 1px;
+      padding: 8px 14px;
+      border-right: 1px solid var(--line);
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      text-shadow: 1.3px 0 rgba(255, 40, 60, 0.5), -1.3px 0 rgba(60, 220, 255, 0.5);
+      flex: 0 0 auto;
     }
-    .rite-col{background:var(--card-bg); padding:.65rem .75rem; position:relative; transition:background .15s;}
-    .rite-col .col-head{
-        display:flex; justify-content:space-between; align-items:center; gap:.4rem;
-        font-family:var(--font-mono); font-size:.55rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
-        margin-bottom:.4rem; padding-bottom:.3rem; border-bottom:1px solid var(--hair);
+    .bignum .neg { color: var(--dim); font-size: 17px; margin-left: 9px; text-shadow: none; }
+    .hatchbar {
+      flex: 1;
+      min-width: 100px;
+      position: relative;
+      border-right: 1px solid var(--line);
+      background: repeating-linear-gradient(45deg, #161616 0 3px, #000 3px 6px);
+      overflow: hidden;
+      min-height: 48px;
     }
-    .rite-col.self.active .col-head{color:#fff; border-bottom-color:var(--fg);}
-    .rite-col.self.active{background:rgba(255,255,255,.055); box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);}
-    .rite-col.self{cursor:pointer;}
-    .rite-col.self:hover{background:rgba(255,255,255,.03);}
-    .col-effect{font-size:.8rem; line-height:1.65; margin-bottom:.5rem;}
-    .col-demand{font-size:.72rem; line-height:1.6; color:var(--dim); font-style:italic;}
-    .col-demand::before{content:"Demand — "; color:var(--dim2); font-style:normal;}
-    .col-pin{background:transparent; border:1px solid var(--line); color:var(--dim2); font-family:var(--font-mono); font-size:.5rem; letter-spacing:.08em; padding:.15rem .4rem; cursor:pointer;}
-    .col-pin:hover{color:#fff; border-color:#fff;}
-    .col-pin.pinned{background:#fff; color:#000; border-color:#fff; font-weight:700;}
-
-    /* Register accent hint: subtle left rule on the sigil column, color-neutral, pattern differs by register */
-    .rite-row[data-group="brain"] .rite-sigil-wrap{border-style:solid;}
-    .rite-row[data-group="nerve"] .rite-sigil-wrap{border-style:solid; border-width:1px;}
-    .rite-row[data-group="frame"] .rite-sigil-wrap{border-style:dashed;}
-
-    /* ============ DIVIDER ============ */
-    .sigil-divider{display:flex; align-items:center; gap:16px; margin:2.6rem 0 1.2rem;}
-    .sigil-divider .sd-line{flex:1 1 auto; height:1px; background:var(--line);}
-    .sigil-divider svg{width:24px; height:24px; flex:0 0 auto; opacity:.8;}
-    .sigil-divider .sd-mark{fill:none; stroke:var(--fg); stroke-width:1.1;}
-    .sigil-divider .sd-dot{fill:var(--fg);}
-
-    h2{font-family:var(--font-mono); font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; margin-bottom:.6rem;}
-
-    .synergy-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:.8rem;}
-    .synergy-item{border:1px dashed var(--line); padding:.6rem .85rem; font-size:.74rem; color:var(--dim); line-height:1.65;}
-    .synergy-item strong{color:var(--fg);}
-
-    .rite-log-intro{font-family:var(--font-mono); font-size:.6rem; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-bottom:.7rem; line-height:1.8;}
-    .log-panel{border:1px solid var(--line); max-height:240px; overflow-y:auto; font-family:var(--font-mono); font-size:.66rem; line-height:1.85;}
-    .log-empty{padding:.9rem; color:var(--dim); text-transform:uppercase; letter-spacing:.14em; font-size:.6rem;}
-    .log-entry{padding:.5rem .85rem; border-bottom:1px solid var(--hair); color:var(--dim);}
-    .log-entry:last-child{border-bottom:none;}
-    .log-entry .le-tag{color:var(--fg); margin-right:.5rem;}
-
-    .nav-link{display:block; margin-top:16px; font-family:"Courier New",monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; border-bottom:1px solid var(--line); color:var(--fg); text-decoration:none; width:max-content;}
-    .nav-link:hover{border-bottom-color:var(--fg);}
-
-    ::-webkit-scrollbar{width:4px; height:4px;}
-    ::-webkit-scrollbar-track{background:var(--bg);}
-    ::-webkit-scrollbar-thumb{background:var(--line);}
-    ::-webkit-scrollbar-thumb:hover{background:var(--fg);}
-
-    @media(prefers-reduced-motion:reduce){
-        .rite-sigil-wrap.misfire{animation:none !important;}
+    .hatchbar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      height: 100%;
+      background: repeating-linear-gradient(45deg, #fff 0 3px, #bbb 3px 6px);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    .hatchbar-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9.5px;
+      letter-spacing: 1px;
+      mix-blend-mode: difference;
+      color: #fff;
+      font-family: var(--font-mono);
     }
 
-    /* ============ CARD SHAKE + DEVOUR INVERT — tied to each row's own tier:
-       1 = Nibble (subtle), 2 = Feed (moderate), 3 = Devour (hardest jitter,
-       card flips to white — the only tier that inverts). ============ */
-    .rite-shake{ display:contents; }
-    .rite-row.ignite-1 .rite-shake > *{ animation:cardJitterLow .55s infinite steps(9); }
-    .rite-row.ignite-2 .rite-shake > *{ animation:cardJitterMed .4s infinite steps(9); }
-    .rite-row.ignite-3 .rite-shake > *{ animation:cardJitterHigh .3s infinite steps(10); }
-    .rite-row.ignite-3{
-        --card-bg:#fff; --fg:#000; --dim:rgba(0,0,0,.6); --dim2:rgba(0,0,0,.4);
-        --line:rgba(0,0,0,.22); --hair:rgba(0,0,0,.14);
+    /* ── controls ── */
+    .controls {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+      padding-top: 0.8rem;
+      border-top: 1px solid #222;
+      position: relative; z-index: 1;
     }
-    @keyframes cardJitterLow{
-        0%{transform:translate(0,0) rotate(0deg);} 11%{transform:translate(.6px,-.7px) rotate(-.06deg);}
-        22%{transform:translate(-.8px,.3px) rotate(.09deg);} 33%{transform:translate(.4px,.8px) rotate(-.04deg);}
-        44%{transform:translate(-.9px,-.4px) rotate(.07deg);} 56%{transform:translate(.7px,.5px) rotate(-.1deg);}
-        67%{transform:translate(-.3px,-.9px) rotate(.05deg);} 78%{transform:translate(.8px,.2px) rotate(-.07deg);}
-        89%{transform:translate(-.6px,.6px) rotate(.03deg);} 100%{transform:translate(0,0) rotate(0deg);}
+    .controls button {
+      background: transparent; border: 1px solid #3a3a3a; color: #ccc; font-family: var(--font-mono); font-size: 0.6rem;
+      padding: 0.4rem 1rem; cursor: pointer; transition: 0.2s; border-radius: 2px; letter-spacing: 0.5px;
     }
-    @keyframes cardJitterMed{
-        0%{transform:translate(0,0) rotate(0deg);} 11%{transform:translate(1.1px,-1.3px) rotate(-.11deg);}
-        22%{transform:translate(-1.5px,.5px) rotate(.16deg);} 33%{transform:translate(.6px,1.4px) rotate(-.08deg);}
-        44%{transform:translate(-1.6px,-.7px) rotate(.13deg);} 56%{transform:translate(1.3px,.9px) rotate(-.18deg);}
-        67%{transform:translate(-.5px,-1.6px) rotate(.09deg);} 78%{transform:translate(1.5px,.3px) rotate(-.14deg);}
-        89%{transform:translate(-1.1px,1.1px) rotate(.06deg);} 100%{transform:translate(0,0) rotate(0deg);}
+    .controls button:hover { background: #222; border-color: #777; color: #fff; }
+    .controls input {
+      background: #111; border: 1px solid #333; color: #ddd; font-family: var(--font-mono); font-size: 0.6rem;
+      padding: 0.4rem 0.6rem; width: 60px; border-radius: 2px;
     }
-    @keyframes cardJitterHigh{
-        0%{transform:translate(0,0) rotate(0deg);} 10%{transform:translate(1.8px,-2.1px) rotate(-.18deg);}
-        20%{transform:translate(-2.4px,.8px) rotate(.25deg);} 30%{transform:translate(1px,2.4px) rotate(-.13deg);}
-        40%{transform:translate(-2.6px,-1.1px) rotate(.21deg);} 50%{transform:translate(2px,1.5px) rotate(-.28deg);}
-        60%{transform:translate(-.8px,-2.7px) rotate(.14deg);} 70%{transform:translate(2.5px,.4px) rotate(-.22deg);}
-        80%{transform:translate(-1.7px,2.2px) rotate(.11deg);} 90%{transform:translate(1px,-1.3px) rotate(-.16deg);}
-        100%{transform:translate(0,0) rotate(0deg);}
+    .controls .reset { border-color: #333; color: #666; }
+
+    /* ── chart panel ── */
+    .chart-panel-inner {
+      background: #0d0d0d;
+      border: 1px solid #1f1f1f;
+      border-radius: 6px;
+      padding: 1.2rem 1rem 1rem;
+      position: relative;
     }
-    @media(prefers-reduced-motion:reduce){
-        .rite-row.ignite-1 .rite-shake > *, .rite-row.ignite-2 .rite-shake > *, .rite-row.ignite-3 .rite-shake > *{ animation:none !important; }
+    .chart-panel-inner .star-field {
+      position: relative;
+      background: #0a0a0a;
+      border: 1px solid #1a1a1a;
+      border-radius: 4px;
+      padding: 0.8rem 0.5rem 0.5rem;
+      min-height: 280px;
     }
 
-    /* ============ AMBIENT GLITCH — whole-page braille/box static,
-       intensity driven by how many Rites are Feed/Devour right now ============ */
-    .ambient-glitch{
-        position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0;
-        font-family:var(--font-mono); font-size:11px; line-height:14px; letter-spacing:1px;
-        color:#3a3a3a; white-space:pre; overflow:hidden;
+    /* ── section labels ── */
+    .section-label {
+      padding: 12px 12px 2px;
+      font-family: var(--font-serif);
+      font-size: 13px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      transition: color 0.5s, opacity 0.5s;
+    }
+    .section-label.locked-tier { color: var(--dim2); opacity: 0.6; }
+    .section-label.unlocked-tier { color: var(--fg); opacity: 1; }
+    .section-sub {
+      padding: 0 12px 8px;
+      font-size: 10px;
+      color: var(--dim);
+      letter-spacing: 0.5px;
+      font-family: var(--font-mono);
     }
 
-    /* ============ STAMP GLITCH — Devour only ============ */
-    .stamp-glitch{
-        position:fixed; top:0; left:0; z-index:1000; pointer-events:none; opacity:0;
-        font-family:var(--font-mono); font-weight:700; line-height:1; white-space:pre; color:#3a3a3a;
-        user-select:none; transition:opacity .03s linear;
+    /* ── tier connector ── */
+    .tier-connector { display: flex; justify-content: center; padding: 2px 0; }
+    .tier-connector span {
+      width: 1px;
+      height: 22px;
+      background: var(--dim2);
+      position: relative;
+      display: block;
+    }
+    .tier-connector span::before, .tier-connector span::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      width: 4px;
+      height: 4px;
+      border: 1px solid var(--dim2);
+      border-radius: 50%;
+      transform: translateX(-50%);
+    }
+    .tier-connector span::before { top: -2px; }
+    .tier-connector span::after { bottom: -2px; }
+    .tier-connector.filled span { background: var(--fg); }
+    .tier-connector.filled span::before, .tier-connector.filled span::after { background: var(--fg); border-color: var(--fg); }
+
+    /* ── notch track ── */
+    .notch-track {
+      display: flex;
+      gap: 5px;
+      padding: 2px 12px 12px;
+      flex-wrap: wrap;
+    }
+    .notch-tick {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--dim2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: var(--dim2);
+      transition: all 0.3s;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+    .notch-tick.available { border-color: var(--fg); color: var(--fg); animation: pulseborder 1.6s infinite; }
+    .notch-tick.carved { background: var(--fg); border-color: var(--fg); color: #000; }
+    @keyframes pulseborder { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+    /* ── channel grid ── */
+    .channel-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      padding: 0 12px 16px;
+    }
+    .slot { display: flex; flex-direction: column; }
+    .slot-label {
+      font-size: 9px;
+      color: var(--dim);
+      letter-spacing: 1px;
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+    }
+    .slot-label.on { color: var(--fg); }
+
+    .pair-row {
+      display: flex;
+      align-items: stretch;
     }
 
-    /* ============ GLITCH-IN — register tab switch transition ============ */
-    .rite-list.glitching{ animation:glitchIn .3s steps(1) both; }
-    @keyframes glitchIn{
-        0%{opacity:0; transform:translate(-8px,0) scaleY(1.03); clip-path:inset(0 0 42% 0); filter:contrast(2.2) brightness(1.6) saturate(0);}
-        8%{opacity:1; transform:translate(6px,0); clip-path:inset(18% 0 0 0); filter:contrast(1.8) brightness(1.3) hue-rotate(8deg);}
-        16%{opacity:.85; transform:translate(-5px,0); clip-path:inset(0 0 65% 0); filter:contrast(2.4) brightness(.7);}
-        24%{opacity:1; transform:translate(4px,0); clip-path:inset(48% 0 0 0); filter:contrast(1.4) brightness(1.4);}
-        33%{opacity:.9; transform:translate(-2px,0); clip-path:inset(0 0 12% 0); filter:contrast(1.9) brightness(.85);}
-        45%{opacity:1; transform:translate(2px,0); clip-path:inset(0); filter:contrast(1.2) brightness(1.1);}
-        60%{opacity:1; transform:translate(0,0); clip-path:inset(0); filter:none;}
-        100%{opacity:1; transform:translate(0,0); clip-path:inset(0); filter:none;}
+    /* ── cards ── */
+    .pcard {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 11px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      position: relative;
+      min-height: 118px;
+      transition: outline-color 0.15s, box-shadow 0.15s;
+      border-radius: 4px;
     }
-    @media(prefers-reduced-motion:reduce){ .rite-list.glitching{ animation:none !important; } }
+    .pcard .h-name { font-size: 12px; font-weight: bold; letter-spacing: 0.5px; font-family: var(--font-mono); }
+    .pcard .h-desc { font-size: 9px; line-height: 1.35; opacity: 0.85; font-family: var(--font-serif); }
+    .pcard .h-tag { font-size: 8px; letter-spacing: 1px; margin-top: 2px; opacity: 0.7; font-family: var(--font-mono); }
 
-    /* ============================================================
-       LIVE SIGNAL — the restored CRT display. Sits at the top of
-       the sticky sidebar column so it stays visible next to the
-       card list at all times, escalating toward full white
-       inversion as the most recently Banned Rite's tier climbs.
-       ============================================================ */
-    .signal-label{font-family:var(--font-mono); font-size:.58rem; letter-spacing:.28em; text-transform:uppercase; color:var(--dim); margin-bottom:.4rem;}
-    .signal-frame{
-        --dim: rgba(255,255,255,.63); --dim2: rgba(255,255,255,.42);
-        border:2px solid #fff; background:#000; position:relative; overflow:hidden; cursor:pointer;
+    /* I card: white */
+    .pcard.i-card {
+      background: #fff;
+      color: #000;
+      border: 1px solid #000;
     }
-    .signal-frame::before{
-        content:""; position:absolute; inset:-4px; pointer-events:none; z-index:5;
-        background:repeating-linear-gradient(to bottom, rgba(0,0,0,.37) 0px, rgba(0,0,0,.37) 1px, transparent 1px, transparent 3px);
-        mix-blend-mode:multiply; animation:scanlineDrift 5s linear infinite;
-    }
-    @keyframes scanlineDrift{0%{transform:translateY(0);}100%{transform:translateY(3px);}}
+    .pcard.i-card:hover { background: #e2e2e2; }
 
-    .signal-stage{
-        position:relative; display:block; width:100%; height:min(26vh,210px); background:#000;
+    /* O card: black with custom dotted border (wide spacing) */
+    .pcard.o-card {
+      background: #000;
+      color: #fff;
+      border: 2px dotted #fff;
+      /* extra spacing via outline */
+      outline: 2px dotted #aaa;
+      outline-offset: 4px;
     }
-    .signal-stage::after{
-        content:""; position:absolute; inset:0; pointer-events:none; z-index:6;
-        background:radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,.22) 80%, rgba(0,0,0,.47) 100%);
-        mix-blend-mode:multiply;
-    }
-    .signal-stage.disp-feed, .signal-stage.disp-devour{
-        --fg:#000; --dim:rgba(0,0,0,.6); background:#fff;
-    }
+    .pcard.o-card:hover { background: #151515; }
 
-    .signal-shake{position:absolute; inset:0; display:flex; flex-direction:column; align-items:stretch;}
-    .signal-stage.disp-feed .signal-shake{animation:dispJitterFeed .5s infinite steps(9);}
-    .signal-stage.disp-devour .signal-shake{animation:dispJitterDevour .28s infinite steps(10);}
-    @keyframes dispJitterFeed{
-        0%{transform:translate(0,0);} 12%{transform:translate(1px,-1px);} 24%{transform:translate(-1px,1px);}
-        36%{transform:translate(1px,1px);} 48%{transform:translate(-1px,-1px);} 60%{transform:translate(1px,-1px);}
-        72%{transform:translate(-1px,1px);} 84%{transform:translate(1px,0);} 100%{transform:translate(0,0);}
-    }
-    @keyframes dispJitterDevour{
-        0%{transform:translate(0,0) rotate(0deg);} 10%{transform:translate(4px,-3px) rotate(-.4deg);}
-        20%{transform:translate(-4px,3px) rotate(.5deg);} 30%{transform:translate(3px,4px) rotate(-.3deg);}
-        40%{transform:translate(-5px,-2px) rotate(.45deg);} 50%{transform:translate(4px,3px) rotate(-.5deg);}
-        60%{transform:translate(-3px,-4px) rotate(.3deg);} 70%{transform:translate(5px,1px) rotate(-.4deg);}
-        80%{transform:translate(-4px,3px) rotate(.22deg);} 90%{transform:translate(3px,-3px) rotate(-.3deg);}
-        100%{transform:translate(0,0) rotate(0deg);}
-    }
-    @media(prefers-reduced-motion:reduce){
-        .signal-stage.disp-feed .signal-shake, .signal-stage.disp-devour .signal-shake{animation:none !important;}
+    .pcard.ghost {
+      background: #000;
+      color: var(--dim2);
+      border: 1px dotted var(--dim2);
+      cursor: default;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
     }
 
-    .signal-glyph{position:relative; flex:0 0 58%; overflow:hidden;}
-    .signal-glyph svg{width:100%; height:100%; display:block;}
-    .signal-glyph svg .seal-line{stroke:var(--fg); stroke-width:1.6; stroke-linecap:round;}
-    .signal-glyph svg .seal-decor{stroke:var(--dim2); stroke-width:1;}
-    .signal-glyph svg .seal-ring{fill:none; stroke:var(--dim2); stroke-width:1;}
-    .signal-glyph svg .seal-tick{stroke:var(--dim2); stroke-width:1;}
+    .pcard.active {
+      outline: 3px solid #fff;
+      outline-offset: 3px;
+      box-shadow: 0 0 12px rgba(255,255,255,0.4);
+      z-index: 2;
+    }
+    .pcard.active .active-tag {
+      position: absolute;
+      top: -9px;
+      right: 6px;
+      background: #000;
+      border: 1px solid #fff;
+      color: #fff;
+      font-size: 7.5px;
+      letter-spacing: 1px;
+      padding: 1px 5px;
+      font-family: var(--font-mono);
+    }
+    .pcard.i-card.active .active-tag { background: #fff; color: #000; border-color: #000; }
 
-    .signal-divider{flex:0 0 1px; align-self:stretch; background:var(--line);}
-    .signal-text{
-        position:relative; z-index:9; flex:1 1 auto; display:flex; flex-direction:column; justify-content:center;
-        gap:.4rem; padding:.9rem 1rem; overflow:hidden; font-family:var(--font-mono); text-align:center; align-items:center;
+    /* Kalma card */
+    .pcard.kalma-card {
+      background: #000;
+      color: var(--grn);
+      border: 1px solid var(--grn);
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+      outline: 3px solid var(--grn);
+      outline-offset: 3px;
+      box-shadow: 0 0 12px rgba(124, 255, 176, 0.35);
     }
-    .sg-title{font-family:var(--font-serif); font-size:1.15rem; font-weight:600; line-height:1.25; color:var(--fg); min-height:1.3em; overflow-wrap:anywhere;}
-    .sg-stage{font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);}
 
-    .signal-grain{
-        position:absolute; inset:-4px; pointer-events:none; z-index:4; opacity:.06;
-        background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.6) 0px, transparent 1px, transparent 2px),
-                          repeating-linear-gradient(90deg, rgba(255,255,255,.3) 0px, transparent 1px, transparent 3px);
-        animation:hudGrain .4s steps(2) infinite;
+    /* ── tether ── */
+    .tether {
+      flex: 0 0 26px;
+      position: relative;
+      align-self: center;
+      height: 2px;
+      background: var(--dim2);
     }
-    @keyframes hudGrain{0%{transform:translate(0,0);}100%{transform:translate(-2px,1px);}}
+    .tether::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--dim2);
+      border: 1px solid var(--dim2);
+    }
+    .tether.engaged { background: var(--fg); }
+    .tether.engaged::before { background: #fff; border-color: #fff; }
+    .tether.ghost-tether { background: var(--dim2); }
+    .tether.ghost-tether::before { background: #000; border: 1px dotted var(--dim2); }
 
-    .signal-noise{
-        position:absolute; inset:0; z-index:7; pointer-events:none; opacity:0;
-        background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.5) 0px, rgba(255,255,255,.5) 1px, transparent 1px, transparent 3px),
-                          repeating-linear-gradient(90deg, rgba(255,255,255,.25) 0px, transparent 2px, transparent 5px);
-        mix-blend-mode:screen;
+    /* ── status card (for locked/available notches) ── */
+    .status-card {
+      flex: 1;
+      border: 1px dotted var(--dim2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 118px;
+      padding: 10px;
+      text-align: center;
+      border-radius: 4px;
     }
-    .signal-noise.flashing{animation:glitchNoiseFlash .26s steps(6);}
-    @keyframes glitchNoiseFlash{
-        0%{opacity:.7; transform:translate(0,0);} 15%{opacity:.15; transform:translate(6px,-3px);}
-        30%{opacity:.65; transform:translate(-8px,2px);} 45%{opacity:.1; transform:translate(4px,4px);}
-        60%{opacity:.5; transform:translate(-3px,-2px);} 80%{opacity:.2; transform:translate(2px,1px);}
-        100%{opacity:0; transform:translate(0,0);}
+    .status-card.locked { color: var(--dim2); font-size: 9px; letter-spacing: 2px; }
+    .status-card.available { border: 1px solid var(--fg); color: var(--fg); }
+    .status-card .av-label { font-size: 9px; letter-spacing: 1.5px; font-family: var(--font-mono); }
+    .status-card .av-power { font-family: var(--font-serif); font-size: 16px; letter-spacing: 1px; }
+
+    .carve-btn {
+      font-size: 10px;
+      border: 1px solid var(--fg);
+      padding: 6px 12px;
+      letter-spacing: 1px;
+      background: transparent;
+      color: var(--fg);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      animation: pulseborder 1.6s infinite;
+      border-radius: 2px;
     }
-</style>
+    .carve-btn:hover { background: var(--fg); color: #000; }
+
+    .u-loss {
+      font-size: 8.5px;
+      color: var(--cyan);
+      padding: 6px 2px 0;
+      font-style: italic;
+      font-family: var(--font-mono);
+    }
+
+    /* ── kalma banner ── */
+    .kalma-banner {
+      display: none;
+      margin: 0 12px 16px;
+      border: 1px solid var(--grn);
+      padding: 16px;
+      text-align: center;
+      border-radius: 4px;
+    }
+    .kalma-banner.show { display: block; }
+    .kalma-banner .kt { font-family: var(--font-serif); font-size: 24px; letter-spacing: 8px; color: var(--grn); }
+    .kalma-banner p { font-size: 10.5px; color: var(--dim); max-width: 600px; margin: 8px auto 0; font-family: var(--font-mono); }
+
+    /* ── log ── */
+    .log-wrap { border-top: 1px solid var(--line); margin-top: 1rem; }
+    .log-feed {
+      font-size: 10px;
+      line-height: 1.65;
+      max-height: 140px;
+      overflow-y: auto;
+      color: var(--dim);
+      padding: 8px 12px 10px;
+      font-family: var(--font-mono);
+    }
+    .log-feed div { white-space: pre-wrap; }
+    .log-feed .noise-hit { color: var(--fg); }
+    .log-feed .kalma-hit { color: var(--grn); }
+
+    /* ── footlines ── */
+    .footlines {
+      border-top: 1px solid var(--line);
+      padding: 8px 12px;
+      font-size: 9.5px;
+      color: var(--dim);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+    }
+    .footlines div { max-width: 48%; white-space: pre-line; }
+
+    /* ── modal ── */
+    .modal-bg {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      border: 1px solid var(--fg);
+      background: #000;
+      padding: 20px;
+      width: min(90vw, 420px);
+      border-radius: 4px;
+    }
+    .modal h3 { font-family: var(--font-serif); font-size: 14px; letter-spacing: 2px; margin: 0 0 6px; }
+    .modal p { font-size: 10.5px; color: var(--dim); margin: 0 0 12px; font-family: var(--font-mono); }
+    .modal textarea {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--line);
+      color: var(--fg);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      padding: 8px;
+      min-height: 68px;
+      resize: vertical;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .modal-actions button {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--fg);
+      font-family: var(--font-mono);
+      padding: 6px 13px;
+      font-size: 10.5px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    .modal-actions button:hover { background: var(--fg); color: #000; }
+    .modal-actions .confirm { border-color: var(--fg); }
+
+    /* ── misc ── */
+    .nav-link { display: block; margin-top: 16px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--line); color: var(--fg); text-decoration: none; width: max-content; }
+    .nav-link:hover { border-bottom-color: var(--fg); }
+
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--line); }
+    ::-webkit-scrollbar-thumb:hover { background: var(--fg); }
+
+    @media (max-width: 700px) {
+      .pcard { min-height: 80px; padding: 8px; }
+      .bignum { font-size: 22px; }
+    }
+  </style>
 </head>
 <body>
-<div class="ambient-glitch" id="ambientGlitch" aria-hidden="true"></div>
-<div class="stamp-glitch" id="stampGlitch" aria-hidden="true"></div>
 <div class="container">
 
-    <p class="eyebrow">NODE // 018</p>
-    <h1>KINDLINGS</h1>
-    <div class="whitebox">ULTRABLACK — DOOMER TERMINAL</div>
-    <p class="subhead">Trace a Kindling's sigil to <strong>Ban</strong> it. A clean pass Nibbles it; trace again to push it to Feed, again to Devour. A broken trace misfires — nothing lands, nothing costs you. Every Rite reads in full below, no tapping required.</p>
+  <p class="eyebrow">node // 011</p>
+  <h1>Notch Chart</h1>
+  <div class="whitebox">Othergrade — Kept Channel</div>
+  <p class="subhead">Each notch is a point of light. Carve them to reveal the constellation. I (light) stays white; O (shade) takes a dotted border with extra spacing.</p>
 
-    <div class="main-grid">
-        <div class="signal-col">
-            <div>
-                <div class="signal-label">Live Signal</div>
-                <div class="signal-frame">
-                    <div class="signal-stage" id="signalStage">
-                        <div class="signal-shake" id="signalShake">
-                            <div class="signal-glyph" id="signalGlyph"></div>
-                            <div class="signal-divider"></div>
-                            <div class="signal-text">
-                                <span class="sg-title" id="sgTitle"></span>
-                                <span class="sg-stage" id="sgStage"></span>
-                            </div>
-                            <div class="signal-grain"></div>
-                            <div class="signal-noise" id="signalNoise"></div>
-                        </div>
-                    </div>
-                </div>
+  <div class="main-grid">
+    <!-- left column: signal, readout, controls -->
+    <div class="signal-col">
+      <div>
+        <div class="signal-label">Live Signal</div>
+        <div class="signal-frame">
+          <div class="signal-stage" id="signalStage">
+            <div class="signal-shake" id="signalShake">
+              <div class="signal-glyph" id="signalGlyph"></div>
+              <div class="signal-divider"></div>
+              <div class="signal-text">
+                <span class="sg-title" id="sgTitle"></span>
+                <span class="sg-stage" id="sgStage"></span>
+              </div>
+              <div class="signal-grain"></div>
             </div>
-
-            <div class="control-bar">
-                <div class="register-tabs" id="registerTabs">
-                    <button class="reg-tab active" data-reg="all">ALL RITES<span class="rt-sub">18</span></button>
-                    <button class="reg-tab" data-reg="brain">HARD LOCK<span class="rt-sub">BRN</span></button>
-                    <button class="reg-tab" data-reg="nerve">RED SHIFT<span class="rt-sub">NRV</span></button>
-                    <button class="reg-tab" data-reg="frame">NEGATIVE BOX<span class="rt-sub">FRM</span></button>
-                </div>
-            </div>
-
-            <div class="keeps-section">
-                <div class="keeps-label">Filter by Keep</div>
-                <div class="keeps-grid" id="keepsGrid"></div>
-            </div>
-
-            <div class="fixed-strip">
-                <div class="fixed-head"><span>Fixed Rites</span><span id="fixedCount">00 Active</span></div>
-                <div class="fixed-body" id="fixedBody"></div>
-            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="rites-col">
-            <div class="rite-list-panel">
-                <div class="rite-list" id="riteList"></div>
-            </div>
+      <!-- readout -->
+      <div>
+        <div class="readout">
+          <div class="bignum" id="bigNoise">0<span class="neg" id="bigNeg">-10</span></div>
+          <div class="hatchbar">
+            <div class="hatchbar-fill" id="hatchFill"></div>
+            <div class="hatchbar-label" id="hatchLabel">NOISE / 270</div>
+          </div>
         </div>
+        <div style="display:flex; justify-content:space-between; padding:4px 4px 0; font-size:9px; color:var(--dim); font-family:var(--font-mono);">
+          <span id="statusLine">status: stable · notches <span id="notchCount">0</span>/9</span>
+          <span id="nextLine">next threshold: 10</span>
+        </div>
+      </div>
+
+      <!-- controls -->
+      <div class="controls">
+        <button id="fusedBtn">fix +5</button>
+        <input type="number" id="manualAmt" placeholder="n" value="5">
+        <button id="manualBtn">apply</button>
+        <button class="reset" id="resetBtn">reset kept</button>
+      </div>
     </div>
 
-    <div class="sigil-divider" id="dividerSynergy"></div>
-    <div class="synergy-section">
-        <h2>Cross-Synergies</h2>
-        <div class="synergy-grid" id="synergyGrid">
-            <div class="synergy-item"><strong>Remove the Righteous Eyes</strong> (Dead Witness) + <strong>Command the Hollow</strong> (Dead Vessel) — one corpse, sight and speech both.</div>
-            <div class="synergy-item"><strong>Drink the Lightning</strong> (Living conductor) + <strong>The Static Storm</strong> — a storm chained through a marked conductor.</div>
-            <div class="synergy-item"><strong>Strip to the Bone</strong> + <strong>The Hollow Rib</strong> — burn to bone, hit like the bone is the weapon.</div>
-            <div class="synergy-item"><strong>Borrow the Shadow</strong> + <strong>The Creeping Gloom</strong> / <strong>Make the Dark Cut</strong> — arrive already striking, from inside a blade you made.</div>
-            <div class="synergy-item"><strong>Strike From Everywhere</strong> + <strong>Second Corpse</strong> — split the strikes, split the cost.</div>
-            <div class="synergy-item"><strong>Silence the Holy Tongue</strong> (Feed) + <strong>Static Lance</strong> — mouth sewn shut, the bolt lands harder and reaches further.</div>
-            <div class="synergy-item"><strong>Split the Skull</strong> (Feed) + <strong>Command the Hollow</strong> — hold the Witness and a second Concentration Kindling running at once.</div>
-            <div class="synergy-item"><strong>Cut the Strings</strong> (Devour) + <strong>Strip to the Bone</strong> — burn past exhaustion, keep swinging past what should have dropped you.</div>
-            <div class="synergy-item"><strong>Exchange Footsteps</strong> + <strong>Wear Their Face</strong> — swap into the room already wearing someone else's face.</div>
-            <div class="synergy-item"><strong>Faster! Faster! Faster!</strong> + <strong>Strike From Everywhere</strong> — extra actions spent on blink-strikes across the whole room.</div>
-            <div class="synergy-item"><strong>The Hollow Rib</strong> (Dead Demand) + <strong>The Creeping Gloom</strong> / <strong>Make the Dark Cut</strong> — a standing Sentinel that hits like a shockwave.</div>
-            <div class="synergy-item"><strong>Wear Their Face</strong> (Dead Demand) + <strong>Command the Hollow</strong> — a Vessel with perfect impersonation, no tell at all.</div>
-            <div class="synergy-item"><strong>Silence the Holy Tongue</strong> (Devour) + <strong>The Static Storm</strong> — offensive BRN ceiling feeding an already-sustained storm.</div>
+    <!-- right column: chart -->
+    <div class="chart-col">
+      <div class="chart-panel">
+        <div class="chart-panel-inner">
+          <div class="star-field">
+            <!-- Kino -->
+            <div class="section-label">Kino</div>
+            <div class="section-sub">Base powers, free of Notches. Firing the O side generates Noise — the I side never does.</div>
+            <div class="channel-grid" id="kinoGrid"></div>
+
+            <div class="tier-connector" id="connector-1"><span></span></div>
+
+            <!-- Fantom -->
+            <div class="section-label locked-tier" id="label-fantom">Fantom</div>
+            <div class="section-sub">Crossing a Noise threshold below only unlocks the <i>option</i> to carve — carving is a deliberate act that costs a permanent Loss. Once carved, firing either read of a Fantom power generates Noise (+3).</div>
+            <div class="notch-track" id="notchTrack"></div>
+            <div class="channel-grid" id="notchGrid"></div>
+
+            <div class="tier-connector" id="connector-2"><span></span></div>
+
+            <!-- Kalma -->
+            <div class="section-label locked-tier" id="label-kalma">Kalma</div>
+            <div class="section-sub">What's left. Not one more Notch to carve — every Notch you already have, unbound.</div>
+            <div class="channel-grid" id="kalmaGrid"></div>
+
+            <div class="kalma-banner" id="kalmaBanner">
+              <div class="kt">KALMA</div>
+              <p><b>NULL</b> — no I, no O. The pit with nothing left to argue with it. Every Kino O channel now runs continuous, free of Noise. Every carved Fantom channel runs unchained.</p>
+            </div>
+
+            <!-- log -->
+            <div class="log-wrap">
+              <div class="section-label" style="padding-top:9px;">Log</div>
+              <div class="section-sub" style="padding-bottom:5px;">latest first</div>
+              <div class="log-feed" id="logFeed"></div>
+            </div>
+
+            <!-- footlines -->
+            <div class="footlines">
+              <div>carve ONE (noise-bound) simulate / kept integrity</div>
+              <div style="text-align:right;">(assign kept-01 pit-plane hand carving, fantom reserve data channel slot...)</div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="sigil-divider" id="dividerRiteLog"></div>
-    <div class="rite-log-section">
-        <h2>Rite Log</h2>
-        <p class="rite-log-intro">Every Rite Banned this session records itself here — title, Self tier, or demand fixed.</p>
-        <div class="log-panel" id="riteLogPanel"></div>
+  <!-- navigation -->
+  <a class="nav-link" href="../kindling">→ kindling</a>
+  <a class="nav-link" href="../spiritbox">→ spiritbox</a>
+  <a class="nav-link" href="../operator-registry">→ operator registry</a>
+  <a class="nav-link" href="../">→ kernel</a>
+</div>
+
+<!-- modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">CARVE NOTCH</h3>
+    <p id="modalSub"></p>
+    <textarea id="lossInput" placeholder="Describe the Loss — a missing memory, a hand that won't stop shaking, a name that means nothing anymore..."></textarea>
+    <div class="modal-actions">
+      <button id="modalCancel">cancel</button>
+      <button class="confirm" id="modalConfirm">carve</button>
     </div>
-
-    <a class="nav-link" href="../kindling">→ KINDLING</a>
-    <a class="nav-link" href="../spiritbox">→ SPIRITBOX</a>
-    <a class="nav-link" href="../operator-registry">→ OPERATOR REGISTRY</a>
-    <a class="nav-link" href="../">→ KERNEL</a>
+  </div>
 </div>
 
 <script>
-(function(){
-'use strict';
+(async function() {
+  'use strict';
 
-/* ============================================================
-   RNG / hashing
-   ============================================================ */
-function mulberry32(seed){
-    return function(){
-        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-}
-function hashString(str){
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
-    return Math.abs(h);
-}
+  // ── data ──
+  const KINO = [
+    { name: "RANGED BURST", I: "Lumen", Id: "fast, clean projectile", O: "Tenebrae", Od: "larger, piercing, carries a Static side-effect" },
+    { name: "MELEE", I: "Awl", Id: "refracted strike", O: "Flense", Od: "hits what isn't fully physical, bypasses armor" },
+    { name: "DASH", I: "Wend", Id: "brief, ignores minor obstacles", O: "Undertow", Od: "the whole path damages what's in it" },
+    { name: "BARRIER", I: "Ward", Id: "deflects", O: "Maw", Od: "absorbs and swallows" },
+    { name: "FALL CONTROL", I: "Alight", Id: "controlled landing", O: "Founder", Od: "violent Static impact on landing" },
+    { name: "VERTICAL ERUPTION", I: "Psalm", Id: "straight up, clean", O: "Dirge", Od: "grows with your Notch count" }
+  ];
 
-/* ============================================================
-   SIGIL GEOMETRY — every sigil is built as a literal set of
-   straight line segments so a pointer trace can be hit-tested
-   against it directly. Decoration (nodes, ticks, the ground line)
-   is drawn separately and is not part of the trace.
+  const THRESHOLDS = [
+    { n: 1, req: 10, power: "Fang", Id: "mirrors your movement", Od: "unchained at Notch 6 — hunts on its own", tier: "Fantom" },
+    { n: 2, req: 25, power: "Wing", Id: "attached, carries you aloft", Od: "the shade drags you higher than you meant to go", tier: "Fantom" },
+    { n: 3, req: 45, power: "Wrath", Id: "mirrors you, takes the hit for you", Od: "unchained at Notch 8 — learns from what strikes you", tier: "Fantom" },
+    { n: 4, req: 70, power: "Edge", Id: "follows your attacks, clean severance", Od: "unchained at Notch 7 — severs matter, Static, connections outright", tier: "Fantom" },
+    { n: 5, req: 100, power: "Zero Parade", Id: "a handful of black rabbits, skittish", Od: "unchained at Notch 9 — the swarm moves as one, past counting", tier: "Fantom" },
+    { n: 6, req: 135, power: "Fang, unchained", Id: "hunts independently, still answers to you", Od: "hunts on instinct alone", tier: "Fantom" },
+    { n: 7, req: 175, power: "Disaster Blade", Id: "severs matter and Static cleanly", Od: "severs connections outright", tier: "Fantom" },
+    { n: 8, req: 220, power: "Wrath, unchained", Id: "acts independently, still yours", Od: "learns from every hit, keeps the lesson", tier: "Fantom" },
+    { n: 9, req: 270, power: "Zero Parade, unchained", Id: "the swarm moves as one body", Od: "multiplies past counting", tier: "Fantom" }
+  ];
+  const NULL_NOTCH = { power: "Null", Od: "the Shade at full, unfiltered output — nothing left to argue with the noise" };
+  const MAX_NOISE = 270;
+  const STORE_KEY = "othergrade-notchchart-v2";
 
-   Each register gets its OWN geometric family — a fixed design
-   philosophy that every Kindling in that group follows, varied
-   only by seed:
+  // ── state ──
+  let state = {
+    noise: 0,
+    kalmaActive: false,
+    notches: THRESHOLDS.map(() => ({ carved: false, loss: "", carvedAt: null, active: null })),
+    kinoActive: KINO.map(() => null),
+    log: []
+  };
 
-     BRN · Hard Lock    → WHEEL   — a hub with spokes radiating to
-                           a ring of points, some tips chorded
-                           together. Reads as a lock/dial mechanism.
-     NRV · Red Shift     → PULSE   — a single sequential jagged
-                           trace, left to right, like a nerve spike
-                           or EKG line. Never re-visits a point.
-     FRM · Negative Box  → BOX     — a quadrilateral with a bisecting
-                           diagonal. Reads as a frame/container.
-   ============================================================ */
+  let seenAvailable = new Set();
+  let seenCarved = new Set();
+  let seenKalma = false;
 
-/* BRN · LOCK — a single continuous angular trace: an open random
-   walk with turns that mostly alternate direction (a consistent
-   zigzag cadence, not a fully random one) so every Kindling in this
-   register — and the idle domain glyph itself, built by this same
-   function — reads as the same family of jagged circuit trace. */
-function sigilBrain(seed){
+  // ── storage ──
+  async function loadState() {
+    try {
+      const res = await window.storage.get(STORE_KEY, false);
+      if (res && res.value) {
+        const parsed = JSON.parse(res.value);
+        if (parsed && Array.isArray(parsed.notches) && parsed.notches.length === THRESHOLDS.length) {
+          parsed.notches.forEach(n => { if (n.active === undefined) n.active = null; });
+          if (!Array.isArray(parsed.kinoActive) || parsed.kinoActive.length !== KINO.length) {
+            parsed.kinoActive = KINO.map(() => null);
+          }
+          if (typeof parsed.kalmaActive !== "boolean") parsed.kalmaActive = false;
+          state = parsed;
+        }
+      }
+    } catch (e) {}
+  }
+  async function saveState() {
+    try { await window.storage.set(STORE_KEY, JSON.stringify(state), false); } catch (e) { console.error("save failed", e); }
+  }
+
+  function isKalma() { return !!state.kalmaActive; }
+  function carvedCount() { return state.notches.filter(n => n.carved).length; }
+  function allCarved() { return carvedCount() === THRESHOLDS.length; }
+  function nextLocked() { for (let i = 0; i < THRESHOLDS.length; i++) { if (!state.notches[i].carved) return THRESHOLDS[i]; } return null; }
+
+  function pushLog(text, cls) {
+    const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    state.log.unshift({ text: `[${stamp}] ${text}`, cls: cls || "" });
+    state.log = state.log.slice(0, 40);
+  }
+
+  function addNoise(amount, label) {
+    if (isKalma() && amount > 0) {
+      pushLog(`${label} — NULL, no Noise generated (Kalma).`, "kalma-hit");
+      render(); saveState(); return;
+    }
+    state.noise = Math.max(0, state.noise + amount);
+    pushLog(`${label} — Noise ${amount >= 0 ? '+' : ''}${amount} (now ${state.noise})`, amount > 0 ? "noise-hit" : "");
+    render(); saveState();
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  // ── render ──
+  function render() {
+    renderReadout();
+    renderKino();
+    renderNotchTrack();
+    renderNotches();
+    renderKalma();
+    renderLog();
+
+    document.getElementById("kalmaBanner").classList.toggle("show", isKalma());
+
+    const fantomOn = carvedCount() > 0;
+    document.getElementById("label-fantom").classList.toggle("unlocked-tier", fantomOn);
+    document.getElementById("label-fantom").classList.toggle("locked-tier", !fantomOn);
+    document.getElementById("connector-1").classList.toggle("filled", fantomOn);
+
+    document.getElementById("label-kalma").classList.toggle("unlocked-tier", isKalma());
+    document.getElementById("label-kalma").classList.toggle("locked-tier", !isKalma());
+    document.getElementById("connector-2").classList.toggle("filled", isKalma());
+  }
+
+  function renderReadout() {
+    const next = nextLocked();
+    document.getElementById("bigNoise").innerHTML = `${state.noise}<span class="neg" id="bigNeg">${next ? '-' + (next.req - state.noise) : 'MAX'}</span>`;
+    const pct = Math.min(state.noise / MAX_NOISE, 1) * 100;
+    document.getElementById("hatchFill").style.width = pct + "%";
+    document.getElementById("hatchLabel").textContent = `NOISE ${state.noise} / ${MAX_NOISE}`;
+    const statusEl = document.getElementById("statusLine");
+    statusEl.innerHTML = isKalma()
+      ? `<span style="color:var(--grn);">status: KALMA — NULL</span> · notches ${carvedCount()}/9`
+      : `status: stable · notches ${carvedCount()}/9`;
+    document.getElementById("nextLine").textContent = next ? `next threshold: ${next.req}` : "all notches carved";
+    document.getElementById("notchCount").textContent = carvedCount();
+  }
+
+  function renderKino() {
+    const wrap = document.getElementById("kinoGrid");
+    wrap.innerHTML = "";
+    KINO.forEach((k, idx) => {
+      const activeSide = state.kinoActive[idx];
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      slot.innerHTML = `
+        <div class="slot-label ${activeSide ? 'on' : ''}"><span>K${idx}</span><span>${k.name}</span></div>
+        <div class="pair-row">
+          <div class="pcard i-card ${activeSide === 'I' ? 'active' : ''}" data-kino-i="${idx}">
+            ${activeSide === 'I' ? '<span class="active-tag">ACTIVE</span>' : ''}
+            <div class="h-name">${k.I}</div>
+            <div class="h-desc">${k.Id}</div>
+            <div class="h-tag">I · CLEAN</div>
+          </div>
+          <div class="tether ${activeSide ? 'engaged' : ''}"></div>
+          <div class="pcard o-card ${activeSide === 'O' ? 'active' : ''}" data-kino-o="${idx}">
+            ${activeSide === 'O' ? '<span class="active-tag">ACTIVE</span>' : ''}
+            <div class="h-name">${k.O}</div>
+            <div class="h-desc">${k.Od}</div>
+            <div class="h-tag">O · ${isKalma() ? 'CONTINUOUS' : '+2 NOISE'}</div>
+          </div>
+        </div>
+      `;
+      wrap.appendChild(slot);
+    });
+    wrap.querySelectorAll("[data-kino-i]").forEach(el => {
+      el.addEventListener("click", () => {
+        const idx = el.dataset.kinoI;
+        const k = KINO[idx];
+        state.kinoActive[idx] = 'I';
+        pushLog(`${k.I} used — clean, no Noise.`);
+        render(); saveState();
+      });
+    });
+    wrap.querySelectorAll("[data-kino-o]").forEach(el => {
+      el.addEventListener("click", () => {
+        const idx = el.dataset.kinoO;
+        const k = KINO[idx];
+        state.kinoActive[idx] = 'O';
+        if (isKalma()) addNoise(0, `${k.O} — running continuous`);
+        else addNoise(2, `${k.O} fired`);
+      });
+    });
+  }
+
+  function renderNotchTrack() {
+    const track = document.getElementById("notchTrack");
+    track.innerHTML = THRESHOLDS.map((t, i) => {
+      const entry = state.notches[i];
+      const cls = entry.carved ? "carved" : (state.noise >= t.req ? "available" : "");
+      return `<div class="notch-tick ${cls}" title="N${t.n} — ${t.power}">${t.n}</div>`;
+    }).join("");
+  }
+
+  function renderNotches() {
+    const wrap = document.getElementById("notchGrid");
+    wrap.innerHTML = "";
+    THRESHOLDS.filter(t => t.tier === "Fantom").forEach((t) => {
+      const i = t.n - 1;
+      const entry = state.notches[i];
+      const available = !entry.carved && state.noise >= t.req;
+      const slot = document.createElement("div");
+      slot.className = "slot";
+
+      const labelOn = entry.carved || available;
+      const label = `<div class="slot-label ${labelOn ? 'on' : ''}"><span>N${t.n}</span><span>req ${t.req}</span></div>`;
+      const isNewCarve = entry.carved && !seenCarved.has(i);
+      const isNewAvailable = !entry.carved && available && !seenAvailable.has(i);
+      if (isNewCarve || isNewAvailable) {
+        slot.classList.add("reveal");
+        slot.style.animationDelay = (i * 40) + "ms";
+      }
+      let body;
+
+      if (entry.carved) {
+        const activeSide = entry.active;
+        body = `<div class="pair-row">
+          <div class="pcard i-card ${activeSide === 'I' ? 'active' : ''}" data-fantom-i="${i}">
+            ${activeSide === 'I' ? '<span class="active-tag">ACTIVE</span>' : ''}
+            <div class="h-name">${t.power}</div>
+            <div class="h-desc">${t.Id}</div>
+            <div class="h-tag">I · +3 NOISE</div>
+          </div>
+          <div class="tether ${activeSide ? 'engaged' : ''}"></div>
+          <div class="pcard o-card ${activeSide === 'O' ? 'active' : ''}" data-fantom-o="${i}">
+            ${activeSide === 'O' ? '<span class="active-tag">ACTIVE</span>' : ''}
+            <div class="h-name">shade read</div>
+            <div class="h-desc">${t.Od}</div>
+            <div class="h-tag">O · +3 NOISE</div>
+          </div>
+        </div>
+        <div class="u-loss">Loss: ${escapeHtml(entry.loss)}</div>`;
+      } else if (available) {
+        body = `<div class="pair-row"><div class="status-card available">
+          <div class="av-label">THRESHOLD CROSSED</div>
+          <div class="av-power">${t.power}</div>
+          <button class="carve-btn" data-carve="${i}">CARVE →</button>
+        </div></div>`;
+      } else {
+        body = `<div class="pair-row"><div class="status-card locked">· · LOCKED · ·<br>req ${t.req} Noise</div></div>`;
+      }
+
+      slot.innerHTML = label + body;
+      wrap.appendChild(slot);
+    });
+
+    wrap.querySelectorAll("[data-carve]").forEach(btn => {
+      btn.addEventListener("click", () => onCarveClick(parseInt(btn.dataset.carve)));
+    });
+    wrap.querySelectorAll("[data-fantom-i]").forEach(el => {
+      el.addEventListener("click", () => {
+        const idx = el.dataset.fantomI;
+        const t = THRESHOLDS[idx];
+        state.notches[idx].active = 'I';
+        if (isKalma()) addNoise(0, `${t.power} (light read) — unchained, continuous`);
+        else addNoise(3, `${t.power} used — light read`);
+      });
+    });
+    wrap.querySelectorAll("[data-fantom-o]").forEach(el => {
+      el.addEventListener("click", () => {
+        const idx = el.dataset.fantomO;
+        const t = THRESHOLDS[idx];
+        state.notches[idx].active = 'O';
+        if (isKalma()) addNoise(0, `${t.power} (shade read) — unchained, continuous`);
+        else addNoise(3, `${t.power} used — shade read`);
+      });
+    });
+
+    THRESHOLDS.forEach((t, i) => {
+      const entry = state.notches[i];
+      if (entry.carved) seenCarved.add(i);
+      if (!entry.carved && state.noise >= t.req) seenAvailable.add(i);
+    });
+  }
+
+  function renderKalma() {
+    const wrap = document.getElementById("kalmaGrid");
+    wrap.innerHTML = "";
+
+    if (!isKalma()) {
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      if (allCarved()) {
+        slot.innerHTML = `<div class="slot-label on"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
+          <div class="pair-row"><div class="status-card available">
+            <div class="av-label">ALL NOTCHES CARVED</div>
+            <div class="av-power">Kalma</div>
+            <button class="carve-btn" id="activateKalmaBtn">ACTIVATE →</button>
+          </div></div>`;
+      } else {
+        slot.innerHTML = `<div class="slot-label"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
+          <div class="pair-row"><div class="status-card locked">· · LOCKED · ·<br>requires all ${THRESHOLDS.length} Notches carved</div></div>`;
+      }
+      wrap.appendChild(slot);
+      const btn = document.getElementById("activateKalmaBtn");
+      if (btn) btn.addEventListener("click", activateKalma);
+      return;
+    }
+
+    const firstReveal = !seenKalma;
+    let revealIdx = 0;
+    function makeSlot() {
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      if (firstReveal) {
+        slot.classList.add("reveal");
+        slot.style.animationDelay = (revealIdx * 45) + "ms";
+        revealIdx++;
+      }
+      return slot;
+    }
+
+    KINO.forEach(k => {
+      const slot = makeSlot();
+      slot.innerHTML = `<div class="slot-label on"><span>${k.name}</span></div>
+        <div class="pair-row">
+          <div class="pcard o-card active" style="flex:1;">
+            <span class="active-tag">ACTIVE</span>
+            <div class="h-name">${k.O}</div>
+            <div class="h-desc">${k.Od}</div>
+            <div class="h-tag">O · CONTINUOUS</div>
+          </div>
+        </div>`;
+      wrap.appendChild(slot);
+    });
+    THRESHOLDS.forEach((t, i) => {
+      if (!state.notches[i].carved) return;
+      const slot = makeSlot();
+      slot.innerHTML = `<div class="slot-label on"><span>N${t.n}</span><span>${t.power}</span></div>
+        <div class="pair-row">
+          <div class="pcard o-card active" style="flex:1;">
+            <span class="active-tag">ACTIVE</span>
+            <div class="h-name">shade read</div>
+            <div class="h-desc">${t.Od}</div>
+            <div class="h-tag">O · CONTINUOUS</div>
+          </div>
+        </div>`;
+      wrap.appendChild(slot);
+    });
+    const nullSlot = makeSlot();
+    nullSlot.innerHTML = `<div class="slot-label on"><span>NULL</span><span>no I</span></div>
+      <div class="pair-row">
+        <div class="pcard o-card active" style="flex:1;">
+          <span class="active-tag">ACTIVE</span>
+          <div class="h-name">${NULL_NOTCH.power}</div>
+          <div class="h-desc">${NULL_NOTCH.Od}</div>
+          <div class="h-tag">O ONLY · CONTINUOUS</div>
+        </div>
+      </div>`;
+    wrap.appendChild(nullSlot);
+    seenKalma = true;
+  }
+
+  function activateKalma() {
+    state.kalmaActive = true;
+    pushLog(`KALMA ACTIVATED — all ${THRESHOLDS.length} Notches carved. Every O side now runs continuous.`, "kalma-hit");
+    render(); saveState();
+  }
+
+  function renderLog() {
+    const feed = document.getElementById("logFeed");
+    if (state.log.length === 0) { feed.innerHTML = `<div>— no activity logged yet —</div>`; return; }
+    feed.innerHTML = state.log.map(l => `<div class="${l.cls}">${escapeHtml(l.text)}</div>`).join("");
+  }
+
+  // ── carve modal ──
+  let modalCallback = null;
+  function openModal({ title, sub, value, onConfirm }) {
+    document.getElementById("modalTitle").textContent = title;
+    document.getElementById("modalSub").textContent = sub;
+    document.getElementById("lossInput").value = value || "";
+    modalCallback = onConfirm;
+    document.getElementById("modalBg").classList.add("show");
+    document.getElementById("lossInput").focus();
+  }
+  function closeModal() { document.getElementById("modalBg").classList.remove("show"); modalCallback = null; }
+  document.getElementById("modalCancel").addEventListener("click", closeModal);
+  document.getElementById("modalBg").addEventListener("click", (e) => { if (e.target.id === "modalBg") closeModal(); });
+  document.getElementById("modalConfirm").addEventListener("click", () => {
+    const val = document.getElementById("lossInput").value.trim();
+    if (modalCallback) modalCallback(val);
+    closeModal();
+  });
+
+  function onCarveClick(i) {
+    const t = THRESHOLDS[i];
+    const entry = state.notches[i];
+    openModal({
+      title: `CARVE NOTCH ${t.n} — ${t.power.toUpperCase()}`,
+      sub: `Threshold ${t.req} reached. Crossing it only unlocked the option — carving is your choice, and it costs a permanent Loss.`,
+      value: "",
+      onConfirm: (val) => {
+        entry.carved = true;
+        entry.loss = val || "(unspecified)";
+        entry.carvedAt = state.noise;
+        pushLog(`NOTCH ${t.n} CARVED — ${t.power}. Loss: ${entry.loss}`, "noise-hit");
+        render(); saveState();
+      }
+    });
+  }
+
+  // ── init ──
+  document.getElementById("fusedBtn").addEventListener("click", () => {
+    if (isKalma()) addNoise(0, "Fix — no Noise (Kalma)");
+    else addNoise(5, "Fix invoked");
+  });
+  document.getElementById("manualBtn").addEventListener("click", () => {
+    const inp = document.getElementById("manualAmt");
+    const v = parseInt(inp.value);
+    if (!isNaN(v) && v !== 0) { addNoise(v, "Manual adjustment"); inp.value = ""; }
+  });
+  document.getElementById("resetBtn").addEventListener("click", async () => {
+    if (confirm("Reset this Kept? Noise, Notches, and Losses will be cleared permanently.")) {
+      state = {
+        noise: 0,
+        kalmaActive: false,
+        notches: THRESHOLDS.map(() => ({ carved: false, loss: "", carvedAt: null, active: null })),
+        kinoActive: KINO.map(() => null),
+        log: []
+      };
+      seenAvailable = new Set(); seenCarved = new Set(); seenKalma = false;
+      pushLog("Kept reset.");
+      render(); await saveState();
+    }
+  });
+
+  await loadState();
+  THRESHOLDS.forEach((t, i) => {
+    const entry = state.notches[i];
+    if (entry.carved) seenCarved.add(i);
+    if (!entry.carved && state.noise >= t.req) seenAvailable.add(i);
+  });
+  seenKalma = isKalma();
+  if (state.log.length === 0) pushLog("Kept status channel online.");
+  render();
+
+  // ── signal display (live signal) ──
+  function buildSeal(seed) {
     const rng = mulberry32(seed);
-    const n = 6 + Math.floor(rng() * 2); // 6–7 segments, kept tight for consistency
-    let x = 0, y = 0, angle = rng() * Math.PI * 2;
-    const raw = [[0,0]];
-    let dir = rng() < 0.5 ? 1 : -1;
-    for (let i = 0; i < n; i++){
-        const turn = (Math.PI * 0.32 + rng() * Math.PI * 0.24) * dir; // ~58°–101°, alternating
-        angle += turn;
-        dir = (rng() < 0.85) ? -dir : dir; // mostly alternates; rare repeat keeps it from feeling mechanical
-        const len = 10 + rng() * 6;
-        x += Math.cos(angle) * len;
-        y += Math.sin(angle) * len;
-        raw.push([x,y]);
-    }
-    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
-    raw.forEach(([px,py]) => { minX=Math.min(minX,px); maxX=Math.max(maxX,px); minY=Math.min(minY,py); maxY=Math.max(maxY,py); });
-    const w = Math.max(maxX-minX, 0.001), h = Math.max(maxY-minY, 0.001);
-    const scale = Math.min(52/w, 44/h);
-    const cx = 50, cy = 44;
-    const offX = cx - ((minX+maxX)/2)*scale, offY = cy - ((minY+maxY)/2)*scale;
-    const pts = raw.map(([px,py]) => [px*scale+offX, py*scale+offY]);
-
-    const segs = [];
-    for (let i = 1; i < pts.length; i++) segs.push([pts[i-1][0], pts[i-1][1], pts[i][0], pts[i][1]]);
-
-    let decor = '';
-    pts.forEach((p,i) => { if (i > 0 && i < pts.length - 1 && rng() < 0.35) decor += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.4" class="sig-node"></circle>`; });
-    const gY = cy + 33, gH = 14 + rng() * 8;
-    decor += `<line x1="${(cx-gH).toFixed(1)}" y1="${gY.toFixed(1)}" x2="${(cx+gH).toFixed(1)}" y2="${gY.toFixed(1)}" class="sig-decor"></line>`;
-    return { segs, decor };
-}
-
-/* NRV · BLINK — scattered waypoints across the whole field, visited
-   in a shuffled order as a single open chain. Random placement plus
-   a shuffled visit order makes the connecting lines cross and jump
-   erratically — reads as motion touching many places — while still
-   being one connected trace, not disconnected marks. */
-function sigilNerve(seed){
-    const rng = mulberry32(seed);
-    const cx = 50, cy = 44, R = 32;
-    const n = 5 + Math.floor(rng() * 4); // 5–8 scattered waypoints
-    const pts = [];
-    for (let i = 0; i < n; i++){
-        const a = rng() * Math.PI * 2;
-        const r = R * (0.15 + rng() * 0.82);
-        pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
-    }
-    const order = [...Array(n).keys()];
-    for (let i = order.length - 1; i > 0; i--){
-        const j = Math.floor(rng() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-    }
-    const segs = [];
-    for (let i = 1; i < n; i++){
-        const a = pts[order[i-1]], b = pts[order[i]];
-        segs.push([a[0], a[1], b[0], b[1]]);
-    }
-
-    let decor = '';
-    order.forEach((idx,i) => { if (i > 0 && i < n - 1 && rng() < 0.35) decor += `<circle cx="${pts[idx][0].toFixed(1)}" cy="${pts[idx][1].toFixed(1)}" r="1.3" class="sig-node"></circle>`; });
-    const gY = cy + R * 0.98, gH = R * (0.4 + rng() * 0.2);
-    decor += `<line x1="${(cx-gH).toFixed(1)}" y1="${gY.toFixed(1)}" x2="${(cx+gH).toFixed(1)}" y2="${gY.toFixed(1)}" class="sig-decor"></line>`;
-    return { segs, decor };
-}
-
-/* FRM · BOX — quadrilateral frame with a bisecting diagonal */
-function sigilBox(seed){
-    const rng = mulberry32(seed);
-    const cx = 50, cy = 44;
-    const hw = 19 + rng() * 12, hh = 13 + rng() * 10;
-    const rot = ((rng() - 0.5) * 50) * Math.PI / 180;
-    const corners = [[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].map(([x,y]) => [
-        cx + x*Math.cos(rot) - y*Math.sin(rot),
-        cy + x*Math.sin(rot) + y*Math.cos(rot)
-    ]);
-    const segs = [];
-    for (let i = 0; i < 4; i++) segs.push([...corners[i], ...corners[(i+1)%4]]);
-    // diagonal is part of the trace too — makes the box a real 5-stroke figure
-    if (rng() < 0.75){
-        const a = Math.floor(rng()*4), b = (a+2)%4;
-        segs.push([...corners[a], ...corners[b]]);
-    }
-    let decor = '';
-    corners.forEach(([x,y]) => { if (rng() < 0.35) decor += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.5" class="sig-node"></circle>`; });
-    const reach = Math.max(hw,hh), gY = cy + reach + 5, gH = reach * 0.5;
-    decor += `<line x1="${(cx-gH).toFixed(1)}" y1="${gY.toFixed(1)}" x2="${(cx+gH).toFixed(1)}" y2="${gY.toFixed(1)}" class="sig-decor"></line>`;
-    return { segs, decor };
-}
-
-function buildSigil(seed, mode){
-    if (mode === 'nerve') return sigilNerve(seed);
-    if (mode === 'frame') return sigilBox(seed);
-    return sigilBrain(seed);
-}
-
-/* Large ring-and-tick seal for the Live Signal display, built from
-   the same segment/decor geometry as the per-row sigils, just scaled
-   and framed with an outer ring and tick marks. */
-function buildSeal(seed, mode){
-    const { segs, decor } = buildSigil(seed, mode);
-    const nTicks = 28;
+    const cx = 150, cy = 150, R = 130;
     let ticks = '';
-    for (let i = 0; i < nTicks; i++){
-        const a = (i / nTicks) * Math.PI * 2;
-        const r1 = 133, r2 = (i % 4 === 0) ? 115 : 123;
-        ticks += `<line x1="${(150+Math.cos(a)*r1).toFixed(1)}" y1="${(150+Math.sin(a)*r1).toFixed(1)}" x2="${(150+Math.cos(a)*r2).toFixed(1)}" y2="${(150+Math.sin(a)*r2).toFixed(1)}" class="seal-tick"></line>`;
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2;
+      const r1 = R, r2 = R * (i % 3 === 0 ? 0.88 : 0.94);
+      ticks += `<line x1="${(cx + Math.cos(a) * r1).toFixed(1)}" y1="${(cy + Math.sin(a) * r1).toFixed(1)}" x2="${(cx + Math.cos(a) * r2).toFixed(1)}" y2="${(cy + Math.sin(a) * r2).toFixed(1)}" class="seal-tick"></line>`;
     }
-    const SCALE = 2.6, TX = 150 - 50*SCALE, TY = 150 - 44*SCALE;
-    const segLines = segs.map(s => `<line x1="${s[0].toFixed(1)}" y1="${s[1].toFixed(1)}" x2="${s[2].toFixed(1)}" y2="${s[3].toFixed(1)}" class="seal-line"></line>`).join('');
-    const decorRecolor = decor.replace(/class="sig-decor"/g,'class="seal-decor"').replace(/class="sig-node"/g,'class="seal-decor"');
+    const lines = [];
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + rng() * 0.5;
+      const r = 30 + rng() * 30;
+      lines.push(`<line x1="${cx}" y1="${cy}" x2="${(cx + Math.cos(a) * r).toFixed(1)}" y2="${(cy + Math.sin(a) * r).toFixed(1)}" class="seal-line"></line>`);
+    }
     return `<svg viewBox="0 0 300 300">
-        <circle cx="150" cy="150" r="140" class="seal-ring"></circle>
-        <circle cx="150" cy="150" r="108" class="seal-ring"></circle>
-        ${ticks}
-        <g transform="translate(${TX.toFixed(1)},${TY.toFixed(1)}) scale(${SCALE})">${segLines}${decorRecolor}</g>
+      <circle cx="150" cy="150" r="${R}" class="seal-ring"></circle>
+      <circle cx="150" cy="150" r="${R * 0.82}" class="seal-ring"></circle>
+      ${ticks}
+      ${lines.join('')}
     </svg>`;
-}
+  }
 
-/* An empty ring frame with nothing traced inside it — the idle
-   state's blank glyph. */
-function buildBlankCircle(){
-    return `<svg viewBox="0 0 300 300">
-        <circle cx="150" cy="150" r="140" class="seal-ring"></circle>
-        <circle cx="150" cy="150" r="108" class="seal-ring"></circle>
-    </svg>`;
-}
-
-/* Draws a seal glyph into a container by animating each stroke's
-   stroke-dashoffset from full length to zero (a "kindling" trace-in)
-   instead of just dropping the finished SVG in place. Rings and
-   ticks fade in behind the strokes as they draw. */
-function paintSeal(container, html){
+  function paintSeal(container, html) {
     if (!container) return;
     container.innerHTML = html;
     const svg = container.querySelector('svg');
     if (!svg) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
     const lines = [...svg.querySelectorAll('.seal-line')];
     const decor = [...svg.querySelectorAll('.seal-ring, .seal-tick')];
     lines.forEach(line => {
-        let len = 40;
-        try { len = line.getTotalLength(); } catch(e){}
-        line.style.strokeDasharray = len;
-        line.style.strokeDashoffset = len;
+      let len = 40;
+      try { len = line.getTotalLength(); } catch (e) {}
+      line.style.strokeDasharray = len;
+      line.style.strokeDashoffset = len;
     });
     decor.forEach(el => { el.style.opacity = '0'; });
-
     requestAnimationFrame(() => {
-        lines.forEach((line,i) => {
-            line.style.transition = `stroke-dashoffset .55s cubic-bezier(.2,.7,.2,1) ${(i*0.018).toFixed(3)}s`;
-            line.style.strokeDashoffset = '0';
-        });
-        decor.forEach((el,i) => {
-            el.style.transition = `opacity .5s ease ${(0.05 + i*0.006).toFixed(3)}s`;
-            el.style.opacity = '1';
-        });
+      lines.forEach((line, i) => {
+        line.style.transition = `stroke-dashoffset 0.55s cubic-bezier(.2,.7,.2,1) ${(i * 0.018).toFixed(3)}s`;
+        line.style.strokeDashoffset = '0';
+      });
+      decor.forEach((el, i) => {
+        el.style.transition = `opacity 0.5s ease ${(0.05 + i * 0.006).toFixed(3)}s`;
+        el.style.opacity = '1';
+      });
     });
-}
+  }
 
-/* ============================================================
-   DATA — unchanged from the source register/kindling text
-   ============================================================ */
-const KINDLINGS = {
-    brain: [{
-        id: 1, title: 'Remove the Righteous Eyes', theme: 'Perception, ESP sensitivity, witnessing', keep: 'black nail, black thread',
-        quote: '"You will not need them again."',
-        stages: { self: [
-            { label:'Nibble', effect:'Nails through the lids. See through walls, briefly. Immune to Surprise. Advantage on Initiative.', demand:'The nails stay. No blinking.' },
-            { label:'Feed', effect:'Thread through the lids, pulled shut. Feel the Static directly. Advantage on all BRN.', demand:'Blind, mundane-blind, for as long as the thread holds.' },
-            { label:'Devour', effect:'See the Static outright. See every mind nearby, walls or no walls.', demand:'Permanent. Nothing grows back.' }
-        ], living:[{effect:'Nail, then thread, driven into someone else\'s eyes. Blind them. Or wear their sight instead.', demand:'Every hour behind their eyes, yours go a little darker.'}],
-           dead:[{effect:'Same, on a corpse. A permanent Witness — see through it, always.', demand:'None owed by you. The corpse carries this one.'}] }
-    },{
-        id: 2, title: 'Silence the Holy Tongue', theme: 'ESP output, amplifies offensive Hard Lock', keep: 'black thread',
-        quote: '"Every prayer leaves through the mouth. Close it."',
-        stages: { self: [
-            { label:'Nibble', effect:'Three stitches, one knot, pulled free. BRN Kindlings can\'t be interrupted. Ignore Concentration checks.', demand:'The thread scars. Each use costs more silence.' },
-            { label:'Feed', effect:'Six stitches, held until torn loose. Offensive BRN Kindlings hit harder, spread wider.', demand:'No speech until the stitches tear.' },
-            { label:'Devour', effect:'Sewn through permanently. Thought becomes Static outright — offensive BRN reaches its ceiling.', demand:'Speech gone. Forever.' }
-        ], living:[{effect:'Thread through another\'s lips. Silences them; strips one spoken memory or command loose.', demand:'Their silence borrows against yours — your own voice thins.'}],
-           dead:[{effect:'Sew a corpse\'s mouth shut, then open it again. It answers what\'s asked.', demand:'None. The dead already paid theirs.'}] }
-    },{
-        id: 3, title: 'Split the Skull', theme: 'Clairvoyance, Concentration', keep: 'black nail',
-        quote: '"Thought was never meant to stay quiet."',
-        stages: { self: [
-            { label:'Nibble', effect:'Nail to the temple. Read intent. Predict one creature\'s next move.', demand:'A headache that doesn\'t fade on its own.' },
-            { label:'Feed', effect:'Nail flat to the brow. Hold two Concentration Kindlings at once.', demand:'Nosebleeds. Migraines that stack.' },
-            { label:'Devour', effect:'Driven in below the hairline. Permanent. Futures, seen constantly, passively.', demand:'The present grows harder to trust.' }
-        ], living:[{effect:'Nail to another\'s temple. Force hallucination. Rewrite a decision.', demand:'Their fracture echoes back — you carry a sliver.'}],
-           dead:[{effect:'Nail through a corpse\'s skull. Walk its last memories like rooms.', demand:'None. The memories were already spent.'}] }
-    },{
-        id: 4, title: 'Static Lance', theme: 'Pure offense', keep: 'Red Salt',
-        quote: '"Point. Release."',
-        stages: { self: [
-            { label:'Nibble', effect:'Charge at the palm, released. Bolt strikes one target.', demand:'A burn across the palm that doesn\'t heal by nightfall.' },
-            { label:'Feed', effect:'Charge arced hand to hand. Bolt pierces, strikes a line.', demand:'The burn spreads up the forearm.' },
-            { label:'Devour', effect:'The current never fully discharges. Bolt splits, strikes several at once.', demand:'You hum, faintly, always.' }
-        ], living:[{effect:'Charge forced into another\'s closed fist. Damage lands as a mental wound.', demand:'Feedback — you take a fraction of what they take.'}],
-           dead:[{effect:'Charge driven into a corpse. Cast future Lances from its location instead of your own.', demand:'None.'}] }
-    },{
-        id: 5, title: 'Command the Hollow', theme: 'Corpse puppetry — requires a prepared Witness', keep: 'black thread',
-        quote: '"The dead do what they\'re told."',
-        stages: { self: [
-            { label:'Nibble', effect:'One thread, finger to wrist. The Witness performs one small action.', demand:'A pull behind your own sternum.' },
-            { label:'Feed', effect:'Threads to both wrists and the jaw. It walks. It repeats short phrases.', demand:'You feel what it feels — cold, stillness, nothing.' },
-            { label:'Devour', effect:'Threads sewn into your own fingers. It moves when you move. Near-perfect impersonation.', demand:'One permanent point of BRN, spent per hour run.' }
-        ], living:[{effect:'An unnoticed thread looped around a living finger. Force one sentence, one action.', demand:'They remember the pull. Word gets around.'}],
-           dead:[{effect:'Full set of threads, sewn permanently into an already-prepared Witness. Full Vessel.', demand:'None, so long as the body holds together.'}] }
-    },{
-        id: 6, title: 'Strip to the Bone', theme: 'Self-consumption, kinetic overdrive', keep: 'Red Salt',
-        quote: '"Flesh is fuel."',
-        stages: { self: [
-            { label:'Nibble', effect:'Powder rubbed into the forearms, sparked. Ignore exhaustion. Minor boost to output.', demand:'Hunger food doesn\'t touch for the rest of the day.' },
-            { label:'Feed', effect:'Powder packed along the ribs, ignited. Increased strike damage.', demand:'You visibly thin, in front of witnesses.' },
-            { label:'Devour', effect:'A fistful swallowed, ignited from within. Near-skeletal, striking with immense force.', demand:'You never look fed again.' }
-        ], living:[{effect:'Powder forced into another\'s mouth, ignited. Their body cannibalizes itself.', demand:'You taste it too — ash and iron, every round it burns.'}],
-           dead:[{effect:'Chest cavity packed, ignited. Rises as a Husk, one action of extreme force.', demand:'None. There\'s nothing left to owe.'}] }
-    }],
-    nerve: [{
-        id: 7, title: 'Faster! Faster! Faster!', theme: 'Movement, extra actions', keep: 'Red Salt',
-        quote: '"Outrun your own signal."',
-        stages: { self: [
-            { label:'Nibble', effect:'Charge built in the legs. Double movement speed.', demand:'Legs shake for the rest of the scene.' },
-            { label:'Feed', effect:'Two charges released together. Two full actions.', demand:'Joints ache like they\'ve run twice as far.' },
-            { label:'Devour', effect:'The charge never fully discharges. Four full actions, blinking between each.', demand:'You can\'t sit still anymore. Ever.' }
-        ], living:[{effect:'Charge forced into another\'s legs. Their movement becomes yours.', demand:'You feel their stumble land in your own knees.'}],
-           dead:[{effect:'Lingering charge driven into a corpse\'s legs. Blink to its location at will.', demand:'None.'}] }
-    },{
-        id: 8, title: 'Exchange Footsteps', theme: 'Teleportation', keep: 'Red Salt',
-        quote: '"Pay the road."',
-        stages: { self: [
-            { label:'Nibble', effect:'A pinch of Red Salt struck alight at your heel. Short blink.', demand:'The burn mark fades. So does feeling in your feet.' },
-            { label:'Feed', effect:'Two pinches, two points. Double range, one free blink per round.', demand:'Vertigo that lingers a full round after landing.' },
-            { label:'Devour', effect:'A grain burned on every threshold you cross. Chain unlimited blinks.', demand:'You\'re never fully sure which step is real anymore.' }
-        ], living:[{effect:'Red Salt struck against another\'s heel. Swap two creatures\' positions.', demand:'Whatever ground they stood on, you feel underfoot.'}],
-           dead:[{effect:'Salt burned into the ground beneath a corpse\'s feet. Permanent Anchor.', demand:'None.'}] }
-    },{
-        id: 9, title: 'Drink the Lightning', theme: 'Single-target electrical offense', keep: 'black nail',
-        quote: '"Teach the nerves what thunder feels like."',
-        stages: { self: [
-            { label:'Nibble', effect:'Nail held between the palms until it hums. Bolt strikes one target.', demand:'Hands numb through the next action.' },
-            { label:'Feed', effect:'Two nails crossed, arced. Bolt chains to a second target.', demand:'Numbness climbs to the elbow.' },
-            { label:'Devour', effect:'The nail swallowed. Every enemy nearby, struck at once.', demand:'Metal near you sparks unprompted.' }
-        ], living:[{effect:'A nail pressed into another\'s palm. They conduct — every bolt chains through them.', demand:'The chain runs both ways. Some of it comes back.'}],
-           dead:[{effect:'Nail driven into a corpse\'s palm. Lightning Rod.', demand:'None.'}] }
-    },{
-        id: 10, title: 'The Static Storm', theme: 'Area lightning, artillery', keep: 'Red Salt',
-        quote: '"Make the sky answer to you."',
-        stages: { self: [
-            { label:'Nibble', effect:'Static built across the whole body. One bolt, one point, area damage.', demand:'Ears ring the rest of the scene.' },
-            { label:'Feed', effect:'Held through a full breath. A second automatic strike, next turn.', demand:'The ringing becomes a headache that doesn\'t quit.' },
-            { label:'Devour', effect:'A permanent charge, carried in the heartbeat. Sustained storm, random strikes.', demand:'Metal, glass — it isn\'t always the enemy that gets hit.' }
-        ], living:[{effect:'Charge forced into another. Storm converges entirely on them.', demand:'Holding them there costs your full attention.'}],
-           dead:[{effect:'Standing charge driven into a corpse. Permanent Storm Well.', demand:'None.'}] }
-    },{
-        id: 11, title: 'Cut the Strings', theme: 'Control movement', keep: 'black thread',
-        quote: '"The body mistakes Static for commands."',
-        stages: { self: [
-            { label:'Nibble', effect:'One knot against the skin, pulled loose. Ignore restraints.', demand:'Skin left raw where the knot sat.' },
-            { label:'Feed', effect:'Thread wound around a limb. That limb keeps working past what should disable it.', demand:'When the scene ends, so does the limb.' },
-            { label:'Devour', effect:'Thread sewn beneath the skin. Keep moving past what would be fatal.', demand:'Every scene you survive this way shortens the ones after it.' }
-        ], living:[{effect:'Thread tied to another\'s wrist. Force one action or movement.', demand:'Your own hands twitch with it after.'}],
-           dead:[{effect:'Thread knotted around a corpse\'s wrist. A Marionette.', demand:'None.'}] }
-    },{
-        id: 12, title: 'Strike From Everywhere', theme: 'Multi-attack via blink', keep: 'Red Salt',
-        quote: '"Arrive already finished."',
-        stages: { self: [
-            { label:'Nibble', effect:'A spark carries you to a target. Blink and strike once.', demand:'Disorientation on landing.' },
-            { label:'Feed', effect:'A second charge held ready. Blink-strike two targets in sequence.', demand:'Disorientation doubles.' },
-            { label:'Devour', effect:'The charge sits permanently. Blink-strike up to four targets.', demand:'You start arriving places a half-second before you mean to.' }
-        ], living:[{effect:'Charge driven into another. Blink to them, strike from any angle.', demand:'Their mark lingers on your own skin.'}],
-           dead:[{effect:'Permanent charge driven into a corpse. A Beacon.', demand:'None.'}] }
-    }],
-    frame: [{
-        id: 13, title: 'Borrow the Shadow', theme: 'Failsafe — reactive swap, shadow travel', keep: 'Red Salt',
-        quote: '"Leave the body behind."',
-        stages: { self: [
-            { label:'Nibble', effect:'Edge of your shadow traced in powder. Once per scene, swap places with the Shade instantly.', demand:'The Shade holds for one exchange only.' },
-            { label:'Feed', effect:'Traced again at dusk. The swap unwinds the last wound you took. Usable twice per scene.', demand:'What gets unwound catches up all at once when the scene ends.' },
-            { label:'Devour', effect:'Burned into the ground where your shadow always falls. Swap no longer limited — full shadow travel.', demand:'You cast no shadow at all anymore.' }
-        ], living:[{effect:'Another\'s shadow traced and one edge ignited. Their speed halved, yours doubled.', demand:'The drag catches up all at once.'}],
-           dead:[{effect:'A corpse\'s shadow traced at death. A permanent doorway.', demand:'None.'}] }
-    },{
-        id: 14, title: 'The Creeping Gloom', theme: 'Shadow strikes', keep: 'black nail',
-        quote: '"Every shadow is a blade waiting for permission."',
-        stages: { self: [
-            { label:'Nibble', effect:'A nail driven into the nearest dark corner. A tendril lashes out, strikes one target.', demand:'The corner stays cold after.' },
-            { label:'Feed', effect:'A second nail, driven into the target\'s own shadow. Strikes ignore cover and distance.', demand:'Their shadow remembers you now.' },
-            { label:'Devour', effect:'A nail into your own shadow. Every shadow in the area strikes at once.', demand:'Your own shadow is armed, always.' }
-        ], living:[{effect:'A nail driven into another\'s shadow directly. Their shadow turns on them automatically.', demand:'Its hunger lingers near you after.'}],
-           dead:[{effect:'A nail through a corpse\'s shadow. A standing Sentinel.', demand:'None.'}] }
-    },{
-        id: 15, title: 'Make the Dark Cut', theme: 'Shadow strikes from flash and afterimage', keep: 'Red Salt',
-        quote: '"Light it. Let what\'s left do the cutting."',
-        stages: { self: [
-            { label:'Nibble', effect:'A line of powder struck alight. A residual blade slashes one target.', demand:'Your own eyes ache in bright light.' },
-            { label:'Feed', effect:'Ignited in a wider arc. The blade sweeps a line, striking all in front of you.', demand:'Disadvantage in any lit space.' },
-            { label:'Devour', effect:'Both hands coated. Every strike leaves a following shadow-blade.', demand:'You flinch from light now, reflexively.' }
-        ], living:[{effect:'Powder rubbed into another\'s shadow, ignited. Their shadow cuts at them.', demand:'The light burns your eyes too.'}],
-           dead:[{effect:'Powder packed into a corpse\'s eyes and mouth, ignited. Its shadow permanently arms itself.', demand:'None.'}] }
-    },{
-        id: 16, title: 'The Hollow Rib', theme: 'Momentum, density', keep: 'black nail',
-        quote: '"Bone remembers weight it was never built for."',
-        stages: { self: [
-            { label:'Nibble', effect:'A nail carried in a closed fist. Next strike, increased force.', demand:'The hand carrying it goes numb.' },
-            { label:'Feed', effect:'The nail swallowed. Resist knockback; strikes shockwave outward.', demand:'Every meal tastes faintly of iron.' },
-            { label:'Devour', effect:'The nail replaces a rib. Momentum becomes a crushing blow.', demand:'Breathing never feels quite complete.' }
-        ], living:[{effect:'A nail pressed to another\'s chest. Their defense drops, yours rises.', demand:'Their labored breath echoes in your own chest.'}],
-           dead:[{effect:'A nail driven into a corpse, buried. Nearby Negative Box Kindlings hit harder.', demand:'None.'}] }
-    },{
-        id: 17, title: 'Wear Their Face', theme: 'Disguise, voice, presence', keep: 'Red Bone',
-        quote: '"Identity has a price."',
-        stages: { self: [
-            { label:'Nibble', effect:'A shard of your own bone, pressed under the skin. Avoid casual recognition.', demand:'Your own face feels wrong to you.' },
-            { label:'Feed', effect:'The shard moved to the throat. Unplaceable — voice and presence both.', demand:'Your real voice takes longer to come back.' },
-            { label:'Devour', effect:'The shard Kindles permanently. Featureless — unreadable to magic, memory, and sight.', demand:'No one remembers your face anymore.' }
-        ], living:[{effect:'A shard taken from another, pressed under your own skin. Steal their appearance.', demand:'You forget one small true thing about your own face.'}],
-           dead:[{effect:'A shard of corpse-bone, fused under your skin. Perfect impersonation.', demand:'None.'}] }
-    },{
-        id: 18, title: 'Second Corpse', theme: 'Shade doubles, damage transfer', keep: 'black thread',
-        quote: '"One body survives. One remembers."',
-        stages: { self: [
-            { label:'Nibble', effect:'Thread knotted into a small likeness. A Shade forms; damage splits.', demand:'You feel every hit it takes, dull, delayed.' },
-            { label:'Feed', effect:'The likeness burned. The Shade can be targeted independently; carries out one Kindling.', demand:'Whatever it does, you\'re spent as if you\'d done it yourself.' },
-            { label:'Devour', effect:'The likeness sewn under your skin. The Shade acts as a second, fully independent body.', demand:'Split attention, split self — you\'re never fully anywhere.' }
-        ], living:[{effect:'A likeness of a living victim knotted and burned over their shadow. Their Shade.', demand:'You feel the tether the whole time — their pulse alongside yours.'}],
-           dead:[{effect:'A likeness of a corpse knotted, buried beneath the body. Its shadow animates.', demand:'None.'}] }
-    }]
-};
-
-const KEEPS = [
-    { name:'Black Nail', tagline:'Perception, nerve, current' },
-    { name:'Black Thread', tagline:'Binding, control, puppetry' },
-    { name:'Red Salt', tagline:'Kinetic force, motion, distance' },
-    { name:'Red Bone', tagline:'Identity, presence, disguise' }
-];
-const GROUP_LABEL = { brain:'BRN · HARD LOCK', nerve:'NRV · RED SHIFT', frame:'FRM · NEGATIVE BOX' };
-const STAGE_KEYS = ['nibble','feed','devour'];
-const STAGE_LABELS = ['Nibble','Feed','Devour'];
-
-const ALL = [];
-['brain','nerve','frame'].forEach(g => KINDLINGS[g].forEach(k => ALL.push({ ...k, group:g })));
-
-/* ============================================================
-   STATE
-   ============================================================ */
-let currentReg = 'all';
-let activeKeep = null;
-const tierState = new Map();   // id -> 0..3
-const pinned = new Map();      // key -> {id,title,type}
-let riteLog = [];
-
-function pinKey(id, type){ return id + ':' + type; }
-
-function flashRiteList(){
-    const list = document.getElementById('riteList');
-    if (!list) return;
-    list.classList.remove('glitching');
-    void list.offsetWidth;
-    list.classList.add('glitching');
-    setTimeout(() => list.classList.remove('glitching'), 300);
-}
-
-/* ============================================================
-   RENDER: dotted-border Keep filter cards
-   ============================================================ */
-function renderKeeps(){
-    const wrap = document.getElementById('keepsGrid');
-    wrap.innerHTML = KEEPS.map(k => `
-        <div class="keep-card" data-keep="${k.name}">
-            <div class="keep-name">${k.name}</div>
-            <div class="keep-tagline">${k.tagline}</div>
-        </div>
-    `).join('');
-    wrap.querySelectorAll('.keep-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const on = activeKeep !== card.dataset.keep;
-            wrap.querySelectorAll('.keep-card').forEach(c => c.classList.remove('selected'));
-            activeKeep = on ? card.dataset.keep : null;
-            if (on) card.classList.add('selected');
-            renderRows();
-            flashRiteList();
-        });
-    });
-}
-
-/* ============================================================
-   RENDER: rite rows
-   ============================================================ */
-function svgSegPath(seg){
-    return `<line x1="${seg[0].toFixed(1)}" y1="${seg[1].toFixed(1)}" x2="${seg[2].toFixed(1)}" y2="${seg[3].toFixed(1)}"></line>`;
-}
-
-function badgeClassForTier(t){
-    return t === 0 ? '' : (t === 1 ? 't1' : (t === 2 ? 't2' : 't3'));
-}
-function badgeTextForTier(t){
-    return t === 0 ? 'DORMANT' : STAGE_LABELS[t-1].toUpperCase();
-}
-
-function renderRows(){
-    const list = document.getElementById('riteList');
-    const items = ALL.filter(k => {
-        if (currentReg !== 'all' && k.group !== currentReg) return false;
-        if (activeKeep && !k.keep.toLowerCase().includes(activeKeep.toLowerCase())) return false;
-        return true;
-    });
-    list.innerHTML = '';
-
-    items.forEach(k => {
-        const seed = k.id * 97 + hashString(k.title);
-        const { segs, decor } = buildSigil(seed, k.group);
-        const tier = tierState.get(k.id) || 0;
-
-        const row = document.createElement('div');
-        row.className = 'rite-row' + (tier > 0 ? ' ignite-' + tier : '');
-        row.dataset.id = k.id;
-        row.dataset.group = k.group;
-
-        const segLines = segs.map((s,i) => `<line class="sig-hit" data-i="${i}" x1="${s[0].toFixed(1)}" y1="${s[1].toFixed(1)}" x2="${s[2].toFixed(1)}" y2="${s[3].toFixed(1)}"></line>`).join('');
-        const baseLines = segs.map(s => `<line class="sig-base" x1="${s[0].toFixed(1)}" y1="${s[1].toFixed(1)}" x2="${s[2].toFixed(1)}" y2="${s[3].toFixed(1)}"></line>`).join('');
-
-        row.innerHTML = `
-            <div class="rite-shake">
-            <div class="rite-sigil-col">
-                <div class="rite-sigil-wrap${tier>0?' ignited':''}" data-id="${k.id}">
-                    <svg viewBox="0 0 100 88">
-                        ${baseLines}
-                        ${decor}
-                        ${segLines}
-                        <circle class="trace-cursor" r="2.4" cx="0" cy="0"></circle>
-                    </svg>
-                </div>
-                <div class="tier-badge ${badgeClassForTier(tier)}" data-badge="${k.id}">${badgeTextForTier(tier)}</div>
-                <div class="keep-note">${k.keep}</div>
-            </div>
-            <div class="rite-info">
-                <div class="rite-title-row">
-                    <span class="rite-idx">#${String(k.id).padStart(2,'0')} · ${GROUP_LABEL[k.group]}</span>
-                </div>
-                <div class="rite-title">${k.title}</div>
-                <div class="rite-quote">${k.quote}</div>
-                <div class="rite-columns">
-                    ${STAGE_KEYS.map((sk,i) => {
-                        const s = k.stages.self[i];
-                        const pk = pinKey(k.id, 'self-'+sk);
-                        const isPinned = pinned.has(pk);
-                        return `<div class="rite-col self${tier===i+1?' active':''}" data-tier-col="${i+1}" data-id="${k.id}">
-                            <div class="col-head"><span>${s.label}</span><button class="col-pin${isPinned?' pinned':''}" data-pin="${pk}" data-title="${k.title}" data-tag="SELF · ${s.label.toUpperCase()}">${isPinned?'FIXED':'FIX'}</button></div>
-                            <p class="col-effect">${s.effect}</p>
-                            <p class="col-demand">${s.demand}</p>
-                        </div>`;
-                    }).join('')}
-                    ${(() => {
-                        const pk = pinKey(k.id,'living'); const isPinned = pinned.has(pk);
-                        return `<div class="rite-col living">
-                            <div class="col-head"><span>Living Demand</span><button class="col-pin${isPinned?' pinned':''}" data-pin="${pk}" data-title="${k.title}" data-tag="LIVING DEMAND">${isPinned?'FIXED':'FIX'}</button></div>
-                            <p class="col-effect">${k.stages.living[0].effect}</p>
-                            <p class="col-demand">${k.stages.living[0].demand}</p>
-                        </div>`;
-                    })()}
-                    ${(() => {
-                        const pk = pinKey(k.id,'dead'); const isPinned = pinned.has(pk);
-                        return `<div class="rite-col dead">
-                            <div class="col-head"><span>Dead Demand</span><button class="col-pin${isPinned?' pinned':''}" data-pin="${pk}" data-title="${k.title}" data-tag="DEAD DEMAND">${isPinned?'FIXED':'FIX'}</button></div>
-                            <p class="col-effect">${k.stages.dead[0].effect}</p>
-                            <p class="col-demand">${k.stages.dead[0].demand}</p>
-                        </div>`;
-                    })()}
-                </div>
-            </div>
-            </div>
-        `;
-        list.appendChild(row);
-        wireSigilTrace(row.querySelector('.rite-sigil-wrap'), k, segs);
-        startTitleGlitch(row.querySelector('.rite-title'), k.title, () => tierState.get(k.id) || 0);
-    });
-
-    list.querySelectorAll('.col-pin').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            togglePin(btn.dataset.pin, btn.dataset.title, btn.dataset.tag);
-        });
-    });
-
-    list.querySelectorAll('.rite-col.self').forEach(col => {
-        col.addEventListener('click', (e) => {
-            if (e.target.closest('button')) return;
-            selectTier(Number(col.dataset.id), Number(col.dataset.tierCol));
-        });
-    });
-}
-
-/* ============================================================
-   SIGIL TRACE — pointer-driven hit testing against the segment
-   list. A continuous drag that covers enough of the sigil's
-   segments Bans it (or escalates it toward Devour); a broken or
-   partial pass misfires with no effect.
-   ============================================================ */
-function distToSeg(px,py,x1,y1,x2,y2){
-    const dx=x2-x1, dy=y2-y1;
-    const lenSq = dx*dx+dy*dy;
-    let t = lenSq ? ((px-x1)*dx+(py-y1)*dy)/lenSq : 0;
-    t = Math.max(0, Math.min(1,t));
-    const cx = x1+t*dx, cy = y1+t*dy;
-    return Math.hypot(px-cx, py-cy);
-}
-
-function wireSigilTrace(wrap, k, segs){
-    if (!wrap) return;
-    const svg = wrap.querySelector('svg');
-    const hitLines = [...svg.querySelectorAll('.sig-hit')];
-    const cursor = svg.querySelector('.trace-cursor');
-    let hitSet = new Set();
-    let tracing = false;
-    const THRESH = 6.5;      // hit distance in viewBox units
-    const NEED = 0.62;       // fraction of segments required for a clean Ban
-
-    function toLocal(evt){
-        const pt = svg.createSVGPoint();
-        pt.x = evt.clientX; pt.y = evt.clientY;
-        const m = svg.getScreenCTM().inverse();
-        const p = pt.matrixTransform(m);
-        return [p.x, p.y];
-    }
-
-    function testPoint(x,y){
-        segs.forEach((s,i) => {
-            if (hitSet.has(i)) return;
-            if (distToSeg(x,y,s[0],s[1],s[2],s[3]) <= THRESH){
-                hitSet.add(i);
-                hitLines[i].classList.add('on');
-            }
-        });
-    }
-
-    function reset(){
-        hitSet = new Set();
-        hitLines.forEach(l => l.classList.remove('on'));
-    }
-
-    wrap.addEventListener('pointerdown', evt => {
-        wrap.setPointerCapture(evt.pointerId);
-        tracing = true;
-        reset();
-        cursor.classList.add('on');
-        const [x,y] = toLocal(evt);
-        cursor.setAttribute('cx', x); cursor.setAttribute('cy', y);
-        testPoint(x,y);
-    });
-
-    wrap.addEventListener('pointermove', evt => {
-        if (!tracing) return;
-        const [x,y] = toLocal(evt);
-        cursor.setAttribute('cx', x); cursor.setAttribute('cy', y);
-        testPoint(x,y);
-    });
-
-    function finish(){
-        if (!tracing) return;
-        tracing = false;
-        cursor.classList.remove('on');
-        const coverage = segs.length ? hitSet.size / segs.length : 0;
-        if (coverage >= NEED){
-            escalate(k.id);
-        } else {
-            wrap.classList.remove('misfire'); void wrap.offsetWidth;
-            wrap.classList.add('misfire');
-            setTimeout(() => wrap.classList.remove('misfire'), 260);
-        }
-        setTimeout(reset, 220);
-    }
-
-    wrap.addEventListener('pointerup', finish);
-    wrap.addEventListener('pointerleave', evt => { if (evt.buttons === 0) finish(); });
-    wrap.addEventListener('pointercancel', finish);
-}
-
-function applyTier(k, tier){
-    tierState.set(k.id, tier);
-
-    const row = document.querySelector(`.rite-row[data-id="${k.id}"]`);
-    const wrap = document.querySelector(`.rite-sigil-wrap[data-id="${k.id}"]`);
-    const badge = document.querySelector(`[data-badge="${k.id}"]`);
-    if (wrap) wrap.classList.toggle('ignited', tier > 0);
-    if (badge){
-        badge.className = 'tier-badge ' + badgeClassForTier(tier);
-        badge.textContent = badgeTextForTier(tier);
-        badge.classList.remove('flash'); void badge.offsetWidth; badge.classList.add('flash');
-        setTimeout(() => badge.classList.remove('flash'), 220);
-    }
-    if (row){
-        row.classList.remove('ignite-1','ignite-2','ignite-3');
-        if (tier > 0) row.classList.add('ignite-' + tier);
-    }
-    document.querySelectorAll(`.rite-col.self[data-id="${k.id}"]`).forEach(col => {
-        col.classList.toggle('active', Number(col.dataset.tierCol) === tier);
-    });
-
-    if (tier === 0){
-        addLog(`UNBANNED — "${k.title.toUpperCase()}" · RETURNED TO DORMANT`);
-        if (lastBannedId === k.id){ lastBannedId = null; idleSignal(); }
-    } else {
-        addLog(`BANNED — "${k.title.toUpperCase()}" · SELF · ${STAGE_LABELS[tier-1].toUpperCase()}`);
-        lastBannedId = k.id;
-        showSignal(k, tier);
-    }
-    updateGlobalEffects();
-}
-
-function escalate(id){
-    const k = ALL.find(x => x.id === id);
-    let tier = tierState.get(id) || 0;
-    tier = tier >= 3 ? 0 : tier + 1;   // Devour traced again releases it back to Dormant
-    applyTier(k, tier);
-}
-
-/* Direct tier pick — clicking a Nibble/Feed/Devour column jumps
-   straight to that tier; clicking the already-active tier again
-   deselects it back to Dormant. */
-function selectTier(id, target){
-    const k = ALL.find(x => x.id === id);
-    const cur = tierState.get(id) || 0;
-    const tier = (cur === target) ? 0 : target;
-    applyTier(k, tier);
-}
-
-/* ============================================================
-   GLOBAL EFFECTS — ambient full-page static and stamp bursts
-   scale with how many Rites are currently Feed/Devour across
-   the whole page, rather than a single selected card.
-   ============================================================ */
-const NOISE_CHARS = '░▒▓█▀▄▌▐▖▗▘▝▚▞■□▪▫◆◇▲△▼▽●○─│┼┤├┬┴╬╫╪⠿⠶⠛⠹⠭⠽⠾⠷#%&*/\\~^';
-function noiseLine(len){
-    let out = '';
-    for (let i = 0; i < len; i++) out += NOISE_CHARS[Math.floor(Math.random() * NOISE_CHARS.length)];
-    return out;
-}
-
-/* ============================================================
-   TITLE GLITCH — every Rite title flickers into noise and back on
-   its own irregular clock. Frequency and hold-length scale with
-   that row's own tier, so a Devoured Rite's name reads as far less
-   stable than a dormant one.
-   ============================================================ */
-const GLITCH_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ-—' + NOISE_CHARS;
-function scrambleText(text){
-    return text.split('').map(c => (c === ' ' ? c : (Math.random() < 0.55 ? GLITCH_ALPHABET[Math.floor(Math.random() * GLITCH_ALPHABET.length)] : c))).join('');
-}
-
-function startTitleGlitch(el, text, getTier){
-    if (!el) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = text; return; }
-
-    function scheduleNext(){
-        const tier = getTier();
-        const delay = 1700 - tier * 380 + Math.random() * 900;
-        setTimeout(tick, delay);
-    }
-    function tick(){
-        if (!document.body.contains(el)) return;
-        const tier = getTier();
-        const chance = 0.1 + tier * 0.14;
-        if (Math.random() < chance){
-            let frames = 0;
-            const holdFrames = 2 + tier;
-            (function step(){
-                if (!document.body.contains(el)) return;
-                if (frames < holdFrames){
-                    el.textContent = scrambleText(text);
-                    frames++;
-                    setTimeout(step, 45);
-                } else {
-                    el.textContent = text;
-                    scheduleNext();
-                }
-            })();
-        } else {
-            el.textContent = text;
-            scheduleNext();
-        }
-    }
-    el.textContent = text;
-    scheduleNext();
-}
-
-let ambientInterval = null, ambientFlickerTimer = null;
-const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const AMBIENT_TONES = {
-    feed:   { bright:{color:'#a8a8a8', op:[.14,.22]}, mid:{color:'#3a3a3a', op:[.08,.15]}, dark:{color:'#050505', op:[.02,.05]} },
-    devour: { bright:{color:'#ffffff', op:[.28,.44]}, mid:{color:'#3a3a3a', op:[.14,.24]}, dark:{color:'#050505', op:[.04,.09]} }
-};
-
-function fillAmbientGlitch(){
-    const el = document.getElementById('ambientGlitch');
-    if (!el) return;
-    const cols = Math.max(20, Math.floor(window.innerWidth / 8));
-    const rows = Math.max(10, Math.floor(window.innerHeight / 14));
-    const lines = [];
-    for (let r = 0; r < rows; r++) lines.push(noiseLine(cols));
-    el.textContent = lines.join('\n');
-}
-
-function tickAmbientFlicker(stage){
-    const el = document.getElementById('ambientGlitch');
-    if (!el) return;
-    const tones = AMBIENT_TONES[stage];
-    const roll = Math.random();
-    const pick = roll < .16 ? tones.bright : (roll < .4 ? tones.dark : tones.mid);
-    const op = pick.op[0] + Math.random() * (pick.op[1] - pick.op[0]);
-    el.style.color = pick.color;
-    el.style.opacity = op.toFixed(3);
-    const base = stage === 'devour' ? 35 : 80, spread = stage === 'devour' ? 220 : 420;
-    ambientFlickerTimer = setTimeout(() => tickAmbientFlicker(stage), base + Math.random() * spread);
-}
-
-function stopAmbientGlitch(){
-    if (ambientInterval) { clearInterval(ambientInterval); ambientInterval = null; }
-    if (ambientFlickerTimer) { clearTimeout(ambientFlickerTimer); ambientFlickerTimer = null; }
-    const el = document.getElementById('ambientGlitch');
-    if (el) { el.style.opacity = ''; el.style.color = ''; }
-}
-
-function startAmbientGlitch(speedMs, stage){
-    stopAmbientGlitch();
-    fillAmbientGlitch();
-    ambientInterval = setInterval(fillAmbientGlitch, speedMs);
-    const el = document.getElementById('ambientGlitch');
-    if (prefersReducedMotion){
-        if (el){ el.style.color = '#3a3a3a'; el.style.opacity = stage === 'devour' ? '.2' : '.14'; }
-        return;
-    }
-    tickAmbientFlicker(stage);
-}
-
-const STAMP_BOX_CHARS = '─│┌┐└┘├┤┬┴┼═║╔╗╚╝╠╣╦╩╬';
-const STAMP_BRAILLE_CHARS = '⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵⠿⠶⠾⠷';
-const STAMP_GLYPHS = STAMP_BOX_CHARS + STAMP_BRAILLE_CHARS;
-function stampNoiseLine(len){
-    let out = '';
-    for (let i = 0; i < len; i++) out += STAMP_GLYPHS[Math.floor(Math.random() * STAMP_GLYPHS.length)];
-    return out;
-}
-
-let stampTimer = null, stampHideTimer = null, stampDelayMin = 220, stampDelayMax = 850;
-function spawnStamp(){
-    const el = document.getElementById('stampGlitch');
-    if (!el) return;
-    const kind = Math.random() < .55 ? 'glyph' : 'text';
-    let text, size, estWidth, estHeight;
-    if (kind === 'glyph'){
-        const glyphCount = 1 + Math.floor(Math.random() * 2);
-        text = '';
-        for (let i = 0; i < glyphCount; i++) text += STAMP_GLYPHS[Math.floor(Math.random() * STAMP_GLYPHS.length)];
-        size = 50 + Math.random() * 170;
-        estWidth = size * glyphCount * .9; estHeight = size;
-    } else {
-        const lineCount = Math.random() < .3 ? 2 : 1;
-        const lineLens = []; const lines = [];
-        for (let i = 0; i < lineCount; i++){ const len = 6 + Math.floor(Math.random() * 14); lineLens.push(len); lines.push(stampNoiseLine(len)); }
-        text = lines.join('\n');
-        size = 16 + Math.random() * 26;
-        estWidth = size * Math.max(...lineLens) * .62; estHeight = size * lineCount * 1.15;
-    }
-    const bgRoll = Math.random();
-    const bgMode = bgRoll < .55 ? 'none' : (bgRoll < .78 ? 'white' : 'black');
-    const padX = kind === 'text' ? size * .32 : size * .14;
-    const padY = kind === 'text' ? size * .22 : size * .1;
-    if (bgMode !== 'none'){ estWidth += padX * 2; estHeight += padY * 2; }
-    const maxTop = Math.max(0, window.innerHeight - estHeight);
-    const maxLeft = Math.max(0, window.innerWidth - estWidth);
-    const top = Math.random() * maxTop, left = Math.random() * maxLeft;
-    const rot = (Math.random() - .5) * 26;
-    const bright = Math.random() < .3;
-
-    el.textContent = text;
-    el.style.fontSize = size.toFixed(0) + 'px';
-    el.style.letterSpacing = kind === 'text' ? '2px' : 'normal';
-    el.style.top = top.toFixed(0) + 'px';
-    el.style.left = left.toFixed(0) + 'px';
-    el.style.transform = `rotate(${rot.toFixed(1)}deg)`;
-
-    if (bgMode === 'white'){
-        el.style.background = '#ffffff'; el.style.border = 'none'; el.style.boxShadow = 'none';
-        el.style.padding = padY.toFixed(0) + 'px ' + padX.toFixed(0) + 'px';
-        el.style.color = '#000000'; el.style.opacity = (.85 + Math.random() * .15).toFixed(2);
-    } else if (bgMode === 'black'){
-        el.style.background = '#000000'; el.style.border = '1px solid rgba(255,255,255,.55)';
-        el.style.boxShadow = '0 0 14px rgba(255,255,255,.15)';
-        el.style.padding = padY.toFixed(0) + 'px ' + padX.toFixed(0) + 'px';
-        el.style.color = '#ffffff'; el.style.opacity = (.85 + Math.random() * .15).toFixed(2);
-    } else {
-        el.style.background = 'transparent'; el.style.border = 'none'; el.style.boxShadow = 'none'; el.style.padding = '0';
-        el.style.color = bright ? '#ffffff' : '#050505';
-        el.style.opacity = (bright ? .4 + Math.random() * .3 : .55 + Math.random() * .3).toFixed(2);
-    }
-    if (stampHideTimer) clearTimeout(stampHideTimer);
-    stampHideTimer = setTimeout(() => { el.style.opacity = '0'; }, 60 + Math.random() * 90);
-}
-
-function tickStamp(){
-    spawnStamp();
-    if (stampDelayMax <= 600 && Math.random() < 0.4) setTimeout(spawnStamp, 40 + Math.random() * 90);
-    stampTimer = setTimeout(tickStamp, stampDelayMin + Math.random() * (stampDelayMax - stampDelayMin));
-}
-function stopStampGlitch(){
-    if (stampTimer) { clearTimeout(stampTimer); stampTimer = null; }
-    if (stampHideTimer) { clearTimeout(stampHideTimer); stampHideTimer = null; }
-    const el = document.getElementById('stampGlitch');
-    if (el) el.style.opacity = '0';
-}
-function startStampGlitch(min, max){
-    stopStampGlitch();
-    stampDelayMin = min != null ? min : 220;
-    stampDelayMax = max != null ? max : 850;
-    if (!prefersReducedMotion) tickStamp();
-}
-
-function updateGlobalEffects(){
-    let feedCount = 0, devourCount = 0;
-    tierState.forEach(t => { if (t === 2) feedCount++; if (t >= 3) devourCount++; });
-
-    if (devourCount > 0){
-        startAmbientGlitch(140, 'devour');
-        startStampGlitch(110, 480);
-    } else if (feedCount > 0){
-        startAmbientGlitch(420, 'feed');
-        startStampGlitch(400, 1300);
-    } else {
-        stopAmbientGlitch();
-        stopStampGlitch();
-    }
-}
-
-window.addEventListener('resize', () => {
-    const el = document.getElementById('ambientGlitch');
-    if (el && el.style.opacity && Number(el.style.opacity) > 0) fillAmbientGlitch();
-});
-
-/* ============================================================
-   LIVE SIGNAL — shows whichever Rite was most recently Banned.
-   Escalates toward full white inversion and heavier jitter as
-   that Rite's tier climbs; corrupts its own title readout more
-   often the higher the tier goes.
-   ============================================================ */
-let lastBannedId = null;
-let signalReadoutTimer = null;
-
-function stopSignalReadout(){
-    if (signalReadoutTimer) { clearTimeout(signalReadoutTimer); signalReadoutTimer = null; }
-}
-
-function flashSignal(){
-    const stage = document.getElementById('signalStage');
-    const noise = document.getElementById('signalNoise');
-    if (stage){ stage.classList.remove('flash'); void stage.offsetWidth; }
-    if (noise){ noise.classList.remove('flashing'); void noise.offsetWidth; noise.classList.add('flashing'); }
-    setTimeout(() => { if (noise) noise.classList.remove('flashing'); }, 280);
-}
-
-function idleSignal(){
-    stopSignalReadout();
-    const stage = document.getElementById('signalStage');
+  function idleSignal() {
     const glyph = document.getElementById('signalGlyph');
     const title = document.getElementById('sgTitle');
-    const stageLabel = document.getElementById('sgStage');
-    if (stage) stage.classList.remove('disp-feed','disp-devour');
+    const stage = document.getElementById('sgStage');
     if (title) title.textContent = '';
-    if (stageLabel) stageLabel.textContent = '';
-    if (glyph){
-        if (currentReg === 'all'){
-            glyph.innerHTML = buildBlankCircle();
-        } else {
-            paintSeal(glyph, buildSeal(hashString('DOMAIN_' + currentReg), currentReg));
-        }
+    if (stage) stage.textContent = '';
+    if (glyph) {
+      paintSeal(glyph, `<svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="130" class="seal-ring"></circle><circle cx="150" cy="150" r="106" class="seal-ring"></circle></svg>`);
     }
-}
+  }
 
-function showSignal(k, tier){
-    stopSignalReadout();
-    const stage = document.getElementById('signalStage');
-    const glyph = document.getElementById('signalGlyph');
-    const title = document.getElementById('sgTitle');
-    const stageLabel = document.getElementById('sgStage');
-    const seed = k.id * 97 + hashString(k.title);
-
-    if (stage){
-        stage.classList.remove('disp-feed','disp-devour');
-        if (tier === 2) stage.classList.add('disp-feed');
-        if (tier >= 3) stage.classList.add('disp-devour');
+  function updateSignal() {
+    const carvedIndices = state.notches.map((n, i) => n.carved ? i : -1).filter(i => i >= 0);
+    if (carvedIndices.length === 0) {
+      idleSignal();
+      return;
     }
-    paintSeal(glyph, buildSeal(seed, k.group));
-    if (stageLabel) stageLabel.textContent = STAGE_LABELS[tier-1].toUpperCase();
+    const lastIdx = carvedIndices[carvedIndices.length - 1];
+    const t = THRESHOLDS[lastIdx];
+    const entry = state.notches[lastIdx];
+    const seed = t.n * 97 + (entry.active === 'I' ? 1 : 2);
+    paintSeal(document.getElementById('signalGlyph'), buildSeal(seed));
+    document.getElementById('sgTitle').textContent = `${t.power} (${entry.active})`;
+    document.getElementById('sgStage').textContent = `notch ${t.n} · ${entry.active === 'I' ? 'light' : 'shade'}`;
+  }
 
-    const corruptChance = [0.08, 0.4, 0.78][tier-1];
-    const tickDelay = [900, 320, 130][tier-1];
-    function tick(){
-        if (!title || lastBannedId !== k.id) return;
-        title.textContent = Math.random() < corruptChance ? noiseLine(Math.min(24, k.title.length + Math.floor(Math.random()*5))) : k.title;
-        signalReadoutTimer = setTimeout(tick, tickDelay + Math.random()*150);
-    }
-    tick();
-    flashSignal();
-}
-function togglePin(key, title, tag){
-    if (pinned.has(key)){
-        pinned.delete(key);
-        addLog(`UNFIXED — "${title.toUpperCase()}" · ${tag}`);
-    } else {
-        pinned.set(key, { title, tag });
-        addLog(`FIXED — "${title.toUpperCase()}" · ${tag}`);
-    }
-    renderFixed();
-    renderRows();
-}
+  function mulberry32(seed) {
+    return function() {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
 
-function renderFixed(){
-    const count = document.getElementById('fixedCount');
-    const body = document.getElementById('fixedBody');
-    count.textContent = String(pinned.size).padStart(2,'0') + ' Active';
-    if (pinned.size === 0){
-        body.innerHTML = '<span class="fixed-empty">No Rites Fixed</span>';
-        return;
-    }
-    body.innerHTML = [...pinned.entries()].map(([key, v]) => `
-        <div class="fixed-pill"><span>${v.title}</span><span class="fp-tag">${v.tag}</span><button data-unpin="${key}">×</button></div>
-    `).join('');
-    body.querySelectorAll('[data-unpin]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const v = pinned.get(btn.dataset.unpin);
-            togglePin(btn.dataset.unpin, v.title, v.tag);
-        });
-    });
-}
+  // override render to update signal
+  const originalRender = render;
+  render = function() {
+    originalRender();
+    updateSignal();
+  };
 
-function addLog(text){
-    riteLog.push(text);
-    const panel = document.getElementById('riteLogPanel');
-    if (riteLog.length === 0){ panel.innerHTML = '<div class="log-empty">NO RITES BANNED</div>'; return; }
-    let html = '';
-    for (let i = riteLog.length - 1; i >= 0; i--){
-        html += `<div class="log-entry"><span class="le-tag">[${String(i+1).padStart(2,'0')}]</span>${riteLog[i]}</div>`;
-    }
-    panel.innerHTML = html;
-}
-
-/* ============================================================
-   REGISTER TABS
-   ============================================================ */
-function setupTabs(){
-    const tabs = document.querySelectorAll('.reg-tab');
-    tabs.forEach(btn => {
-        btn.addEventListener('click', () => {
-            tabs.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentReg = btn.dataset.reg;
-            renderRows();
-            if (lastBannedId === null) idleSignal();
-            flashRiteList();
-        });
-    });
-}
-
-/* Clicking anywhere on the display frame clears the currently-shown
-   Rite from the Live Signal without touching its tier — a manual way
-   to throw the display back to idle. */
-function wireSignalReset(){
-    const frame = document.querySelector('.signal-frame');
-    if (!frame) return;
-    frame.addEventListener('click', () => {
-        if (lastBannedId === null) return;
-        lastBannedId = null;
-        idleSignal();
-    });
-}
-
-function initDividers(){
-    const glyph = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" class="sd-mark"></circle><circle cx="12" cy="12" r="1.6" class="sd-dot"></circle><line x1="12" y1="2" x2="12" y2="5.4" class="sd-mark"></line><line x1="12" y1="18.6" x2="12" y2="22" class="sd-mark"></line></svg>`;
-    ['dividerSynergy','dividerRiteLog'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = `<span class="sd-line"></span>${glyph}<span class="sd-line"></span>`;
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    renderKeeps();
-    setupTabs();
-    renderRows();
-    renderFixed();
-    idleSignal();
-    wireSignalReset();
-    document.getElementById('riteLogPanel').innerHTML = '<div class="log-empty">NO RITES BANNED</div>';
-    initDividers();
-    console.log('🔴 THE 18 KINDLINGS · ULTRABLACK — TRACE BUILD ONLINE');
-});
+  // initial signal
+  idleSignal();
+  render();
 
 })();
 </script>
