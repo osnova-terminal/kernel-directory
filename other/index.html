@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Notch Chart · othergrade</title>
   <style>
-    /* ── base reset & variables ── */
     :root {
       --bg: #000;
       --fg: #fff;
@@ -24,17 +23,16 @@
     body { padding: 1.8rem 1.1rem 4rem; min-height: 100vh; background: var(--bg); }
     .container { max-width: 1280px; margin: 0 auto; }
 
-    /* ── header ── */
+    /* header */
     .eyebrow { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.15rem; }
     h1 { font-size: 3rem; font-weight: 600; line-height: 1; letter-spacing: -0.01em; margin-bottom: 0.15rem; }
     .whitebox { background: var(--fg); color: var(--bg); display: inline-block; padding: 0.35rem 0.7rem; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; margin-bottom: 1rem; }
     .subhead { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.05em; color: var(--dim); line-height: 1.8; max-width: 640px; margin-bottom: 1.6rem; }
-    .subhead strong { color: var(--fg); }
 
-    /* ── main grid ── */
+    /* main grid */
     .main-grid {
       display: grid;
-      grid-template-columns: 360px minmax(0, 1fr);
+      grid-template-columns: 320px minmax(0, 1fr);
       gap: 1.6rem;
       align-items: start;
       margin-bottom: 1.6rem;
@@ -50,18 +48,14 @@
       padding-right: 0.2rem;
     }
     .chart-col { min-width: 0; }
-    .chart-panel {
-      max-height: calc(100vh - 2.4rem);
-      overflow-y: auto;
-      padding-right: 0.5rem;
-    }
+    .chart-panel { max-height: calc(100vh - 2.4rem); overflow-y: auto; padding-right: 0.5rem; }
     @media (max-width: 960px) {
       .main-grid { grid-template-columns: 1fr; }
       .signal-col { position: static; max-height: none; overflow-y: visible; }
       .chart-panel { max-height: none; overflow-y: visible; padding-right: 0; }
     }
 
-    /* ── signal / status display ── */
+    /* signal display */
     .signal-label { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--dim); margin-bottom: 0.4rem; }
     .signal-frame {
       border: 2px solid #fff;
@@ -81,7 +75,6 @@
       animation: scanlineDrift 5s linear infinite;
     }
     @keyframes scanlineDrift { 0% { transform: translateY(0); } 100% { transform: translateY(3px); } }
-
     .signal-stage {
       position: relative;
       display: block;
@@ -98,7 +91,6 @@
       background: radial-gradient(ellipse at center, transparent 48%, rgba(0,0,0,0.22) 80%, rgba(0,0,0,0.47) 100%);
       mix-blend-mode: multiply;
     }
-
     .signal-shake { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: stretch; }
     .signal-glyph { position: relative; flex: 0 0 58%; overflow: hidden; }
     .signal-glyph svg { width: 100%; height: 100%; display: block; }
@@ -106,7 +98,6 @@
     .signal-glyph svg .seal-decor { stroke: var(--dim2); stroke-width: 1; }
     .signal-glyph svg .seal-ring { fill: none; stroke: var(--dim2); stroke-width: 1; }
     .signal-glyph svg .seal-tick { stroke: var(--dim2); stroke-width: 1; }
-
     .signal-divider { flex: 0 0 1px; align-self: stretch; background: var(--line); }
     .signal-text {
       position: relative; z-index: 9; flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center;
@@ -114,7 +105,6 @@
     }
     .sg-title { font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600; line-height: 1.25; color: var(--fg); min-height: 1.3em; overflow-wrap: anywhere; }
     .sg-stage { font-size: 0.56rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--dim); }
-
     .signal-grain {
       position: absolute; inset: -4px; pointer-events: none; z-index: 4; opacity: 0.06;
       background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0px, transparent 1px, transparent 2px),
@@ -123,7 +113,7 @@
     }
     @keyframes hudGrain { 0% { transform: translate(0,0); } 100% { transform: translate(-2px,1px); } }
 
-    /* ── readout ── */
+    /* readout */
     .readout {
       display: flex;
       align-items: stretch;
@@ -173,7 +163,7 @@
       font-family: var(--font-mono);
     }
 
-    /* ── controls ── */
+    /* controls */
     .controls {
       display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
       padding-top: 0.8rem;
@@ -191,7 +181,7 @@
     }
     .controls .reset { border-color: #333; color: #666; }
 
-    /* ── chart panel ── */
+    /* chart panel */
     .chart-panel-inner {
       background: #0d0d0d;
       border: 1px solid #1f1f1f;
@@ -208,7 +198,7 @@
       min-height: 280px;
     }
 
-    /* ── section labels ── */
+    /* section labels */
     .section-label {
       padding: 12px 12px 2px;
       font-family: var(--font-serif);
@@ -227,7 +217,7 @@
       font-family: var(--font-mono);
     }
 
-    /* ── tier connector ── */
+    /* tier connector */
     .tier-connector { display: flex; justify-content: center; padding: 2px 0; }
     .tier-connector span {
       width: 1px;
@@ -251,7 +241,7 @@
     .tier-connector.filled span { background: var(--fg); }
     .tier-connector.filled span::before, .tier-connector.filled span::after { background: var(--fg); border-color: var(--fg); }
 
-    /* ── notch track ── */
+    /* notch track */
     .notch-track {
       display: flex;
       gap: 5px;
@@ -275,67 +265,80 @@
     .notch-tick.carved { background: var(--fg); border-color: var(--fg); color: #000; }
     @keyframes pulseborder { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-    /* ── channel grid ── */
+    /* channel grid - THIS IS WHERE NOTCHES LIVE */
     .channel-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
+      grid-template-columns: 1fr;
+      gap: 20px;
       padding: 0 12px 16px;
     }
-    .slot { display: flex; flex-direction: column; }
+
+    .slot {
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 6px;
+      padding: 12px 14px 14px;
+    }
     .slot-label {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--dim);
-      letter-spacing: 1px;
-      padding-bottom: 6px;
+      letter-spacing: 1.5px;
+      padding-bottom: 8px;
       display: flex;
       justify-content: space-between;
       font-family: var(--font-mono);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 10px;
     }
     .slot-label.on { color: var(--fg); }
 
     .pair-row {
       display: flex;
       align-items: stretch;
+      gap: 0;
     }
 
-    /* ── cards ── */
+    /* CARDS - the Notch itself */
     .pcard {
       flex: 1;
       min-width: 0;
-      padding: 10px 11px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       gap: 4px;
       cursor: pointer;
       position: relative;
-      min-height: 118px;
-      transition: outline-color 0.15s, box-shadow 0.15s;
+      min-height: 130px;
+      transition: outline-color 0.15s, box-shadow 0.15s, transform 0.15s;
       border-radius: 4px;
     }
-    .pcard .h-name { font-size: 12px; font-weight: bold; letter-spacing: 0.5px; font-family: var(--font-mono); }
-    .pcard .h-desc { font-size: 9px; line-height: 1.35; opacity: 0.85; font-family: var(--font-serif); }
-    .pcard .h-tag { font-size: 8px; letter-spacing: 1px; margin-top: 2px; opacity: 0.7; font-family: var(--font-mono); }
+    .pcard:hover { transform: scale(1.01); }
+    .pcard .h-name { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; font-family: var(--font-mono); }
+    .pcard .h-desc { font-size: 10px; line-height: 1.4; opacity: 0.85; font-family: var(--font-serif); }
+    .pcard .h-tag { font-size: 8px; letter-spacing: 1.5px; margin-top: 4px; opacity: 0.7; font-family: var(--font-mono); }
 
-    /* I card: white */
+    /* I CARD — pure white box */
     .pcard.i-card {
-      background: #fff;
-      color: #000;
-      border: 1px solid #000;
+      background: #ffffff;
+      color: #000000;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 20px rgba(255,255,255,0.08);
     }
-    .pcard.i-card:hover { background: #e2e2e2; }
+    .pcard.i-card:hover { background: #f0f0f0; }
 
-    /* O card: black with custom dotted border (wide spacing) */
+    /* O CARD — black with WIDE SPACING dotted border */
     .pcard.o-card {
-      background: #000;
-      color: #fff;
-      border: 2px dotted #fff;
-      /* extra spacing via outline */
-      outline: 2px dotted #aaa;
-      outline-offset: 4px;
+      background: #0a0a0a;
+      color: #ffffff;
+      border: 3px dotted #ffffff;
+      /* extra wide spacing via outline + offset */
+      outline: 3px dotted #aaaaaa;
+      outline-offset: 6px;
     }
-    .pcard.o-card:hover { background: #151515; }
+    .pcard.o-card:hover { background: #161616; }
 
     .pcard.ghost {
       background: #000;
@@ -348,21 +351,21 @@
     }
 
     .pcard.active {
-      outline: 3px solid #fff;
-      outline-offset: 3px;
-      box-shadow: 0 0 12px rgba(255,255,255,0.4);
+      outline: 4px solid #fff;
+      outline-offset: 4px;
+      box-shadow: 0 0 30px rgba(255,255,255,0.35);
       z-index: 2;
     }
     .pcard.active .active-tag {
       position: absolute;
-      top: -9px;
-      right: 6px;
+      top: -12px;
+      right: 8px;
       background: #000;
       border: 1px solid #fff;
       color: #fff;
-      font-size: 7.5px;
-      letter-spacing: 1px;
-      padding: 1px 5px;
+      font-size: 8px;
+      letter-spacing: 1.5px;
+      padding: 2px 8px;
       font-family: var(--font-mono);
     }
     .pcard.i-card.active .active-tag { background: #fff; color: #000; border-color: #000; }
@@ -371,22 +374,23 @@
     .pcard.kalma-card {
       background: #000;
       color: var(--grn);
-      border: 1px solid var(--grn);
+      border: 2px solid var(--grn);
       align-items: center;
       text-align: center;
       justify-content: center;
-      outline: 3px solid var(--grn);
-      outline-offset: 3px;
-      box-shadow: 0 0 12px rgba(124, 255, 176, 0.35);
+      outline: 4px solid var(--grn);
+      outline-offset: 4px;
+      box-shadow: 0 0 30px rgba(124, 255, 176, 0.3);
     }
 
-    /* ── tether ── */
+    /* TETHER between I and O */
     .tether {
-      flex: 0 0 26px;
+      flex: 0 0 32px;
       position: relative;
       align-self: center;
-      height: 2px;
+      height: 3px;
       background: var(--dim2);
+      margin: 0 2px;
     }
     .tether::before {
       content: "";
@@ -394,18 +398,18 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--dim2);
       border: 1px solid var(--dim2);
     }
-    .tether.engaged { background: var(--fg); }
-    .tether.engaged::before { background: #fff; border-color: #fff; }
+    .tether.engaged { background: var(--fg); box-shadow: 0 0 12px rgba(255,255,255,0.4); }
+    .tether.engaged::before { background: #fff; border-color: #fff; box-shadow: 0 0 12px rgba(255,255,255,0.6); }
     .tether.ghost-tether { background: var(--dim2); }
     .tether.ghost-tether::before { background: #000; border: 1px dotted var(--dim2); }
 
-    /* ── status card (for locked/available notches) ── */
+    /* status card for locked/available */
     .status-card {
       flex: 1;
       border: 1px dotted var(--dim2);
@@ -413,57 +417,60 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      min-height: 118px;
-      padding: 10px;
+      gap: 10px;
+      min-height: 130px;
+      padding: 14px;
       text-align: center;
       border-radius: 4px;
+      background: rgba(0,0,0,0.4);
     }
-    .status-card.locked { color: var(--dim2); font-size: 9px; letter-spacing: 2px; }
-    .status-card.available { border: 1px solid var(--fg); color: var(--fg); }
-    .status-card .av-label { font-size: 9px; letter-spacing: 1.5px; font-family: var(--font-mono); }
-    .status-card .av-power { font-family: var(--font-serif); font-size: 16px; letter-spacing: 1px; }
+    .status-card.locked { color: var(--dim2); font-size: 10px; letter-spacing: 2px; }
+    .status-card.available { border: 2px solid var(--fg); color: var(--fg); box-shadow: 0 0 20px rgba(91,227,255,0.15); }
+    .status-card .av-label { font-size: 10px; letter-spacing: 2px; font-family: var(--font-mono); }
+    .status-card .av-power { font-family: var(--font-serif); font-size: 20px; letter-spacing: 1px; font-weight: 600; }
 
     .carve-btn {
-      font-size: 10px;
-      border: 1px solid var(--fg);
-      padding: 6px 12px;
-      letter-spacing: 1px;
+      font-size: 11px;
+      border: 2px solid var(--fg);
+      padding: 8px 20px;
+      letter-spacing: 2px;
       background: transparent;
       color: var(--fg);
       cursor: pointer;
       font-family: var(--font-mono);
       animation: pulseborder 1.6s infinite;
-      border-radius: 2px;
+      border-radius: 3px;
+      font-weight: 700;
     }
     .carve-btn:hover { background: var(--fg); color: #000; }
 
     .u-loss {
-      font-size: 8.5px;
+      font-size: 9px;
       color: var(--cyan);
-      padding: 6px 2px 0;
+      padding: 8px 2px 0;
       font-style: italic;
       font-family: var(--font-mono);
     }
 
-    /* ── kalma banner ── */
+    /* kalma banner */
     .kalma-banner {
       display: none;
       margin: 0 12px 16px;
-      border: 1px solid var(--grn);
-      padding: 16px;
+      border: 2px solid var(--grn);
+      padding: 20px;
       text-align: center;
       border-radius: 4px;
+      background: rgba(124,255,176,0.05);
     }
     .kalma-banner.show { display: block; }
-    .kalma-banner .kt { font-family: var(--font-serif); font-size: 24px; letter-spacing: 8px; color: var(--grn); }
-    .kalma-banner p { font-size: 10.5px; color: var(--dim); max-width: 600px; margin: 8px auto 0; font-family: var(--font-mono); }
+    .kalma-banner .kt { font-family: var(--font-serif); font-size: 28px; letter-spacing: 10px; color: var(--grn); }
+    .kalma-banner p { font-size: 11px; color: var(--dim); max-width: 600px; margin: 10px auto 0; font-family: var(--font-mono); }
 
-    /* ── log ── */
+    /* log */
     .log-wrap { border-top: 1px solid var(--line); margin-top: 1rem; }
     .log-feed {
       font-size: 10px;
-      line-height: 1.65;
+      line-height: 1.7;
       max-height: 140px;
       overflow-y: auto;
       color: var(--dim);
@@ -474,7 +481,7 @@
     .log-feed .noise-hit { color: var(--fg); }
     .log-feed .kalma-hit { color: var(--grn); }
 
-    /* ── footlines ── */
+    /* footlines */
     .footlines {
       border-top: 1px solid var(--line);
       padding: 8px 12px;
@@ -488,52 +495,52 @@
     }
     .footlines div { max-width: 48%; white-space: pre-line; }
 
-    /* ── modal ── */
+    /* modal */
     .modal-bg {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.88);
+      background: rgba(0, 0, 0, 0.92);
       z-index: 1000;
       align-items: center;
       justify-content: center;
     }
     .modal-bg.show { display: flex; }
     .modal {
-      border: 1px solid var(--fg);
-      background: #000;
-      padding: 20px;
-      width: min(90vw, 420px);
+      border: 2px solid var(--fg);
+      background: #0a0a0a;
+      padding: 24px;
+      width: min(90vw, 440px);
       border-radius: 4px;
     }
-    .modal h3 { font-family: var(--font-serif); font-size: 14px; letter-spacing: 2px; margin: 0 0 6px; }
-    .modal p { font-size: 10.5px; color: var(--dim); margin: 0 0 12px; font-family: var(--font-mono); }
+    .modal h3 { font-family: var(--font-serif); font-size: 16px; letter-spacing: 2px; margin: 0 0 6px; }
+    .modal p { font-size: 11px; color: var(--dim); margin: 0 0 14px; font-family: var(--font-mono); }
     .modal textarea {
       width: 100%;
       background: #000;
       border: 1px solid var(--line);
       color: var(--fg);
       font-family: var(--font-mono);
-      font-size: 11.5px;
-      padding: 8px;
-      min-height: 68px;
+      font-size: 12px;
+      padding: 10px;
+      min-height: 80px;
       resize: vertical;
+      border-radius: 2px;
     }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
     .modal-actions button {
       background: transparent;
       border: 1px solid var(--line);
       color: var(--fg);
       font-family: var(--font-mono);
-      padding: 6px 13px;
-      font-size: 10.5px;
+      padding: 8px 16px;
+      font-size: 11px;
       cursor: pointer;
       border-radius: 2px;
     }
     .modal-actions button:hover { background: var(--fg); color: #000; }
-    .modal-actions .confirm { border-color: var(--fg); }
+    .modal-actions .confirm { border-color: var(--fg); font-weight: 700; }
 
-    /* ── misc ── */
     .nav-link { display: block; margin-top: 16px; font-family: var(--font-mono); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid var(--line); color: var(--fg); text-decoration: none; width: max-content; }
     .nav-link:hover { border-bottom-color: var(--fg); }
 
@@ -543,9 +550,15 @@
     ::-webkit-scrollbar-thumb:hover { background: var(--fg); }
 
     @media (max-width: 700px) {
-      .pcard { min-height: 80px; padding: 8px; }
+      .pcard { min-height: 90px; padding: 10px 12px; }
+      .pcard .h-name { font-size: 12px; }
       .bignum { font-size: 22px; }
+      .pair-row { flex-direction: column; gap: 8px; }
+      .tether { height: 24px; min-width: 2px; flex: 0 0 auto; align-self: stretch; margin: 0 auto; width: 2px; }
+      .tether::before { top: 50%; left: 50%; transform: translate(-50%, -50%); }
     }
+    .reveal { animation: popIn 0.4s ease both; }
+    @keyframes popIn { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
   </style>
 </head>
 <body>
@@ -554,16 +567,16 @@
   <p class="eyebrow">node // 011</p>
   <h1>Notch Chart</h1>
   <div class="whitebox">Othergrade — Kept Channel</div>
-  <p class="subhead">Each notch is a point of light. Carve them to reveal the constellation. I (light) stays white; O (shade) takes a dotted border with extra spacing.</p>
+  <p class="subhead">Nine Notches. Each is a choice: I (light, white) or O (shade, black with wide dotted border). Carve them, unlock the constellation.</p>
 
   <div class="main-grid">
-    <!-- left column: signal, readout, controls -->
+    <!-- left column -->
     <div class="signal-col">
       <div>
         <div class="signal-label">Live Signal</div>
         <div class="signal-frame">
           <div class="signal-stage" id="signalStage">
-            <div class="signal-shake" id="signalShake">
+            <div class="signal-shake">
               <div class="signal-glyph" id="signalGlyph"></div>
               <div class="signal-divider"></div>
               <div class="signal-text">
@@ -576,7 +589,6 @@
         </div>
       </div>
 
-      <!-- readout -->
       <div>
         <div class="readout">
           <div class="bignum" id="bigNoise">0<span class="neg" id="bigNeg">-10</span></div>
@@ -591,43 +603,47 @@
         </div>
       </div>
 
-      <!-- controls -->
       <div class="controls">
         <button id="fusedBtn">fix +5</button>
         <input type="number" id="manualAmt" placeholder="n" value="5">
         <button id="manualBtn">apply</button>
-        <button class="reset" id="resetBtn">reset kept</button>
+        <button class="reset" id="resetBtn">reset</button>
       </div>
     </div>
 
-    <!-- right column: chart -->
+    <!-- right column: THE NOTCHES -->
     <div class="chart-col">
       <div class="chart-panel">
         <div class="chart-panel-inner">
           <div class="star-field">
-            <!-- Kino -->
+
+            <!-- KINO (small, at the top) -->
             <div class="section-label">Kino</div>
-            <div class="section-sub">Base powers, free of Notches. Firing the O side generates Noise — the I side never does.</div>
-            <div class="channel-grid" id="kinoGrid"></div>
+            <div class="section-sub">Base powers. O side generates Noise (+2). I side is clean.</div>
+            <div class="channel-grid" id="kinoGrid" style="grid-template-columns: repeat(auto-fill, minmax(280px,1fr));"></div>
 
             <div class="tier-connector" id="connector-1"><span></span></div>
 
-            <!-- Fantom -->
-            <div class="section-label locked-tier" id="label-fantom">Fantom</div>
-            <div class="section-sub">Crossing a Noise threshold below only unlocks the <i>option</i> to carve — carving is a deliberate act that costs a permanent Loss. Once carved, firing either read of a Fantom power generates Noise (+3).</div>
+            <!-- FANTOM — THIS IS WHERE THE NOTCHES ARE -->
+            <div class="section-label locked-tier" id="label-fantom" style="font-size:18px; letter-spacing:6px;">✧ Notches ✧</div>
+            <div class="section-sub">Cross a threshold to unlock the option. Carving costs a permanent Loss. Once carved, firing either side generates Noise (+3).</div>
+
+            <!-- Notch track: tiny numbered indicators -->
             <div class="notch-track" id="notchTrack"></div>
+
+            <!-- THE NOTCH GRID — each notch is a full card pair -->
             <div class="channel-grid" id="notchGrid"></div>
 
             <div class="tier-connector" id="connector-2"><span></span></div>
 
-            <!-- Kalma -->
+            <!-- KALMA -->
             <div class="section-label locked-tier" id="label-kalma">Kalma</div>
-            <div class="section-sub">What's left. Not one more Notch to carve — every Notch you already have, unbound.</div>
+            <div class="section-sub">All Notches carved. Every O side runs continuous, free of Noise.</div>
             <div class="channel-grid" id="kalmaGrid"></div>
 
             <div class="kalma-banner" id="kalmaBanner">
               <div class="kt">KALMA</div>
-              <p><b>NULL</b> — no I, no O. The pit with nothing left to argue with it. Every Kino O channel now runs continuous, free of Noise. Every carved Fantom channel runs unchained.</p>
+              <p><b>NULL</b> — no I, no O. The pit with nothing left to argue with it. Every O channel runs continuous, unchained.</p>
             </div>
 
             <!-- log -->
@@ -637,18 +653,17 @@
               <div class="log-feed" id="logFeed"></div>
             </div>
 
-            <!-- footlines -->
             <div class="footlines">
               <div>carve ONE (noise-bound) simulate / kept integrity</div>
               <div style="text-align:right;">(assign kept-01 pit-plane hand carving, fantom reserve data channel slot...)</div>
             </div>
+
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- navigation -->
   <a class="nav-link" href="../kindling">→ kindling</a>
   <a class="nav-link" href="../spiritbox">→ spiritbox</a>
   <a class="nav-link" href="../operator-registry">→ operator registry</a>
@@ -672,32 +687,30 @@
 (async function() {
   'use strict';
 
-  // ── data ──
   const KINO = [
-    { name: "RANGED BURST", I: "Lumen", Id: "fast, clean projectile", O: "Tenebrae", Od: "larger, piercing, carries a Static side-effect" },
-    { name: "MELEE", I: "Awl", Id: "refracted strike", O: "Flense", Od: "hits what isn't fully physical, bypasses armor" },
-    { name: "DASH", I: "Wend", Id: "brief, ignores minor obstacles", O: "Undertow", Od: "the whole path damages what's in it" },
+    { name: "RANGED BURST", I: "Lumen", Id: "fast, clean projectile", O: "Tenebrae", Od: "larger, piercing, carries Static" },
+    { name: "MELEE", I: "Awl", Id: "refracted strike", O: "Flense", Od: "bypasses armor" },
+    { name: "DASH", I: "Wend", Id: "brief, ignores obstacles", O: "Undertow", Od: "damages everything in the path" },
     { name: "BARRIER", I: "Ward", Id: "deflects", O: "Maw", Od: "absorbs and swallows" },
-    { name: "FALL CONTROL", I: "Alight", Id: "controlled landing", O: "Founder", Od: "violent Static impact on landing" },
-    { name: "VERTICAL ERUPTION", I: "Psalm", Id: "straight up, clean", O: "Dirge", Od: "grows with your Notch count" }
+    { name: "FALL CONTROL", I: "Alight", Id: "controlled landing", O: "Founder", Od: "violent Static impact" },
+    { name: "VERTICAL ERUPTION", I: "Psalm", Id: "straight up, clean", O: "Dirge", Od: "grows with Notch count" }
   ];
 
   const THRESHOLDS = [
-    { n: 1, req: 10, power: "Fang", Id: "mirrors your movement", Od: "unchained at Notch 6 — hunts on its own", tier: "Fantom" },
-    { n: 2, req: 25, power: "Wing", Id: "attached, carries you aloft", Od: "the shade drags you higher than you meant to go", tier: "Fantom" },
-    { n: 3, req: 45, power: "Wrath", Id: "mirrors you, takes the hit for you", Od: "unchained at Notch 8 — learns from what strikes you", tier: "Fantom" },
-    { n: 4, req: 70, power: "Edge", Id: "follows your attacks, clean severance", Od: "unchained at Notch 7 — severs matter, Static, connections outright", tier: "Fantom" },
-    { n: 5, req: 100, power: "Zero Parade", Id: "a handful of black rabbits, skittish", Od: "unchained at Notch 9 — the swarm moves as one, past counting", tier: "Fantom" },
-    { n: 6, req: 135, power: "Fang, unchained", Id: "hunts independently, still answers to you", Od: "hunts on instinct alone", tier: "Fantom" },
-    { n: 7, req: 175, power: "Disaster Blade", Id: "severs matter and Static cleanly", Od: "severs connections outright", tier: "Fantom" },
-    { n: 8, req: 220, power: "Wrath, unchained", Id: "acts independently, still yours", Od: "learns from every hit, keeps the lesson", tier: "Fantom" },
-    { n: 9, req: 270, power: "Zero Parade, unchained", Id: "the swarm moves as one body", Od: "multiplies past counting", tier: "Fantom" }
+    { n: 1, req: 10, power: "Fang", Id: "mirrors your movement", Od: "unchained at Notch 6 — hunts on its own" },
+    { n: 2, req: 25, power: "Wing", Id: "carries you aloft", Od: "shade drags you higher" },
+    { n: 3, req: 45, power: "Wrath", Id: "mirrors you, takes the hit", Od: "unchained at Notch 8 — learns from strikes" },
+    { n: 4, req: 70, power: "Edge", Id: "follows your attacks, clean severance", Od: "unchained at Notch 7 — severs matter, Static, connections" },
+    { n: 5, req: 100, power: "Zero Parade", Id: "a handful of black rabbits", Od: "unchained at Notch 9 — the swarm moves as one" },
+    { n: 6, req: 135, power: "Fang, unchained", Id: "hunts independently, still answers", Od: "hunts on instinct alone" },
+    { n: 7, req: 175, power: "Disaster Blade", Id: "severs matter and Static cleanly", Od: "severs connections outright" },
+    { n: 8, req: 220, power: "Wrath, unchained", Id: "acts independently, still yours", Od: "learns from every hit" },
+    { n: 9, req: 270, power: "Zero Parade, unchained", Id: "the swarm moves as one body", Od: "multiplies past counting" }
   ];
   const NULL_NOTCH = { power: "Null", Od: "the Shade at full, unfiltered output — nothing left to argue with the noise" };
   const MAX_NOISE = 270;
-  const STORE_KEY = "othergrade-notchchart-v2";
+  const STORE_KEY = "othergrade-notchchart-v3";
 
-  // ── state ──
   let state = {
     noise: 0,
     kalmaActive: false,
@@ -710,7 +723,6 @@
   let seenCarved = new Set();
   let seenKalma = false;
 
-  // ── storage ──
   async function loadState() {
     try {
       const res = await window.storage.get(STORE_KEY, false);
@@ -744,7 +756,7 @@
 
   function addNoise(amount, label) {
     if (isKalma() && amount > 0) {
-      pushLog(`${label} — NULL, no Noise generated (Kalma).`, "kalma-hit");
+      pushLog(`${label} — NULL, no Noise (Kalma).`, "kalma-hit");
       render(); saveState(); return;
     }
     state.noise = Math.max(0, state.noise + amount);
@@ -756,7 +768,6 @@
     return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
   }
 
-  // ── render ──
   function render() {
     renderReadout();
     renderKino();
@@ -775,6 +786,8 @@
     document.getElementById("label-kalma").classList.toggle("unlocked-tier", isKalma());
     document.getElementById("label-kalma").classList.toggle("locked-tier", !isKalma());
     document.getElementById("connector-2").classList.toggle("filled", isKalma());
+
+    updateSignal();
   }
 
   function renderReadout() {
@@ -850,52 +863,66 @@
   function renderNotches() {
     const wrap = document.getElementById("notchGrid");
     wrap.innerHTML = "";
-    THRESHOLDS.filter(t => t.tier === "Fantom").forEach((t) => {
-      const i = t.n - 1;
+
+    THRESHOLDS.forEach((t, i) => {
       const entry = state.notches[i];
       const available = !entry.carved && state.noise >= t.req;
       const slot = document.createElement("div");
       slot.className = "slot";
 
       const labelOn = entry.carved || available;
-      const label = `<div class="slot-label ${labelOn ? 'on' : ''}"><span>N${t.n}</span><span>req ${t.req}</span></div>`;
       const isNewCarve = entry.carved && !seenCarved.has(i);
       const isNewAvailable = !entry.carved && available && !seenAvailable.has(i);
       if (isNewCarve || isNewAvailable) {
         slot.classList.add("reveal");
-        slot.style.animationDelay = (i * 40) + "ms";
+        slot.style.animationDelay = (i * 30) + "ms";
       }
+
       let body;
-
       if (entry.carved) {
-        const activeSide = entry.active;
-        body = `<div class="pair-row">
-          <div class="pcard i-card ${activeSide === 'I' ? 'active' : ''}" data-fantom-i="${i}">
-            ${activeSide === 'I' ? '<span class="active-tag">ACTIVE</span>' : ''}
-            <div class="h-name">${t.power}</div>
-            <div class="h-desc">${t.Id}</div>
-            <div class="h-tag">I · +3 NOISE</div>
+        const activeSide = entry.active || 'I';
+        body = `
+          <div class="slot-label on"><span>NOTCH ${t.n}</span><span>${t.power}</span></div>
+          <div class="pair-row">
+            <div class="pcard i-card ${activeSide === 'I' ? 'active' : ''}" data-fantom-i="${i}">
+              ${activeSide === 'I' ? '<span class="active-tag">ACTIVE</span>' : ''}
+              <div class="h-name">${t.power}</div>
+              <div class="h-desc">${t.Id}</div>
+              <div class="h-tag">I · +3 NOISE</div>
+            </div>
+            <div class="tether ${activeSide ? 'engaged' : ''}"></div>
+            <div class="pcard o-card ${activeSide === 'O' ? 'active' : ''}" data-fantom-o="${i}">
+              ${activeSide === 'O' ? '<span class="active-tag">ACTIVE</span>' : ''}
+              <div class="h-name">shade read</div>
+              <div class="h-desc">${t.Od}</div>
+              <div class="h-tag">O · +3 NOISE</div>
+            </div>
           </div>
-          <div class="tether ${activeSide ? 'engaged' : ''}"></div>
-          <div class="pcard o-card ${activeSide === 'O' ? 'active' : ''}" data-fantom-o="${i}">
-            ${activeSide === 'O' ? '<span class="active-tag">ACTIVE</span>' : ''}
-            <div class="h-name">shade read</div>
-            <div class="h-desc">${t.Od}</div>
-            <div class="h-tag">O · +3 NOISE</div>
-          </div>
-        </div>
-        <div class="u-loss">Loss: ${escapeHtml(entry.loss)}</div>`;
+          <div class="u-loss">Loss: ${escapeHtml(entry.loss)}</div>
+        `;
       } else if (available) {
-        body = `<div class="pair-row"><div class="status-card available">
-          <div class="av-label">THRESHOLD CROSSED</div>
-          <div class="av-power">${t.power}</div>
-          <button class="carve-btn" data-carve="${i}">CARVE →</button>
-        </div></div>`;
+        body = `
+          <div class="slot-label on"><span>NOTCH ${t.n}</span><span>threshold ${t.req}</span></div>
+          <div class="pair-row">
+            <div class="status-card available" style="flex:1;">
+              <div class="av-label">THRESHOLD CROSSED</div>
+              <div class="av-power">${t.power}</div>
+              <button class="carve-btn" data-carve="${i}">CARVE →</button>
+            </div>
+          </div>
+        `;
       } else {
-        body = `<div class="pair-row"><div class="status-card locked">· · LOCKED · ·<br>req ${t.req} Noise</div></div>`;
+        body = `
+          <div class="slot-label"><span>NOTCH ${t.n}</span><span>req ${t.req}</span></div>
+          <div class="pair-row">
+            <div class="status-card locked" style="flex:1;">
+              · · LOCKED · ·<br>${t.power}
+            </div>
+          </div>
+        `;
       }
 
-      slot.innerHTML = label + body;
+      slot.innerHTML = body;
       wrap.appendChild(slot);
     });
 
@@ -907,8 +934,8 @@
         const idx = el.dataset.fantomI;
         const t = THRESHOLDS[idx];
         state.notches[idx].active = 'I';
-        if (isKalma()) addNoise(0, `${t.power} (light read) — unchained, continuous`);
-        else addNoise(3, `${t.power} used — light read`);
+        if (isKalma()) addNoise(0, `${t.power} (light) — unchained`);
+        else addNoise(3, `${t.power} — light read`);
       });
     });
     wrap.querySelectorAll("[data-fantom-o]").forEach(el => {
@@ -916,8 +943,8 @@
         const idx = el.dataset.fantomO;
         const t = THRESHOLDS[idx];
         state.notches[idx].active = 'O';
-        if (isKalma()) addNoise(0, `${t.power} (shade read) — unchained, continuous`);
-        else addNoise(3, `${t.power} used — shade read`);
+        if (isKalma()) addNoise(0, `${t.power} (shade) — unchained, continuous`);
+        else addNoise(3, `${t.power} — shade read`);
       });
     });
 
@@ -936,15 +963,23 @@
       const slot = document.createElement("div");
       slot.className = "slot";
       if (allCarved()) {
-        slot.innerHTML = `<div class="slot-label on"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
-          <div class="pair-row"><div class="status-card available">
-            <div class="av-label">ALL NOTCHES CARVED</div>
-            <div class="av-power">Kalma</div>
-            <button class="carve-btn" id="activateKalmaBtn">ACTIVATE →</button>
-          </div></div>`;
+        slot.innerHTML = `
+          <div class="slot-label on"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
+          <div class="pair-row">
+            <div class="status-card available" style="flex:1;">
+              <div class="av-label">ALL NOTCHES CARVED</div>
+              <div class="av-power">Kalma</div>
+              <button class="carve-btn" id="activateKalmaBtn">ACTIVATE →</button>
+            </div>
+          </div>
+        `;
       } else {
-        slot.innerHTML = `<div class="slot-label"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
-          <div class="pair-row"><div class="status-card locked">· · LOCKED · ·<br>requires all ${THRESHOLDS.length} Notches carved</div></div>`;
+        slot.innerHTML = `
+          <div class="slot-label"><span>KALMA</span><span>${carvedCount()}/${THRESHOLDS.length}</span></div>
+          <div class="pair-row">
+            <div class="status-card locked" style="flex:1;">· · LOCKED · ·<br>requires all ${THRESHOLDS.length} Notches carved</div>
+          </div>
+        `;
       }
       wrap.appendChild(slot);
       const btn = document.getElementById("activateKalmaBtn");
@@ -952,14 +987,14 @@
       return;
     }
 
-    const firstReveal = !seenKalma;
+    // Kalma active — show all O sides running
     let revealIdx = 0;
     function makeSlot() {
       const slot = document.createElement("div");
       slot.className = "slot";
-      if (firstReveal) {
+      if (!seenKalma) {
         slot.classList.add("reveal");
-        slot.style.animationDelay = (revealIdx * 45) + "ms";
+        slot.style.animationDelay = (revealIdx * 40) + "ms";
         revealIdx++;
       }
       return slot;
@@ -967,7 +1002,8 @@
 
     KINO.forEach(k => {
       const slot = makeSlot();
-      slot.innerHTML = `<div class="slot-label on"><span>${k.name}</span></div>
+      slot.innerHTML = `
+        <div class="slot-label on"><span>${k.name}</span></div>
         <div class="pair-row">
           <div class="pcard o-card active" style="flex:1;">
             <span class="active-tag">ACTIVE</span>
@@ -975,13 +1011,16 @@
             <div class="h-desc">${k.Od}</div>
             <div class="h-tag">O · CONTINUOUS</div>
           </div>
-        </div>`;
+        </div>
+      `;
       wrap.appendChild(slot);
     });
+
     THRESHOLDS.forEach((t, i) => {
       if (!state.notches[i].carved) return;
       const slot = makeSlot();
-      slot.innerHTML = `<div class="slot-label on"><span>N${t.n}</span><span>${t.power}</span></div>
+      slot.innerHTML = `
+        <div class="slot-label on"><span>N${t.n}</span><span>${t.power}</span></div>
         <div class="pair-row">
           <div class="pcard o-card active" style="flex:1;">
             <span class="active-tag">ACTIVE</span>
@@ -989,11 +1028,14 @@
             <div class="h-desc">${t.Od}</div>
             <div class="h-tag">O · CONTINUOUS</div>
           </div>
-        </div>`;
+        </div>
+      `;
       wrap.appendChild(slot);
     });
+
     const nullSlot = makeSlot();
-    nullSlot.innerHTML = `<div class="slot-label on"><span>NULL</span><span>no I</span></div>
+    nullSlot.innerHTML = `
+      <div class="slot-label on"><span>NULL</span><span>no I</span></div>
       <div class="pair-row">
         <div class="pcard o-card active" style="flex:1;">
           <span class="active-tag">ACTIVE</span>
@@ -1001,14 +1043,15 @@
           <div class="h-desc">${NULL_NOTCH.Od}</div>
           <div class="h-tag">O ONLY · CONTINUOUS</div>
         </div>
-      </div>`;
+      </div>
+    `;
     wrap.appendChild(nullSlot);
     seenKalma = true;
   }
 
   function activateKalma() {
     state.kalmaActive = true;
-    pushLog(`KALMA ACTIVATED — all ${THRESHOLDS.length} Notches carved. Every O side now runs continuous.`, "kalma-hit");
+    pushLog(`KALMA ACTIVATED — all ${THRESHOLDS.length} Notches carved. Every O side runs continuous.`, "kalma-hit");
     render(); saveState();
   }
 
@@ -1018,7 +1061,7 @@
     feed.innerHTML = state.log.map(l => `<div class="${l.cls}">${escapeHtml(l.text)}</div>`).join("");
   }
 
-  // ── carve modal ──
+  // modal
   let modalCallback = null;
   function openModal({ title, sub, value, onConfirm }) {
     document.getElementById("modalTitle").textContent = title;
@@ -1042,7 +1085,7 @@
     const entry = state.notches[i];
     openModal({
       title: `CARVE NOTCH ${t.n} — ${t.power.toUpperCase()}`,
-      sub: `Threshold ${t.req} reached. Crossing it only unlocked the option — carving is your choice, and it costs a permanent Loss.`,
+      sub: `Threshold ${t.req} reached. Carving costs a permanent Loss.`,
       value: "",
       onConfirm: (val) => {
         entry.carved = true;
@@ -1054,42 +1097,7 @@
     });
   }
 
-  // ── init ──
-  document.getElementById("fusedBtn").addEventListener("click", () => {
-    if (isKalma()) addNoise(0, "Fix — no Noise (Kalma)");
-    else addNoise(5, "Fix invoked");
-  });
-  document.getElementById("manualBtn").addEventListener("click", () => {
-    const inp = document.getElementById("manualAmt");
-    const v = parseInt(inp.value);
-    if (!isNaN(v) && v !== 0) { addNoise(v, "Manual adjustment"); inp.value = ""; }
-  });
-  document.getElementById("resetBtn").addEventListener("click", async () => {
-    if (confirm("Reset this Kept? Noise, Notches, and Losses will be cleared permanently.")) {
-      state = {
-        noise: 0,
-        kalmaActive: false,
-        notches: THRESHOLDS.map(() => ({ carved: false, loss: "", carvedAt: null, active: null })),
-        kinoActive: KINO.map(() => null),
-        log: []
-      };
-      seenAvailable = new Set(); seenCarved = new Set(); seenKalma = false;
-      pushLog("Kept reset.");
-      render(); await saveState();
-    }
-  });
-
-  await loadState();
-  THRESHOLDS.forEach((t, i) => {
-    const entry = state.notches[i];
-    if (entry.carved) seenCarved.add(i);
-    if (!entry.carved && state.noise >= t.req) seenAvailable.add(i);
-  });
-  seenKalma = isKalma();
-  if (state.log.length === 0) pushLog("Kept status channel online.");
-  render();
-
-  // ── signal display (live signal) ──
+  // signal display
   function buildSeal(seed) {
     const rng = mulberry32(seed);
     const cx = 150, cy = 150, R = 130;
@@ -1152,16 +1160,13 @@
 
   function updateSignal() {
     const carvedIndices = state.notches.map((n, i) => n.carved ? i : -1).filter(i => i >= 0);
-    if (carvedIndices.length === 0) {
-      idleSignal();
-      return;
-    }
+    if (carvedIndices.length === 0) { idleSignal(); return; }
     const lastIdx = carvedIndices[carvedIndices.length - 1];
     const t = THRESHOLDS[lastIdx];
     const entry = state.notches[lastIdx];
     const seed = t.n * 97 + (entry.active === 'I' ? 1 : 2);
     paintSeal(document.getElementById('signalGlyph'), buildSeal(seed));
-    document.getElementById('sgTitle').textContent = `${t.power} (${entry.active})`;
+    document.getElementById('sgTitle').textContent = `${t.power} (${entry.active || 'I'})`;
     document.getElementById('sgStage').textContent = `notch ${t.n} · ${entry.active === 'I' ? 'light' : 'shade'}`;
   }
 
@@ -1174,14 +1179,39 @@
     };
   }
 
-  // override render to update signal
-  const originalRender = render;
-  render = function() {
-    originalRender();
-    updateSignal();
-  };
+  // init
+  document.getElementById("fusedBtn").addEventListener("click", () => {
+    if (isKalma()) addNoise(0, "Fix — no Noise (Kalma)");
+    else addNoise(5, "Fix invoked");
+  });
+  document.getElementById("manualBtn").addEventListener("click", () => {
+    const inp = document.getElementById("manualAmt");
+    const v = parseInt(inp.value);
+    if (!isNaN(v) && v !== 0) { addNoise(v, "Manual adjustment"); inp.value = ""; }
+  });
+  document.getElementById("resetBtn").addEventListener("click", async () => {
+    if (confirm("Reset this Kept? Noise, Notches, and Losses will be cleared permanently.")) {
+      state = {
+        noise: 0,
+        kalmaActive: false,
+        notches: THRESHOLDS.map(() => ({ carved: false, loss: "", carvedAt: null, active: null })),
+        kinoActive: KINO.map(() => null),
+        log: []
+      };
+      seenAvailable = new Set(); seenCarved = new Set(); seenKalma = false;
+      pushLog("Kept reset.");
+      render(); await saveState();
+    }
+  });
 
-  // initial signal
+  await loadState();
+  THRESHOLDS.forEach((t, i) => {
+    const entry = state.notches[i];
+    if (entry.carved) seenCarved.add(i);
+    if (!entry.carved && state.noise >= t.req) seenAvailable.add(i);
+  });
+  seenKalma = isKalma();
+  if (state.log.length === 0) pushLog("Kept status channel online.");
   idleSignal();
   render();
 
