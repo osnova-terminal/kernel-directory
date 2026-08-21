@@ -56,7 +56,7 @@
   }
   .crt-vignette{
     position:absolute; inset:0; z-index:11; pointer-events:none;
-    background:radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,.38) 100%);
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,.28) 100%);
     mix-blend-mode:multiply;
   }
   .crt-flicker{
@@ -97,6 +97,7 @@
 
   /* card boxes, rendered via foreignObject — name only, no description */
   .card{
+    position:relative;
     width:100%; height:100%;
     display:flex; align-items:center; justify-content:center; text-align:center;
     padding:4px 6px; box-sizing:border-box;
@@ -108,9 +109,23 @@
     overflow:hidden;
     white-space:normal; word-break:break-word; hyphens:auto;
   }
+  .card::after{
+    content:"";
+    position:absolute; inset:0;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,.07) 0px,
+      rgba(0,0,0,.07) 1px,
+      rgba(255,255,255,.04) 2px,
+      rgba(255,255,255,.04) 3px
+    );
+    background-size:100% 3px;
+    pointer-events:none;
+    z-index:1;
+  }
   .card.i-card{background:#fff; color:#000; border:1px solid #000; box-shadow:0 0 5px rgba(255,255,255,.35);}
   .card.i-card:hover{background:#e4e4e4;}
-  .card.o-card{background:#000; color:#fff; border:1.6px dotted #fff; text-shadow:0 0 3px rgba(255,255,255,.4); box-shadow:0 0 3px rgba(255,255,255,.12);}
+  .card.o-card{background:#000; color:#fff; border:2px dotted #fff; text-shadow:0 0 3px rgba(255,255,255,.4); box-shadow:0 0 3px rgba(255,255,255,.12);}
   .card.o-card:hover{background:#141414;}
   .card.o-card.kalma-on, .card.i-card.kalma-on{animation:pulseGlow 2.2s ease-in-out infinite;}
   @keyframes pulseGlow{0%,100%{opacity:.8;} 50%{opacity:1;}}
@@ -353,6 +368,7 @@
   const NULL_POS = {x:700, y:820};
 
   const PAIR_W = 160, PAIR_H = 54, GAP = 8;      // Kino / carved-Fantom binary cards
+  const PAIR_H_OFFSET = 7;                        // black (O) card runs slightly shorter + shifted, so the pair doesn't align edge-to-edge
   const SINGLE_W = 150, SINGLE_H = 46;            // Fantom available single card
   const LOCKED_W = 70, LOCKED_H = 40;             // Fantom locked single card
   const NULL_W = 200, NULL_H = 70;
@@ -392,6 +408,26 @@
     svg.querySelectorAll('.card').forEach(fitCardText);
   }
 
+  // erratic jitter — each card ticks on its own random clock, snaps to a random
+  // tiny offset, holds briefly, snaps back. No easing/transition on transform,
+  // so it reads as a glitch twitch rather than a swoon.
+  function scheduleJitter(div){
+    function tick(){
+      if(!div.isConnected) return;
+      const dx = (Math.random()*4-2).toFixed(2);
+      const dy = (Math.random()*4-2).toFixed(2);
+      div.style.transform = `translate(${dx}px, ${dy}px)`;
+      const hold = 25 + Math.random()*45;
+      setTimeout(()=>{ if(div.isConnected) div.style.transform = 'translate(0,0)'; }, hold);
+      const next = 120 + Math.random()*1400;
+      setTimeout(tick, next);
+    }
+    setTimeout(tick, Math.random()*1000);
+  }
+  function jitterAllCards(){
+    svg.querySelectorAll('.card').forEach(scheduleJitter);
+  }
+
   function renderField(){
     svg.innerHTML = "";
 
@@ -412,7 +448,7 @@
       svg.appendChild(box(p.x-halfW/2, p.y, halfW-GAP/2, PAIR_H,
         k.I, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
         ()=>selectKino(i,'I')));
-      svg.appendChild(box(p.x+halfW/2, p.y, halfW-GAP/2, PAIR_H,
+      svg.appendChild(box(p.x+halfW/2, p.y+PAIR_H_OFFSET/2, halfW-GAP/2, PAIR_H-PAIR_H_OFFSET,
         k.O, 'o-card'+(isKalma()?' kalma-on':'')+oSel,
         ()=>selectKino(i,'O')));
     });
@@ -442,7 +478,7 @@
         svg.appendChild(box(p.x-halfW/2, p.y, halfW-GAP/2, PAIR_H,
           `N${t.n} · ${t.power}`, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
           ()=>selectFantom(i,'I')));
-        svg.appendChild(box(p.x+halfW/2, p.y, halfW-GAP/2, PAIR_H,
+        svg.appendChild(box(p.x+halfW/2, p.y+PAIR_H_OFFSET/2, halfW-GAP/2, PAIR_H-PAIR_H_OFFSET,
           'shade read', 'o-card'+(isKalma()?' kalma-on':'')+oSel,
           ()=>selectFantom(i,'O')));
       } else if(available){
@@ -478,6 +514,7 @@
     }
 
     fitAllCards();
+    jitterAllCards();
   }
 
   // ---------- selection & info panel ----------
