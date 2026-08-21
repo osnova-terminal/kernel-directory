@@ -6,7 +6,7 @@
 <title>OTHERGRADE // NOTCH FIELD</title>
 <style>
   :root{
-    --black:#000000; --fg:#ffffff; --dim:#7f7f7f; --dimmer:#3c3c3c; --line:#4a4a4a;
+    --black:#000000; --fg:#ffffff; --dim:#6f6f6f; --dimmer:#2a2a2a; --line:#3a3a3a;
     --cyan:#5be3ff; --grn:#7cffb0; --amber:#ffcf7c;
   }
   *{box-sizing:border-box;}
@@ -20,18 +20,58 @@
     min-height:100vh;
     background:#000;
     overflow:hidden;
+    filter:contrast(1.14) brightness(1.015);
   }
-  .dust{position:absolute; inset:0; pointer-events:none;}
-  .dust i{
-    position:absolute;
-    width:2px;height:2px;
-    background:#fff;
-    border-radius:50%;
-    animation:twinkle var(--dur) ease-in-out infinite;
-    animation-delay:var(--delay);
-    opacity:.2;
+  #noiseCanvas{
+    position:absolute; inset:0; width:100%; height:100%;
+    opacity:.1; z-index:1; pointer-events:none;
+    image-rendering:pixelated;
+    mix-blend-mode:screen;
   }
-  @keyframes twinkle{0%,100%{opacity:.08;} 50%{opacity:.7;}}
+  #grainCanvas{
+    position:absolute; inset:0; width:100%; height:100%;
+    opacity:.05; z-index:13; pointer-events:none;
+    image-rendering:pixelated;
+    mix-blend-mode:overlay;
+  }
+
+  /* ===== CRT OVERLAY LAYERS — sit above every visual element, blended so text stays legible ===== */
+  .crt-bloom{
+    position:absolute; inset:0; z-index:9; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 42%, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 62%);
+    mix-blend-mode:screen;
+  }
+  .crt-scanlines{
+    position:absolute; inset:0; z-index:10; pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,.16) 0px,
+      rgba(0,0,0,.16) 1px,
+      rgba(255,255,255,.012) 2px,
+      rgba(255,255,255,.012) 3px
+    );
+    background-size:100% 3px;
+    mix-blend-mode:overlay;
+    opacity:.55;
+  }
+  .crt-vignette{
+    position:absolute; inset:0; z-index:11; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,.5) 100%);
+    mix-blend-mode:multiply;
+  }
+  .crt-flicker{
+    position:absolute; inset:0; z-index:12; pointer-events:none;
+    background:rgba(255,255,255,.012);
+    mix-blend-mode:overlay;
+    animation:crtFlicker 6.5s infinite steps(1);
+  }
+  @keyframes crtFlicker{
+    0%,92%,100%{opacity:1;}
+    93%{opacity:.55;}
+    94%{opacity:1;}
+    96%{opacity:.7;}
+    97%{opacity:1;}
+  }
 
   /* ===== TOP HUD ===== */
   .hud-top{
@@ -39,10 +79,10 @@
     display:flex; justify-content:space-between; align-items:baseline;
     padding:16px 20px;
     font-size:11px; letter-spacing:.1em; color:var(--dim);
-    border-bottom:1px solid #161616;
+    border-bottom:1px solid #0f0f0f;
   }
   .hud-top b{color:var(--fg); font-weight:normal;}
-  .hud-title{font-family:"Times New Roman",serif; font-size:15px; letter-spacing:.3em; color:var(--fg);}
+  .hud-title{font-family:"Times New Roman",serif; font-size:15px; letter-spacing:.3em; color:var(--fg); text-shadow:0 0 4px rgba(255,255,255,.4), 0 0 1px rgba(255,255,255,.8);}
 
   /* ===== FIELD (svg constellation) ===== */
   .field-wrap{position:relative; z-index:2; width:100%; margin:0 auto;}
@@ -50,60 +90,61 @@
 
   .lead{stroke:var(--dimmer); stroke-width:.8; fill:none;}
   .lead.dashed{stroke-dasharray:3 4;}
-  .lead.lit{stroke:var(--fg); opacity:.6;}
-  .lead.kalma-lead{stroke:var(--grn); opacity:.75;}
-  .lead.link{stroke:#1c1c1c; stroke-width:.7;}
-  .lead.link.lit{stroke:var(--fg); opacity:.35;}
+  .lead.lit{stroke:var(--fg); opacity:.65; filter:drop-shadow(0 0 1.2px rgba(255,255,255,.75));}
+  .lead.kalma-lead{stroke:var(--grn); opacity:.8; filter:drop-shadow(0 0 1.5px rgba(124,255,176,.7));}
+  .lead.link{stroke:#242424; stroke-width:.75;}
+  .lead.link.lit{stroke:var(--fg); opacity:.6; stroke-width:.9; filter:drop-shadow(0 0 2px rgba(255,255,255,.85)) drop-shadow(0 0 5px rgba(255,255,255,.4));}
 
-  /* card boxes, rendered via foreignObject */
+  /* card boxes, rendered via foreignObject — name only, no description */
   .card{
     width:100%; height:100%;
     display:flex; align-items:center; justify-content:center; text-align:center;
-    padding:6px; box-sizing:border-box;
+    padding:4px 6px; box-sizing:border-box;
     font-family:"Courier New",Courier,monospace;
-    font-size:10.5px; letter-spacing:.03em; line-height:1.25;
+    font-weight:bold;
+    font-size:13px; letter-spacing:.02em; line-height:1.15;
     cursor:pointer; user-select:none;
     transition:box-shadow .15s;
+    overflow:hidden;
+    white-space:normal; word-break:break-word; hyphens:auto;
   }
-  .card.i-card{background:#fff; color:#000; border:1px solid #000;}
+  .card.i-card{background:#fff; color:#000; border:1px solid #000; box-shadow:0 0 5px rgba(255,255,255,.35);}
   .card.i-card:hover{background:#e4e4e4;}
-  .card.o-card{background:#000; color:#fff; border:1.6px dotted #fff;}
+  .card.o-card{background:#000; color:#fff; border:1.6px dotted #fff; text-shadow:0 0 3px rgba(255,255,255,.4); box-shadow:0 0 3px rgba(255,255,255,.12);}
   .card.o-card:hover{background:#141414;}
   .card.o-card.kalma-on, .card.i-card.kalma-on{animation:pulseGlow 2.2s ease-in-out infinite;}
   @keyframes pulseGlow{0%,100%{opacity:.8;} 50%{opacity:1;}}
 
-  .card.locked-card{background:#000; color:var(--dimmer); border:1px solid var(--dimmer); font-size:9px;}
-  .card.available-card{background:#000; color:var(--fg); border:1px solid var(--fg); animation:ringPulse 1.6s ease-in-out infinite;}
-  @keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);} 50%{box-shadow:0 0 10px 1px rgba(255,255,255,.35);}}
+  .card.locked-card{background:#000; color:var(--dimmer); border:1px solid var(--dimmer); font-size:11px; font-weight:normal;}
+  .card.available-card{background:#000; color:var(--fg); border:1px solid var(--fg); text-shadow:0 0 4px rgba(255,255,255,.5); animation:ringPulse 1.6s ease-in-out infinite;}
+  @keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0);} 50%{box-shadow:0 0 12px 2px rgba(255,255,255,.4);}}
 
-  .card.null-card{background:#000; color:var(--grn); border:1px solid var(--grn); font-family:"Times New Roman",serif; font-size:16px; letter-spacing:.1em;}
-  .card.null-card.dormant{color:var(--dim); border-color:var(--dimmer); font-family:"Courier New",monospace; font-size:10px; animation:ringPulse 1.6s ease-in-out infinite;}
-  .card.null-card.active{animation:pulseGlow 1.8s ease-in-out infinite; box-shadow:0 0 16px 2px rgba(124,255,176,.3);}
+  .card.null-card{background:#000; color:var(--grn); border:1px solid var(--grn); font-family:"Times New Roman",serif; font-size:20px; letter-spacing:.15em; font-weight:normal;}
+  .card.null-card.dormant{color:var(--dim); border-color:var(--dimmer); font-family:"Courier New",monospace; font-size:12px; animation:ringPulse 1.6s ease-in-out infinite;}
+  .card.null-card.active{animation:pulseGlow 1.8s ease-in-out infinite; box-shadow:0 0 18px 3px rgba(124,255,176,.35); text-shadow:0 0 6px rgba(124,255,176,.6);}
 
   .card.selected{outline:2px solid var(--cyan); outline-offset:2px;}
-
-  .tier-tag{position:absolute; font-size:8px; letter-spacing:.12em; color:var(--dimmer); pointer-events:none;}
 
   /* ===== BOTTOM HUD ===== */
   .hud-bottom{
     position:relative; z-index:3;
-    border-top:1px solid #161616;
+    border-top:1px solid #0f0f0f;
     background:rgba(0,0,0,.75);
   }
   .readout-row{
     display:flex; align-items:stretch; flex-wrap:wrap;
-    border-bottom:1px solid #161616;
+    border-bottom:1px solid #0f0f0f;
   }
-  .readout-cell{padding:10px 16px; border-right:1px solid #161616; font-size:10px; color:var(--dim); letter-spacing:.08em;}
-  .readout-cell b{display:block; font-family:"Times New Roman",serif; font-size:20px; color:var(--fg); letter-spacing:.02em; font-weight:normal;}
+  .readout-cell{padding:10px 16px; border-right:1px solid #0f0f0f; font-size:10px; color:var(--dim); letter-spacing:.08em;}
+  .readout-cell b{display:block; font-family:"Times New Roman",serif; font-size:20px; color:var(--fg); letter-spacing:.02em; font-weight:normal; text-shadow:0 0 4px rgba(255,255,255,.4);}
   .readout-cell.grow{flex:1; min-width:180px;}
   .tickrow{display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;}
   .tick{width:11px;height:11px;border:1px solid var(--dimmer);}
-  .tick.available{border-color:var(--fg); animation:ringPulse2 1.6s infinite;}
-  .tick.carved{background:var(--fg); border-color:var(--fg);}
+  .tick.available{border-color:var(--fg); box-shadow:0 0 4px rgba(255,255,255,.4); animation:ringPulse2 1.6s infinite;}
+  .tick.carved{background:var(--fg); border-color:var(--fg); box-shadow:0 0 3px rgba(255,255,255,.5);}
   @keyframes ringPulse2{0%,100%{opacity:.5;}50%{opacity:1;}}
 
-  .controls-row{display:flex; gap:8px; padding:10px 16px; flex-wrap:wrap; align-items:center; border-bottom:1px solid #161616;}
+  .controls-row{display:flex; gap:8px; padding:10px 16px; flex-wrap:wrap; align-items:center; border-bottom:1px solid #0f0f0f;}
   .controls-row button{
     background:transparent; border:1px solid var(--line); color:var(--fg);
     font-family:"Courier New",monospace; font-size:10.5px; padding:6px 12px; cursor:pointer;
@@ -114,12 +155,12 @@
     font-family:"Courier New",monospace; padding:6px; font-size:10.5px;
   }
   .controls-row .spacer{flex:1;}
-  .controls-row .reset{color:var(--dim); border-color:#222;}
+  .controls-row .reset{color:var(--dim); border-color:#1a1a1a;}
 
   .infopanel{padding:14px 16px 18px; min-height:96px;}
   .infopanel .eyebrow{font-size:9px; letter-spacing:.18em; color:var(--dimmer);}
-  .infopanel .name{font-family:"Times New Roman",serif; font-size:18px; margin:4px 0 8px;}
-  .infopanel .name.kalma-c{color:var(--grn);}
+  .infopanel .name{font-family:"Times New Roman",serif; font-size:18px; margin:4px 0 8px; text-shadow:0 0 3px rgba(255,255,255,.3);}
+  .infopanel .name.kalma-c{color:var(--grn); text-shadow:0 0 4px rgba(124,255,176,.5);}
   .infopanel .row{display:flex; gap:8px; font-size:11px; margin-bottom:4px; max-width:60ch;}
   .infopanel .tag{font-size:9px; border:1px solid var(--dimmer); padding:0 4px; color:var(--dim); flex-shrink:0;}
   .infopanel .tag.o{border-color:var(--amber); color:var(--amber);}
@@ -130,20 +171,16 @@
     font-family:"Courier New",monospace; font-size:10px; padding:6px 12px; cursor:pointer;
   }
   .infopanel .fire-row button:hover{background:var(--fg); color:#000;}
-  .infopanel .fire-row button.carve{border-color:var(--amber); color:var(--amber); animation:ringPulse2 1.6s infinite;}
-  .infopanel .fire-row button.carve:hover{background:var(--amber); color:#000;}
-  .infopanel .fire-row button.activate{border-color:var(--grn); color:var(--grn); animation:ringPulse2 1.6s infinite;}
-  .infopanel .fire-row button.activate:hover{background:var(--grn); color:#000;}
 
-  .log-feed{font-size:9.5px; line-height:1.6; max-height:110px; overflow-y:auto; color:var(--dim); padding:10px 16px 14px; border-top:1px solid #161616;}
+  .log-feed{font-size:9.5px; line-height:1.6; max-height:110px; overflow-y:auto; color:var(--dim); padding:10px 16px 14px; border-top:1px solid #0f0f0f;}
   .log-feed div{white-space:pre-wrap;}
-  .log-feed .hit{color:var(--fg);}
-  .log-feed .kalma-hit{color:var(--grn);}
+  .log-feed .hit{color:var(--fg); text-shadow:0 0 2px rgba(255,255,255,.35);}
+  .log-feed .kalma-hit{color:var(--grn); text-shadow:0 0 2px rgba(124,255,176,.4);}
 
   .modal-bg{display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:1000; align-items:center; justify-content:center;}
   .modal-bg.show{display:flex;}
-  .modal{border:1px solid var(--fg); background:#000; padding:20px; width:min(90vw,420px);}
-  .modal h3{font-family:"Times New Roman",serif; font-size:14px; letter-spacing:2px; margin:0 0 6px;}
+  .modal{border:1px solid var(--fg); background:#000; padding:20px; width:min(90vw,420px); box-shadow:0 0 12px rgba(255,255,255,.15);}
+  .modal h3{font-family:"Times New Roman",serif; font-size:14px; letter-spacing:2px; margin:0 0 6px; text-shadow:0 0 3px rgba(255,255,255,.4);}
   .modal p{font-size:10.5px; color:var(--dim); margin:0 0 12px;}
   .modal textarea{width:100%; background:#000; border:1px solid var(--line); color:var(--fg);
     font-family:"Courier New",monospace; font-size:11.5px; padding:8px; min-height:68px; resize:vertical;}
@@ -160,7 +197,7 @@
 </head>
 <body>
 <div class="stage">
-  <div class="dust" id="dust"></div>
+  <canvas id="noiseCanvas" width="220" height="140"></canvas>
 
   <div class="hud-top">
     <span>KEPT <b>//</b> NOTCH FIELD</span>
@@ -198,11 +235,18 @@
     <div class="infopanel" id="infopanel">
       <div class="eyebrow">SELECTED</div>
       <div class="name">— no card selected —</div>
-      <div class="row" style="color:var(--dimmer)">Click any card in the field above.</div>
+      <div class="row" style="color:var(--dimmer)">Click any card in the field above. Click a pulsing card to carve it.</div>
     </div>
 
     <div class="log-feed" id="logFeed"></div>
   </div>
+
+  <!-- CRT overlay stack — sits above every element below; blended so text underneath stays readable -->
+  <div class="crt-bloom"></div>
+  <div class="crt-scanlines"></div>
+  <div class="crt-flicker"></div>
+  <div class="crt-vignette"></div>
+  <canvas id="grainCanvas" width="180" height="120"></canvas>
 </div>
 
 <div class="modal-bg" id="modalBg">
@@ -242,7 +286,7 @@
   ];
   const NULL_NOTCH = {power:"Null", Od:"the Shade at full, unfiltered output — nothing left to argue with the noise"};
   const MAX_NOISE = 270;
-  const STORE_KEY = "othergrade-starfield-v2";
+  const STORE_KEY = "othergrade-starfield-v3";
 
   let state = {
     noise:0, kalmaActive:false,
@@ -287,7 +331,6 @@
   function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
   // ---------- hand-placed layout — no hub, no rings, no radial arrangement ----------
-  // each entry: pair-center {x,y}. I-card sits left half, O-card sits right half.
   const KINO_POS = [
     {x:140,  y:110},
     {x:430,  y:80},
@@ -307,11 +350,12 @@
     {x:830,  y:630},
     {x:1100, y:670}
   ];
-  const NULL_POS = {x:700, y:830};
+  const NULL_POS = {x:700, y:820};
 
-  const PAIR_W = 150, PAIR_H = 66, GAP = 8;      // Kino / carved-Fantom binary cards
-  const SINGLE_W = 140, SINGLE_H = 60;            // Fantom locked / available single card
-  const NULL_W = 240, NULL_H = 96;
+  const PAIR_W = 160, PAIR_H = 54, GAP = 8;      // Kino / carved-Fantom binary cards
+  const SINGLE_W = 150, SINGLE_H = 46;            // Fantom available single card
+  const LOCKED_W = 70, LOCKED_H = 40;             // Fantom locked single card
+  const NULL_W = 200, NULL_H = 70;
 
   const svg = document.getElementById('fieldSvg');
   const NS = "http://www.w3.org/2000/svg";
@@ -320,7 +364,6 @@
     for(const k in attrs) e.setAttribute(k, attrs[k]);
     return e;
   }
-  // a box rendered as a foreignObject containing an HTML div, so text can wrap and fit inside
   function box(cx, cy, w, h, innerHtml, cls, onClick){
     const fo = el('foreignObject', {x:cx-w/2, y:cy-h/2, width:w, height:h});
     const div = document.createElement('div');
@@ -332,35 +375,48 @@
     return fo;
   }
 
+  // shrink a card's font-size (never its box) until the label stops clipping
+  function fitCardText(div){
+    const startSize = parseFloat(getComputedStyle(div).fontSize) || 13;
+    const minSize = 6.5;
+    let size = startSize;
+    div.style.fontSize = size + 'px';
+    let guard = 0;
+    while(guard++ < 40 && size > minSize &&
+          (div.scrollHeight > div.clientHeight + 0.5 || div.scrollWidth > div.clientWidth + 0.5)){
+      size -= 0.5;
+      div.style.fontSize = size + 'px';
+    }
+  }
+  function fitAllCards(){
+    svg.querySelectorAll('.card').forEach(fitCardText);
+  }
+
   function renderField(){
     svg.innerHTML = "";
 
     // ---- Kino pairs ----
     KINO.forEach((k,i)=>{
       const p = KINO_POS[i];
-      const ix = p.x - PAIR_W/2 - GAP/2 + (PAIR_W/2)/2*0; // left card center
-      const iCx = p.x - (PAIR_W+GAP)/4 - GAP/4;
-      const oCx = p.x + (PAIR_W+GAP)/4 + GAP/4;
       const halfW = PAIR_W/2;
 
       svg.appendChild(el('line',{x1:p.x-halfW/2,y1:p.y,x2:p.x+halfW/2,y2:p.y,class:'lead'}));
       if(i>0){
         const prev = KINO_POS[i-1];
-        svg.appendChild(el('line',{x1:prev.x,y1:prev.y,x2:p.x,y2:p.y,class:'lead link'+(true?' lit':'')}));
+        svg.appendChild(el('line',{x1:prev.x,y1:prev.y,x2:p.x,y2:p.y,class:'lead link lit'}));
       }
 
       const iSel = selected && selected.kind==='kino' && selected.idx===i && selected.side==='I' ? ' selected':'';
       const oSel = selected && selected.kind==='kino' && selected.idx===i && selected.side==='O' ? ' selected':'';
 
       svg.appendChild(box(p.x-halfW/2, p.y, halfW-GAP/2, PAIR_H,
-        `<b>${k.I}</b><br>${k.Id}`, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
+        k.I, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
         ()=>selectKino(i,'I')));
       svg.appendChild(box(p.x+halfW/2, p.y, halfW-GAP/2, PAIR_H,
-        `<b>${k.O}</b><br>${k.Od}`, 'o-card'+(isKalma()?' kalma-on':'')+oSel,
+        k.O, 'o-card'+(isKalma()?' kalma-on':'')+oSel,
         ()=>selectKino(i,'O')));
     });
 
-    // link last Kino to first Fantom to keep one continuous constellation line
     svg.appendChild(el('line',{x1:KINO_POS[KINO_POS.length-1].x,y1:KINO_POS[KINO_POS.length-1].y,
       x2:FANTOM_POS[0].x,y2:FANTOM_POS[0].y,class:'lead link'}));
 
@@ -384,20 +440,19 @@
         svg.appendChild(el('line',{x1:p.x-halfW/2,y1:p.y,x2:p.x+halfW/2,y2:p.y,class:'lead lit'}));
 
         svg.appendChild(box(p.x-halfW/2, p.y, halfW-GAP/2, PAIR_H,
-          `<b>N${t.n} · ${t.power}</b><br>${t.Id}`, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
+          `N${t.n} · ${t.power}`, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
           ()=>selectFantom(i,'I')));
         svg.appendChild(box(p.x+halfW/2, p.y, halfW-GAP/2, PAIR_H,
-          `<b>shade read</b><br>${t.Od}`, 'o-card'+(isKalma()?' kalma-on':'')+oSel,
+          'shade read', 'o-card'+(isKalma()?' kalma-on':'')+oSel,
           ()=>selectFantom(i,'O')));
       } else if(available){
-        const sel = selected && selected.kind==='fantom' && selected.idx===i ? ' selected':'';
+        // click carves directly — no separate carve button
         svg.appendChild(box(p.x, p.y, SINGLE_W, SINGLE_H,
-          `<b>N${t.n} · ${t.power}</b><br>threshold reached — carve?`, 'available-card'+sel,
-          ()=>selectFantom(i,null)));
+          `N${t.n} · ${t.power}`, 'available-card',
+          ()=>openCarveModal(i)));
       } else {
-        const sel = selected && selected.kind==='fantom' && selected.idx===i ? ' selected':'';
-        svg.appendChild(box(p.x, p.y, SINGLE_W*0.6, SINGLE_H*0.72,
-          `N${t.n}<br>?????`, 'locked-card'+sel,
+        svg.appendChild(box(p.x, p.y, LOCKED_W, LOCKED_H,
+          `N${t.n}`, 'locked-card',
           ()=>selectFantom(i,null)));
       }
     });
@@ -408,15 +463,21 @@
       svg.appendChild(el('line',{x1:last.x,y1:last.y,x2:NULL_POS.x,y2:NULL_POS.y,
         class:isKalma()?'lead kalma-lead':'lead dashed'}));
 
-      const sel = selected && selected.kind==='null' ? ' selected':'';
       if(isKalma()){
         svg.appendChild(box(NULL_POS.x, NULL_POS.y, NULL_W, NULL_H,
-          `KALMA — NULL`, 'null-card active'+sel, ()=>selectNull()));
+          'NULL', 'null-card active', ()=>selectNull()));
       } else {
-        svg.appendChild(box(NULL_POS.x, NULL_POS.y, NULL_W*0.8, NULL_H*0.8,
-          `KALMA<br>all Notches carved — activate?`, 'null-card dormant'+sel, ()=>selectNull()));
+        // click activates directly — no separate activate button
+        svg.appendChild(box(NULL_POS.x, NULL_POS.y, NULL_W*0.85, NULL_H*0.85,
+          'KALMA', 'null-card dormant', ()=>{
+            if(confirm('Activate Kalma? Every carved Notch runs continuous, permanently. This cannot be undone.')){
+              activateKalma();
+            }
+          }));
       }
     }
+
+    fitAllCards();
   }
 
   // ---------- selection & info panel ----------
@@ -428,7 +489,7 @@
     const panel = document.getElementById('infopanel');
     if(!selected){
       panel.innerHTML = `<div class="eyebrow">SELECTED</div><div class="name">— no card selected —</div>
-        <div class="row" style="color:var(--dimmer)">Click any card in the field above.</div>`;
+        <div class="row" style="color:var(--dimmer)">Click any card in the field above. Click a pulsing card to carve it.</div>`;
       return;
     }
     if(selected.kind==='kino'){
@@ -448,7 +509,6 @@
     if(selected.kind==='fantom'){
       const t = THRESHOLDS[selected.idx];
       const entry = state.notches[selected.idx];
-      const available = !entry.carved && state.noise >= t.req;
       if(entry.carved){
         panel.innerHTML = `<div class="eyebrow">FANTOM — N${t.n}</div>
           <div class="name">${t.power}</div>
@@ -461,32 +521,18 @@
           </div>`;
         document.getElementById('fireI').addEventListener('click', ()=>{ addNoise(isKalma()?0:3, `${t.power} used — light read`); });
         document.getElementById('fireO').addEventListener('click', ()=>{ addNoise(isKalma()?0:3, `${t.power} used — shade read`); });
-      } else if(available){
-        panel.innerHTML = `<div class="eyebrow">FANTOM — N${t.n}</div>
-          <div class="name">${t.power}</div>
-          <div class="row">Threshold ${t.req} reached. Crossing it only unlocked the option — carving is your choice, and it costs a permanent Loss.</div>
-          <div class="fire-row"><button class="carve" id="carveBtn">CARVE →</button></div>`;
-        document.getElementById('carveBtn').addEventListener('click', ()=>openCarveModal(selected.idx));
       } else {
         panel.innerHTML = `<div class="eyebrow">FANTOM — N${t.n}</div>
           <div class="name" style="color:var(--dimmer)">UNIDENTIFIED CONTACT</div>
-          <div class="row" style="color:var(--dimmer)">Dormant. Carves automatically at ${t.req} running Noise.</div>`;
+          <div class="row" style="color:var(--dimmer)">Dormant. Carves automatically at ${t.req} running Noise — the card will start pulsing. Click it then to carve.</div>`;
       }
       return;
     }
     if(selected.kind==='null'){
-      if(isKalma()){
-        panel.innerHTML = `<div class="eyebrow">KALMA</div>
-          <div class="name kalma-c">NULL</div>
-          <div class="row">${NULL_NOTCH.Od}</div>
-          <div class="row" style="color:var(--dim)">Every Kino and Fantom O side now runs continuous, free of Noise.</div>`;
-      } else {
-        panel.innerHTML = `<div class="eyebrow">KALMA</div>
-          <div class="name">All ${THRESHOLDS.length} Notches carved</div>
-          <div class="row">Nothing left to carve. What's left is a choice: become what you've been carving toward.</div>
-          <div class="fire-row"><button class="activate" id="activateBtn">ACTIVATE →</button></div>`;
-        document.getElementById('activateBtn').addEventListener('click', activateKalma);
-      }
+      panel.innerHTML = `<div class="eyebrow">KALMA</div>
+        <div class="name kalma-c">NULL</div>
+        <div class="row">${NULL_NOTCH.Od}</div>
+        <div class="row" style="color:var(--dim)">Every Kino and Fantom O side now runs continuous, free of Noise.</div>`;
     }
   }
 
@@ -562,22 +608,64 @@
     }
   });
 
-  // ---------- ambient star dust ----------
-  function buildDust(){
-    const wrap = document.getElementById('dust');
-    const frag = document.createDocumentFragment();
-    for(let i=0;i<160;i++){
-      const s = document.createElement('i');
-      s.style.left = (Math.random()*100)+'%';
-      s.style.top = (Math.random()*100)+'%';
-      s.style.setProperty('--dur', (2+Math.random()*4).toFixed(2)+'s');
-      s.style.setProperty('--delay', (Math.random()*4).toFixed(2)+'s');
-      frag.appendChild(s);
+  // ---------- ambient background: actual noise/static, not stars ----------
+  const noiseCanvas = document.getElementById('noiseCanvas');
+  const nctx = noiseCanvas.getContext('2d');
+  function drawStatic(){
+    const w = noiseCanvas.width, h = noiseCanvas.height;
+    const imgData = nctx.createImageData(w,h);
+    const buf = imgData.data;
+    for(let p=0; p<buf.length; p+=4){
+      const v = Math.random()*255;
+      buf[p]=v; buf[p+1]=v; buf[p+2]=v; buf[p+3]=255;
     }
-    wrap.appendChild(frag);
-  }
+    nctx.putImageData(imgData,0,0);
 
-  buildDust();
+    // glitch bands: slice rows, offset them horizontally — a signal-tear look
+    if(Math.random() < 0.4){
+      const bands = 1 + Math.floor(Math.random()*3);
+      for(let b=0; b<bands; b++){
+        const y = Math.floor(Math.random()*h);
+        const bandH = 1 + Math.floor(Math.random()*8);
+        const shift = ((Math.random()*50-25)|0);
+        try{
+          const slice = nctx.getImageData(0, y, w, Math.min(bandH, h-y));
+          nctx.putImageData(slice, shift, y);
+        }catch(e){}
+      }
+    }
+    // occasional dropped/blacked-out band, like a tracking glitch
+    if(Math.random() < 0.1){
+      const y = Math.floor(Math.random()*h);
+      const bandH = 1 + Math.floor(Math.random()*4);
+      nctx.fillStyle = Math.random() < 0.5 ? '#000' : '#fff';
+      nctx.fillRect(0, y, w, bandH);
+    }
+    // occasional cold color flash across the whole field
+    if(Math.random() < 0.05){
+      nctx.fillStyle = Math.random()<0.5 ? 'rgba(91,227,255,0.18)' : 'rgba(124,255,176,0.15)';
+      nctx.fillRect(0,0,w,h);
+    }
+  }
+  function loopStatic(){ drawStatic(); setTimeout(loopStatic, 45+Math.random()*90); }
+
+  // ---------- film grain: fine, low-contrast, no glitch bands — just texture ----------
+  const grainCanvas = document.getElementById('grainCanvas');
+  const gctx = grainCanvas.getContext('2d');
+  function drawGrain(){
+    const w = grainCanvas.width, h = grainCanvas.height;
+    const imgData = gctx.createImageData(w,h);
+    const buf = imgData.data;
+    for(let p=0; p<buf.length; p+=4){
+      const v = 128 + (Math.random()*255-128)*0.55;
+      buf[p]=v; buf[p+1]=v; buf[p+2]=v; buf[p+3]=255;
+    }
+    gctx.putImageData(imgData,0,0);
+  }
+  function loopGrain(){ drawGrain(); setTimeout(loopGrain, 90+Math.random()*60); }
+
+  loopStatic();
+  loopGrain();
   await loadState();
   if(state.log.length===0) pushLog('Kept status channel online.');
   renderAll();
