@@ -84,6 +84,20 @@
   .hud-top b{color:var(--fg); font-weight:normal;}
   .hud-title{font-family:"Times New Roman",serif; font-size:15px; letter-spacing:.3em; color:var(--fg); text-shadow:0 0 4px rgba(255,255,255,.4), 0 0 1px rgba(255,255,255,.8);}
 
+  /* ===== SECTION FRAMES (Kino / Fantom containers) ===== */
+  .section-frame{
+    fill:none; stroke:#ffffff; stroke-width:1.3; opacity:.75;
+    filter:drop-shadow(0 0 2px rgba(255,255,255,.55)) drop-shadow(0 0 7px rgba(255,255,255,.28));
+  }
+  .section-header{
+    width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Times New Roman",serif; font-weight:bold;
+    font-size:17px; letter-spacing:.4em;
+    color:#000000; background:#ffffff;
+    box-shadow:0 0 6px rgba(255,255,255,.6), 0 0 14px rgba(255,255,255,.3);
+  }
+
   /* ===== FIELD (svg constellation) ===== */
   .field-wrap{position:relative; z-index:2; width:100%; margin:0 auto;}
   svg.field{width:100%; height:auto; display:block;}
@@ -107,7 +121,7 @@
     cursor:pointer; user-select:none;
     transition:box-shadow .15s;
     overflow:hidden;
-    white-space:normal; word-break:break-word; hyphens:auto;
+    white-space:nowrap;
   }
   .card::after{
     content:"";
@@ -368,10 +382,11 @@
   const NULL_POS = {x:700, y:820};
 
   const PAIR_W = 160, PAIR_H = 54, GAP = 8;      // Kino / carved-Fantom binary cards
-  const PAIR_H_OFFSET = 7;                        // black (O) card runs slightly shorter + shifted, so the pair doesn't align edge-to-edge
+  const PAIR_H_OFFSET = 8;                        // full vertical shift applied to one card in each pair (both edges move together)
   const SINGLE_W = 150, SINGLE_H = 46;            // Fantom available single card
   const LOCKED_W = 70, LOCKED_H = 40;             // Fantom locked single card
   const NULL_W = 200, NULL_H = 70;
+  function pairDir(i){ return (i%2===0) ? 1 : -1; } // alternates which card (white/black) sits higher, pair to pair
 
   const svg = document.getElementById('fieldSvg');
   const NS = "http://www.w3.org/2000/svg";
@@ -390,18 +405,65 @@
     fo.appendChild(div);
     return fo;
   }
+  // connects the facing edges of two cards — endpoints sit exactly on each
+  // card's boundary, so the line only ever spans the gap between them and
+  // never passes behind/over either card's body or text
+  function edgeLine(leftCx, leftCy, leftW, rightCx, rightCy, rightW, cls){
+    return el('line', {
+      x1: leftCx + leftW/2,  y1: leftCy,
+      x2: rightCx - rightW/2, y2: rightCy,
+      class: cls
+    });
+  }
 
-  // shrink a card's font-size (never its box) until the label stops clipping
+  // white-line container that frames a whole section (Kino / Fantom), with a
+  // solid-white header label straddling the top edge. Padding is generous
+  // enough that the frame never overlaps any card inside it.
+  function sectionFrame(positions, label, padX, padY){
+    const xs = positions.map(p=>p.x), ys = positions.map(p=>p.y);
+    const minX = Math.min(...xs) - padX;
+    const maxX = Math.max(...xs) + padX;
+    const minY = Math.min(...ys) - padY;
+    const maxY = Math.max(...ys) + padY;
+
+    const frag = document.createDocumentFragment();
+    frag.appendChild(el('rect', {
+      x:minX, y:minY, width:maxX-minX, height:maxY-minY, class:'section-frame'
+    }));
+
+    const headerW = 210, headerH = 32;
+    const headerFo = el('foreignObject', {
+      x:(minX+maxX)/2 - headerW/2, y:minY - headerH/2, width:headerW, height:headerH
+    });
+    const div = document.createElement('div');
+    div.setAttribute('xmlns','http://www.w3.org/1999/xhtml');
+    div.className = 'section-header';
+    div.textContent = label;
+    headerFo.appendChild(div);
+    frag.appendChild(headerFo);
+
+    return frag;
+  }
+
+  // shrink a card's font-size (never its box) until the label stops clipping —
+  // white-space:nowrap means this is purely a width fit now, no wrapping to fall back on
   function fitCardText(div){
     const startSize = parseFloat(getComputedStyle(div).fontSize) || 13;
-    const minSize = 6.5;
+    const minSize = 5;
     let size = startSize;
     div.style.fontSize = size + 'px';
     let guard = 0;
-    while(guard++ < 40 && size > minSize &&
+    while(guard++ < 60 && size > minSize &&
           (div.scrollHeight > div.clientHeight + 0.5 || div.scrollWidth > div.clientWidth + 0.5)){
-      size -= 0.5;
+      size -= 0.25;
       div.style.fontSize = size + 'px';
+    }
+    // still too wide at minimum size — tighten tracking rather than wrap
+    let tracking = 0;
+    guard = 0;
+    while(guard++ < 20 && div.scrollWidth > div.clientWidth + 0.5 && tracking > -1.2){
+      tracking -= 0.06;
+      div.style.letterSpacing = tracking + 'px';
     }
   }
   function fitAllCards(){
@@ -431,12 +493,21 @@
   function renderField(){
     svg.innerHTML = "";
 
+    // ---- section frames (drawn first, so cards/lines sit on top) ----
+    svg.appendChild(sectionFrame(KINO_POS, 'KINO', PAIR_W/2 + 40, PAIR_H/2 + PAIR_H_OFFSET/2 + 40));
+    svg.appendChild(sectionFrame(FANTOM_POS, 'FANTOM', PAIR_W/2 + 40, PAIR_H/2 + PAIR_H_OFFSET/2 + 40));
+
     // ---- Kino pairs ----
     KINO.forEach((k,i)=>{
       const p = KINO_POS[i];
       const halfW = PAIR_W/2;
+      const cardW = halfW - GAP/2;
+      const dir = pairDir(i);
+      const iCy = p.y - (dir*PAIR_H_OFFSET)/2;
+      const oCy = p.y + (dir*PAIR_H_OFFSET)/2;
+      const iCx = p.x-halfW/2, oCx = p.x+halfW/2;
 
-      svg.appendChild(el('line',{x1:p.x-halfW/2,y1:p.y,x2:p.x+halfW/2,y2:p.y,class:'lead'}));
+      svg.appendChild(edgeLine(iCx, iCy, cardW, oCx, oCy, cardW, 'lead'));
       if(i>0){
         const prev = KINO_POS[i-1];
         svg.appendChild(el('line',{x1:prev.x,y1:prev.y,x2:p.x,y2:p.y,class:'lead link lit'}));
@@ -445,10 +516,10 @@
       const iSel = selected && selected.kind==='kino' && selected.idx===i && selected.side==='I' ? ' selected':'';
       const oSel = selected && selected.kind==='kino' && selected.idx===i && selected.side==='O' ? ' selected':'';
 
-      svg.appendChild(box(p.x-halfW/2, p.y, halfW-GAP/2, PAIR_H,
+      svg.appendChild(box(iCx, iCy, cardW, PAIR_H,
         k.I, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
         ()=>selectKino(i,'I')));
-      svg.appendChild(box(p.x+halfW/2, p.y+PAIR_H_OFFSET/2, halfW-GAP/2, PAIR_H-PAIR_H_OFFSET,
+      svg.appendChild(box(oCx, oCy, cardW, PAIR_H,
         k.O, 'o-card'+(isKalma()?' kalma-on':'')+oSel,
         ()=>selectKino(i,'O')));
     });
@@ -470,15 +541,20 @@
 
       if(entry.carved){
         const halfW = PAIR_W/2;
+        const cardW = halfW - GAP/2;
+        const dir = pairDir(i);
+        const iCy = p.y - (dir*PAIR_H_OFFSET)/2;
+        const oCy = p.y + (dir*PAIR_H_OFFSET)/2;
+        const iCx = p.x-halfW/2, oCx = p.x+halfW/2;
         const iSel = selected && selected.kind==='fantom' && selected.idx===i && selected.side==='I' ? ' selected':'';
         const oSel = selected && selected.kind==='fantom' && selected.idx===i && selected.side==='O' ? ' selected':'';
 
-        svg.appendChild(el('line',{x1:p.x-halfW/2,y1:p.y,x2:p.x+halfW/2,y2:p.y,class:'lead lit'}));
+        svg.appendChild(edgeLine(iCx, iCy, cardW, oCx, oCy, cardW, 'lead lit'));
 
-        svg.appendChild(box(p.x-halfW/2, p.y, halfW-GAP/2, PAIR_H,
+        svg.appendChild(box(iCx, iCy, cardW, PAIR_H,
           `N${t.n} · ${t.power}`, 'i-card'+(isKalma()?' kalma-on':'')+iSel,
           ()=>selectFantom(i,'I')));
-        svg.appendChild(box(p.x+halfW/2, p.y+PAIR_H_OFFSET/2, halfW-GAP/2, PAIR_H-PAIR_H_OFFSET,
+        svg.appendChild(box(oCx, oCy, cardW, PAIR_H,
           'shade read', 'o-card'+(isKalma()?' kalma-on':'')+oSel,
           ()=>selectFantom(i,'O')));
       } else if(available){
